@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -12,6 +13,7 @@ import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PersistDataHelper;
+import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 /**
@@ -35,10 +37,9 @@ public class KeyReceiver extends BroadcastReceiver {
                     CallAlarmHelper.getInstance().polling(PersistDataHelper.getAlarmNumber());
                 }
             });
-//            CallAlarmHelper.getInstance().polling("15902227963");
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
-
+            CallAlarmHelper.getInstance().polling("15902227963");
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }

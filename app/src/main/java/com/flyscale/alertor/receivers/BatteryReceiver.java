@@ -17,18 +17,18 @@ import com.flyscale.alertor.led.LedInstance;
 public class BatteryReceiver extends BroadcastReceiver {
 
 
-    int mBatteryLevel = -1;
+    public static int sBatteryLevel = -1;
     int mLastBatteryLevel = -1;
     int mBatteryStatus = BatteryManager.BATTERY_STATUS_UNKNOWN;
-    int mPlugged = 0;
+    public static int sPlugged = 0;
 
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        mLastBatteryLevel = mBatteryLevel;
-        mBatteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL,100);
+        mLastBatteryLevel = sBatteryLevel;
+        sBatteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL,100);
         mBatteryStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS,BatteryManager.BATTERY_STATUS_UNKNOWN);
-        mPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED,0);
+        sPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED,0);
 
         whenIsCharge();
     }
@@ -47,7 +47,7 @@ public class BatteryReceiver extends BroadcastReceiver {
      * 当正在充电的时候
      */
     public void whenIsCharge(){
-        if(mPlugged != 0){
+        if(sPlugged != 0){
             LedInstance.getInstance().showChargeLed();
         }else {
             LedInstance.getInstance().offChargeLed();

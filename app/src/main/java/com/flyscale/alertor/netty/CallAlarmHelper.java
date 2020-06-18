@@ -27,6 +27,8 @@ public class CallAlarmHelper {
     String TAG = "CallAlarmHelper";
     PhoneStateReceiver mPhoneStateReceiver = new PhoneStateReceiver();
 
+    boolean isOffhook = true;
+
     public static CallAlarmHelper getInstance() {
         return ourInstance;
     }
@@ -62,12 +64,25 @@ public class CallAlarmHelper {
             @Override
             public void run() {
                 if(!mAlarmResult.get()){
-                    PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
+                    //这里打电话之前要先判断是否挂断电话
+                    //如果挂断电话的状态直接打电话
+                    //如果不是挂断的状态 ，则需要挂断电话。这个挂断是有过程的 大概一秒 然后才会变成挂断的状态
+                    isOffhook = PhoneUtil.isOffhook(BaseApplication.sContext);
+                    if(isOffhook){
+                        PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
+                    }else {
+                        PhoneUtil.endCall(BaseApplication.sContext);
+                        while (!isOffhook){
+                            isOffhook = PhoneUtil.isOffhook(BaseApplication.sContext);
+                            Log.i(TAG, "run: 等待挂断电话" );
+                        }
+                        PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
+                    }
                 }else {
                     destroy();
                 }
             }
-        },50,20 * 1000);
+        },50,5 * 1000);
     }
 
 
@@ -82,12 +97,18 @@ public class CallAlarmHelper {
     }
 
 
+    /**
+     * 通话状态的广播
+     */
     public class PhoneStateReceiver extends BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals("com.android.phone.FLYSCALE_PHONE_STATE")){
                 int state = intent.getIntExtra("phone_state", 0);
                 Log.i(TAG, "onReceive: " + state);
+                if(state == 2){
+                    setAlarmResult(true);
+                }
             }
         }
     }

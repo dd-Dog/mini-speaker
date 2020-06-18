@@ -2,6 +2,7 @@ package com.flyscale.alertor.services;
 
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.flyscale.alertor.base.BaseService;
 import com.flyscale.alertor.helper.FileHelper;
@@ -39,6 +40,7 @@ public class AlarmService extends BaseService {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i(TAG, "onCreate: ");
         NettyHelper.getInstance().register();
         NettyHelper.getInstance().connect();
         //初始化程序默认文件夹
@@ -53,12 +55,11 @@ public class AlarmService extends BaseService {
         mTelephonyStateReceiver.listenStrengths();
         mKeyReceiver = new KeyReceiver();
         mKeyReceiver.register(mKeyReceiver);
-
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i(TAG, "onStartCommand: ");
         if(mTimer != null){
             mTimer.cancel();
             mTimer = null;

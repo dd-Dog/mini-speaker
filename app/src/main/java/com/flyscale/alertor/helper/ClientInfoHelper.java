@@ -2,6 +2,7 @@ package com.flyscale.alertor.helper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
@@ -10,6 +11,9 @@ import android.widget.TextView;
 
 import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.receivers.BatteryReceiver;
+
+import static android.content.Context.BATTERY_SERVICE;
 
 /**
  * @author 高鹤泉
@@ -45,38 +49,31 @@ public class ClientInfoHelper {
      * @return
      */
     @SuppressLint("MissingPermission")
-    public static boolean sTempChange = false;
     public static String getICCID(){
 //        return "89860320249940634519";
-        return "89860320249940634527";
-//        TelephonyManager telephonyManager = (TelephonyManager) BaseApplication.sContext.getSystemService(Context.TELEPHONY_SERVICE);
-//        String iccid = telephonyManager.getSimSerialNumber();
-//        if(TextUtils.isEmpty(iccid)){
-//            iccid = "iccid_is_null";
-//        }
-//        return iccid;
+//        return "89860320249940634527";
+        TelephonyManager telephonyManager = (TelephonyManager) BaseApplication.sContext.getSystemService(Context.TELEPHONY_SERVICE);
+        String iccid = telephonyManager.getSimSerialNumber();
+        if(TextUtils.isEmpty(iccid)){
+            iccid = "iccid_is_null";
+        }
+        return iccid;
     }
 
     /**
      * 电量百分比
      * @return
      */
-    //TODO 这里有问题 需要系统5.0以上  等待边工的room
     public static String getBatteryLevel(){
-        return "10%";
-//        BatteryManager batteryManager = (BatteryManager) BaseApplication.sContext.getSystemService(BATTERY_SERVICE);
-//        int capacity = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-//        return capacity + "%";
-
+        return BatteryReceiver.sBatteryLevel + "%";
     }
 
     /**
      * 市电 市电 是否接入220V电源，0接入，1未接入
      * @return
      */
-    //TODO 这里并不是准确的
     public static int getAC(){
-        return 0;
+        return BatteryReceiver.sPlugged == 0 ? 1 : 0;
     }
 
     /**
