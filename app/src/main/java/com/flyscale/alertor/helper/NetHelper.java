@@ -1,0 +1,56 @@
+package com.flyscale.alertor.helper;
+
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
+import com.flyscale.alertor.base.BaseApplication;
+
+/**
+ * 作者 ： 高鹤泉
+ * 时间 ： 2019/2/28 下午3:42
+ */
+public class NetHelper {
+    //无网
+    public static final int NONE = 0;
+    //移动网络
+    public static final int MOBILE = 1;
+    //wifi
+    public static final int WIFI = 2;
+
+    /**
+     * 获取网络类型
+     * @return
+     */
+    public static int getNetworkType(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) BaseApplication.sContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo != null && networkInfo.isConnected()){
+            if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+                return WIFI;
+            }else if(networkInfo.getType() == ConnectivityManager.TYPE_MOBILE){
+                return MOBILE;
+            }
+        }else {
+            return NONE;
+        }
+        return NONE;
+    }
+
+    /**
+     * 判断网络是否可用
+     * @param context
+     * @return
+     */
+    public static boolean isNetworkConnected(Context context) {
+        if (context != null) {
+            ConnectivityManager mConnectivityManager = (ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo mNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
+            if (mNetworkInfo != null) {
+                return mNetworkInfo.isAvailable();
+            }
+        }
+        return false;
+    }
+}

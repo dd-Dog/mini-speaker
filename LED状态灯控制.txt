@@ -1,0 +1,16 @@
+    public static final int CHARGE_LED = 11;//充电指示灯
+    public static final int SIGNAL_LED = 12;//信号指示灯
+    public static final int STATE_LED = 13;//状态指示灯
+    public static final int ALARM_LED = 14;//报警灯	
+
+调用接口：
+/**
+     * @param lightByte 指定LED灯,例如CHARGE_LED 
+     * @param color 亮度值，0表示熄灭，大于0亮起,1-255表示亮度值
+     */
+FlyscaleManager.setLightColor(int lightByte, int color)
+
+添加获取灯的开关状态方法 getLightColor
+
+
+闪烁功能需要应用起定时器，例如使用Timer

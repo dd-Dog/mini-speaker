@@ -1,0 +1,20 @@
+监听广播示例:
+if (TextUtils.equals(action,"com.android.phone.FLYSCALE_PHONE_STATE")) {
+    int stateFly = intent.getIntExtra("phone_state", INVALID);
+    Log.d(TAG, "stateFly=" + stateFly);
+} 
+
+
+phone_state 状态说明:
+
+public static final int INVALID = 0;
+public static final int IDLE = 1;           /* The call is idle.  Nothing active */
+public static final int ACTIVE = 2;         /* There is an active call */
+public static final int INCOMING = 3;       /* A normal incoming phone call */
+public static final int CALL_WAITING = 4;   /* Incoming call while another is active */
+public static final int DIALING = 5;        /* An outgoing call during dial phase */
+public static final int REDIALING = 6;      /* Subsequent dialing attempt after a failure */
+public static final int ONHOLD = 7;         /* An active phone call placed on hold */
+public static final int DISCONNECTING = 8;  /* A call is being ended. */
+public static final int DISCONNECTED = 9;   /* State after a call disconnects */
+public static final int CONFERENCED = 10;   /* Call part of a conference call */

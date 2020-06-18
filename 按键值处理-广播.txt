@@ -1,0 +1,27 @@
+四个按键，在按键触发时发出对应的广播。监听方法：
+
+<intent-filter>
+    <!--                报警键-->
+    <action android:name="flyscale.privkey.ALARM.down" />
+    <action android:name="flyscale.privkey.ALARM.long" />
+    <action android:name="flyscale.privkey.ALARM.up" />
+    <!--                110报警键-->
+    <action android:name="flyscale.privkey.EMERGENCY.down" />
+    <action android:name="flyscale.privkey.EMERGENCY.long" />
+    <action android:name="flyscale.privkey.EMERGENCY.up" />
+    <!--               外接警号检测键-->
+    <action android:name="flyscale.privkey.EXTRA_SPEAKER.down" />
+    <action android:name="flyscale.privkey.EXTRA_SPEAKER.long" />
+    <action android:name="flyscale.privkey.EXTRA_SPEAKER.up" />
+    <!--                静默报警开关键-->
+    <action android:name="flyscale.privkey.MUTE.down" />
+    <action android:name="flyscale.privkey.MUTE.long" />
+    <action android:name="flyscale.privkey.MUTE.up" />
+
+    131 报警键
+    133 110报警键
+    143 外接警号
+    144 静默报警开关
+    例如：adb shell input keyevent 131
+
+</intent-filter>
