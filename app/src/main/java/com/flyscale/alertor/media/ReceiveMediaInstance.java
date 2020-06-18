@@ -4,7 +4,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.util.Log;
 
-import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 
 import java.io.File;
@@ -15,18 +14,18 @@ import java.io.IOException;
  * @TIME 2020/6/16 14:20
  * @DESCRIPTION 播放单例 可以限制次数等
  */
-public class MediaInstance {
+public class ReceiveMediaInstance {
     String TAG = "MediaInstance";
     MediaPlayer mMediaPlayer = new MediaPlayer();
     int mPlayCount = 3;
 
-    private static final MediaInstance ourInstance = new MediaInstance();
+    private static final ReceiveMediaInstance ourInstance = new ReceiveMediaInstance();
 
-    public static MediaInstance getInstance() {
+    public static ReceiveMediaInstance getInstance() {
         return ourInstance;
     }
 
-    private MediaInstance() {
+    private ReceiveMediaInstance() {
 
     }
 

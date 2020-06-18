@@ -10,6 +10,8 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
+import com.flyscale.alertor.led.LedInstance;
+import com.flyscale.alertor.media.AlarmMediaInstance;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,14 +28,21 @@ public class CallAlarmHelper {
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
     String TAG = "CallAlarmHelper";
     PhoneStateReceiver mPhoneStateReceiver = new PhoneStateReceiver();
-
+    //是否摘机
     boolean isOffhook = true;
+    //正在报警
+    boolean isAlarming = false;
 
     public static CallAlarmHelper getInstance() {
         return ourInstance;
     }
 
     private CallAlarmHelper() {
+    }
+
+
+    public boolean isAlarming() {
+        return isAlarming;
     }
 
     /**
@@ -60,6 +69,8 @@ public class CallAlarmHelper {
         mTimer = new Timer();
         mAlarmResult = new AtomicBoolean(false);
         final String finalCallNumber = callNumber;
+        //正在报警
+        isAlarming = true;
         mTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -69,24 +80,26 @@ public class CallAlarmHelper {
                     //如果不是挂断的状态 ，则需要挂断电话。这个挂断是有过程的 大概一秒 然后才会变成挂断的状态
                     isOffhook = PhoneUtil.isOffhook(BaseApplication.sContext);
                     if(isOffhook){
-                        PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
-                    }else {
+                        //接听
                         PhoneUtil.endCall(BaseApplication.sContext);
-                        while (!isOffhook){
+                        while (isOffhook){
                             isOffhook = PhoneUtil.isOffhook(BaseApplication.sContext);
-                            Log.i(TAG, "run: 等待挂断电话" );
                         }
-                        PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
                     }
+                    PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
                 }else {
+                    //报警取消
                     destroy();
                 }
             }
-        },50,5 * 1000);
+        },50,20 * 1000);
     }
 
 
     public void destroy(){
+        AlarmMediaInstance.getInstance().stopLoopAlarm();
+        LedInstance.getInstance().cancelBlinkOffAlarmLed();
+        isAlarming = false;
         unRegister();
         if(mTimer != null){
             mTimer.cancel();

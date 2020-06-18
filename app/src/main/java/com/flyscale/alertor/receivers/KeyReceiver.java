@@ -21,7 +21,7 @@ import com.flyscale.alertor.netty.CallAlarmHelper;
  * @TIME 2020/6/18 11:28
  * @DESCRIPTION 按键广播
  */
-public class KeyReceiver extends BroadcastReceiver {
+public class KeyReceiver extends BroadcastReceiver{
 
     String TAG = "KeyReceiver";
 
@@ -30,18 +30,31 @@ public class KeyReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         Log.i(TAG, "onReceive: " + action);
         if(TextUtils.equals(action,"flyscale.privkey.ALARM.down")){
-            //按下报警键
+
+
+        }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
+            //110报警
+
+        }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
+
+        }
+    }
+
+    /**
+     * 报警时 按下报警键报警 再次按下报警键挂机
+     * 接警时 按下报警键接听
+     */
+    public void alarmOrReceive(){
+        //报警
+        if(CallAlarmHelper.getInstance().isAlarming()){
+            CallAlarmHelper.getInstance().destroy();
+        }else {
             AlarmHelper.getInstance().polling(new AlarmHelper.onAlarmFailListener() {
                 @Override
                 public void onAlarmFail() {
                     CallAlarmHelper.getInstance().polling(PersistDataHelper.getAlarmNumber());
                 }
             });
-        }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
-            //110报警
-            CallAlarmHelper.getInstance().polling("15902227963");
-        }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
-
         }
     }
 

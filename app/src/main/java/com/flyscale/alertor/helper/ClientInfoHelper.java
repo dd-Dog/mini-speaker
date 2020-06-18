@@ -51,13 +51,13 @@ public class ClientInfoHelper {
     @SuppressLint("MissingPermission")
     public static String getICCID(){
 //        return "89860320249940634519";
-//        return "89860320249940634527";
-        TelephonyManager telephonyManager = (TelephonyManager) BaseApplication.sContext.getSystemService(Context.TELEPHONY_SERVICE);
-        String iccid = telephonyManager.getSimSerialNumber();
-        if(TextUtils.isEmpty(iccid)){
-            iccid = "iccid_is_null";
-        }
-        return iccid;
+        return "89860320249940634527";
+//        TelephonyManager telephonyManager = (TelephonyManager) BaseApplication.sContext.getSystemService(Context.TELEPHONY_SERVICE);
+//        String iccid = telephonyManager.getSimSerialNumber();
+//        if(TextUtils.isEmpty(iccid)){
+//            iccid = "iccid_is_null";
+//        }
+//        return iccid;
     }
 
     /**

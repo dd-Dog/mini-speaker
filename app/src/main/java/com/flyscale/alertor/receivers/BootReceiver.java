@@ -18,7 +18,8 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         //开机启动服务
         Log.i("gaohequan", "onReceive: 开机了");
-        context.startActivity(new Intent(context, MainActivity.class));
-//        context.startActivity(new Intent(context, AlarmService.class));
+        Intent intentServer = new Intent(context, MainActivity.class);
+        intentServer.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intentServer);
     }
 }

@@ -10,6 +10,7 @@ import com.flyscale.alertor.data.up.UAlarm;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
+import com.flyscale.alertor.media.AlarmMediaInstance;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,7 +29,6 @@ public class AlarmHelper {
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
     int mSendCount = 1;
 
-    MediaPlayer mMediaPlayer = new MediaPlayer();
 
     public static AlarmHelper getInstance() {
         return ourInstance;
@@ -53,7 +53,7 @@ public class AlarmHelper {
         //闪灯和播放警铃
         //todo 需要静默开关控制
         LedInstance.getInstance().blinkAlarmLed();
-        playLoopAlarm();
+        AlarmMediaInstance.getInstance().playLoopAlarm();
         if(mTimer != null){
             mTimer.cancel();
             mTimer.purge();
@@ -78,7 +78,7 @@ public class AlarmHelper {
     }
 
     public void destroy(){
-        stopLoopAlarm();
+        AlarmMediaInstance.getInstance().stopLoopAlarm();
         LedInstance.getInstance().cancelBlinkOffAlarmLed();
         if(mTimer != null){
             mTimer.cancel();
@@ -89,23 +89,7 @@ public class AlarmHelper {
         mAlarmResult = new AtomicBoolean(false);
     }
 
-    /**
-     * 循环播放报警音
-     */
-    public void playLoopAlarm(){
-        SoundPoolHelper.getInstance().stopAudio();
-        mMediaPlayer = MediaPlayer.create(BaseApplication.sContext,R.raw.alarm_ringing);
-        mMediaPlayer.setLooping(true);
-        mMediaPlayer.start();
-        if(BuildConfig.DEBUG){
-            mMediaPlayer.setVolume(0.05f,0.05f);
-        }
-    }
 
-    public void stopLoopAlarm(){
-        mMediaPlayer.stop();
-        SoundPoolHelper.getInstance().releaseAudio();
-    }
 
     public interface onAlarmFailListener{
         void onAlarmFail();
