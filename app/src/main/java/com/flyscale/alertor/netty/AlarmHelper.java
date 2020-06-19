@@ -51,9 +51,7 @@ public class AlarmHelper {
      */
     public void polling(final onAlarmFailListener listener){
         //闪灯和播放警铃
-        //todo 需要静默开关控制
-        LedInstance.getInstance().blinkAlarmLed();
-        AlarmMediaInstance.getInstance().playLoopAlarm();
+        alarmStart();
         if(mTimer != null){
             mTimer.cancel();
             mTimer.purge();
@@ -70,6 +68,10 @@ public class AlarmHelper {
                 }else {
                     if(!mAlarmResult.get() && mSendCount> 3){
                         listener.onAlarmFail();
+                    }else {
+                        //IP报警成功
+                        alarmFinish();
+                        MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
                     }
                     destroy();
                 }
@@ -77,9 +79,10 @@ public class AlarmHelper {
         },50,1000);
     }
 
+    /**
+     * ip报警结束  不代表一定成功
+     */
     public void destroy(){
-        AlarmMediaInstance.getInstance().stopLoopAlarm();
-        LedInstance.getInstance().cancelBlinkOffAlarmLed();
         if(mTimer != null){
             mTimer.cancel();
             mTimer.purge();
@@ -93,6 +96,25 @@ public class AlarmHelper {
 
     public interface onAlarmFailListener{
         void onAlarmFail();
+    }
+
+    /**
+     * 报警结束
+     * 关闭闪光灯 关闭报警音
+     */
+    public void alarmFinish(){
+        AlarmMediaInstance.getInstance().stopLoopAlarm();
+        LedInstance.getInstance().cancelBlinkOffAlarmLed();
+    }
+
+    /**
+     * 开始报警
+     * 闪灯 响铃
+     */
+    //todo 需要静默开关控制
+    public void alarmStart(){
+        AlarmMediaInstance.getInstance().playLoopAlarm();
+        LedInstance.getInstance().blinkAlarmLed();
     }
 
 }

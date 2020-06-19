@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.led.LedInstance;
@@ -89,16 +90,23 @@ public class CallAlarmHelper {
                     PhoneUtil.call(BaseApplication.sContext, finalCallNumber);
                 }else {
                     //报警取消
-                    destroy();
+                    destroy(false);
                 }
             }
         },50,20 * 1000);
     }
 
-
-    public void destroy(){
-        AlarmMediaInstance.getInstance().stopLoopAlarm();
-        LedInstance.getInstance().cancelBlinkOffAlarmLed();
+    /**
+     * 电话报警需要一直报警  直到成功
+     * 成功后 报警结束
+     * 用户主动关闭 则不成功
+     * 被动关闭 一定成功
+     */
+    public void destroy(boolean isUserCancel){
+        AlarmHelper.getInstance().alarmFinish();
+        if(!isUserCancel){
+            MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
+        }
         isAlarming = false;
         unRegister();
         if(mTimer != null){
@@ -121,6 +129,7 @@ public class CallAlarmHelper {
                 Log.i(TAG, "onReceive: " + state);
                 if(state == 2){
                     setAlarmResult(true);
+                    destroy(false);
                 }
             }
         }

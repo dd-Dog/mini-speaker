@@ -11,11 +11,16 @@ import android.util.Log;
 
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
+import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
+
+import java.io.File;
+
 /**
  * @author 高鹤泉
  * @TIME 2020/6/18 11:28
@@ -30,11 +35,10 @@ public class KeyReceiver extends BroadcastReceiver{
         String action = intent.getAction();
         Log.i(TAG, "onReceive: " + action);
         if(TextUtils.equals(action,"flyscale.privkey.ALARM.down")){
-
-
+            alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
-
+            PhoneUtil.call(BaseApplication.sContext,"15902227963");
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }
@@ -47,7 +51,7 @@ public class KeyReceiver extends BroadcastReceiver{
     public void alarmOrReceive(){
         //报警
         if(CallAlarmHelper.getInstance().isAlarming()){
-            CallAlarmHelper.getInstance().destroy();
+            CallAlarmHelper.getInstance().destroy(true);
         }else {
             AlarmHelper.getInstance().polling(new AlarmHelper.onAlarmFailListener() {
                 @Override

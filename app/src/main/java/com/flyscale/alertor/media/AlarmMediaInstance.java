@@ -32,7 +32,7 @@ public class AlarmMediaInstance {
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
         if(BuildConfig.DEBUG){
-            mMediaPlayer.setVolume(0.05f,0.05f);
+            mMediaPlayer.setVolume(0.1f,0.1f);
         }
     }
 

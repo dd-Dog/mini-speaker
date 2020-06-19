@@ -5,6 +5,7 @@ import android.media.MediaPlayer;
 import android.util.Log;
 
 import com.flyscale.alertor.helper.SoundPoolHelper;
+import com.flyscale.alertor.netty.AlarmHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +63,7 @@ public class ReceiveMediaInstance {
                     }else {
                         SoundPoolHelper.getInstance().releaseAudio();
                         mp.reset();
+                        AlarmHelper.getInstance().alarmFinish();
                     }
 
                 }
