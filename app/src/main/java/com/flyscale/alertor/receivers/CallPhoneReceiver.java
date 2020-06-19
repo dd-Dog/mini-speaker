@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.PersistDataHelper;
-import com.flyscale.alertor.netty.Call110Helper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 
 /**
@@ -54,7 +53,6 @@ public class CallPhoneReceiver extends BroadcastReceiver {
             if(state == 2){
                 isCallActive = true;
                 destroyCallAlarm();
-                destroyCall110();
             }
             Log.i(TAG, "onReceive: mCallState = " + mCallState + " -- phone_state = " + state);
         }else {
@@ -101,25 +99,18 @@ public class CallPhoneReceiver extends BroadcastReceiver {
         return isCallActive;
     }
 
+
+
     /**
      * 销毁电话报警
      */
     public void destroyCallAlarm(){
-        if(TextUtils.equals(mSendNum,PersistDataHelper.getAlarmNumber())
-                && mCallState == CALL_SEND){
-            CallAlarmHelper.getInstance().setAlarmResult(true);
-            CallAlarmHelper.getInstance().destroy(false);
-        }
-    }
-
-    /**
-     * 拨出110电话的状态
-     */
-    public void destroyCall110(){
-        if(TextUtils.equals(mSendNum,PersistDataHelper.getSpecialNumber())
-                && mCallState == CALL_SEND){
-            Call110Helper.getInstance().setAlarmResult(true);
-            Call110Helper.getInstance().destroy();
+        if(mCallState == CALL_SEND){
+            if(TextUtils.equals(mSendNum,PersistDataHelper.getAlarmNumber())){
+                CallAlarmHelper.getInstance().destroy(true,true,false);
+            }else if(TextUtils.equals(mSendNum,PersistDataHelper.getSpecialNumber())){
+                CallAlarmHelper.getInstance().destroy(false,true,false);
+            }
         }
     }
 

@@ -4,27 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.MediaPlayer;
-import android.telecom.Call;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
-import com.flyscale.alertor.data.up.UAlarm;
 import com.flyscale.alertor.helper.AppActionHelper;
-import com.flyscale.alertor.helper.FileHelper;
-import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
-import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
-import com.flyscale.alertor.netty.Call110Helper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
-import com.flyscale.alertor.netty.NettyHelper;
-
-import java.io.File;
 
 /**
  * @author 高鹤泉
@@ -53,11 +41,12 @@ public class KeyReceiver extends BroadcastReceiver{
      * 110报警
      */
     public void alarm110(){
-        if(Call110Helper.getInstance().isAlarming){
-            Call110Helper.getInstance().destroy();
+        if(CallAlarmHelper.getInstance().isAlarming()){
+            CallAlarmHelper.getInstance().destroy(false,false,false);
         }else {
-            Call110Helper.getInstance().polling();
+            CallAlarmHelper.getInstance().polling(null,true);
         }
+
     }
 
 
@@ -77,14 +66,14 @@ public class KeyReceiver extends BroadcastReceiver{
         }else {
             //报警
             if(CallAlarmHelper.getInstance().isAlarming()){
-                CallAlarmHelper.getInstance().destroy(true);
+                CallAlarmHelper.getInstance().destroy(false,false,false);
                 Log.i(TAG, "alarmOrReceive: 取消报警");
             }else {
                 Log.i(TAG, "alarmOrReceive: 开始报警");
                 AlarmHelper.getInstance().polling(new AlarmHelper.onAlarmFailListener() {
                     @Override
                     public void onAlarmFail() {
-                        CallAlarmHelper.getInstance().polling(PersistDataHelper.getAlarmNumber());
+                        CallAlarmHelper.getInstance().polling(null,false);
                     }
                 });
             }

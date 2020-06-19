@@ -1,0 +1,74 @@
+
+    //todo 测试代码
+    fotaHelper = new FotaHelper(this, new FotaHelper.FotaHelperCallbackAdapter() {
+        @Override
+        public void onRemoteServiceConnected() {
+            Log.i(TAG, "onRemoteServiceConnected: ");
+        }
+
+        @Override
+        public void onRemoteServiceDisconnected() {
+            Log.i(TAG, "onRemoteServiceDisconnected: ");
+        }
+
+        @Override
+        public void hasNewVersion(NewVersionInfo newVersionInfo) {
+            Log.i(TAG, "hasNewVersion: ");
+        }
+
+        @Override
+        public void noNewVersion(int code) {
+            Log.i(TAG, "noNewVersion: ");
+        }
+
+        @Override
+        public void onDownloadStart() {
+            Log.i(TAG, "onDownloadStart: ");
+        }
+
+        @Override
+        public void onDownloadProgress(int progress) {
+            Log.i(TAG, "onDownloadProgress: ");
+        }
+
+        @Override
+        public void onDownloadFail(int code) {
+            Log.i(TAG, "onDownloadFail: ");
+        }
+
+        @Override
+        public void onDownloadonCancel() {
+            Log.i(TAG, "onDownloadonCancel: ");
+        }
+
+        @Override
+        public void onDownloadSuccess() {
+            Log.i(TAG, "onDownloadSuccess: ");
+        }
+
+        @Override
+        public void onDownloadPause() {
+            Log.i(TAG, "onDownloadPause: ");
+        }
+
+        @Override
+        public void enterRecoveryFail(int code) {
+            Log.i(TAG, "enterRecoveryFail: ");
+        }
+
+        @Override
+        public void upgradeProgress(int progress) {
+            Log.i(TAG, "upgradeProgress: ");
+        }
+
+        @Override
+        public void upgradeSuccess() {
+            Log.i(TAG, "upgradeSuccess: ");
+        }
+    });
+
+     //检查版本并升级
+     Log.i(TAG, "run: 开始检查版本");
+     fotaHelper.checkVersion();
+
+

@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.os.BatteryManager;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.MediaHelper;
@@ -24,7 +25,7 @@ public class BatteryReceiver extends BroadcastReceiver {
     int mLastBatteryLevel = -1;
     int mBatteryStatus = BatteryManager.BATTERY_STATUS_UNKNOWN;
     public static int sPlugged = 0;
-
+    String TAG = "BatteryReceiver";
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -35,6 +36,7 @@ public class BatteryReceiver extends BroadcastReceiver {
             mBatteryStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS,BatteryManager.BATTERY_STATUS_UNKNOWN);
             sPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED,0);
 
+            Log.i(TAG, "onReceive: " + sBatteryLevel + " -- " + sPlugged);
             whenIsCharge();
         }else if(TextUtils.equals(action,Intent.ACTION_BATTERY_LOW)){
             MediaHelper.play(MediaHelper.BATTERY_LOW,true);
