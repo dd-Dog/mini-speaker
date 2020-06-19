@@ -28,7 +28,6 @@ public class CallAlarmHelper {
     Timer mTimer;
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
     String TAG = "CallAlarmHelper";
-    PhoneStateReceiver mPhoneStateReceiver = new PhoneStateReceiver();
     //是否摘机
     boolean isOffhook = true;
     //正在报警
@@ -59,7 +58,6 @@ public class CallAlarmHelper {
      * 如果callNumber为空 则去本地存储默认号码
      */
     public void polling(String callNumber){
-        register();
         if(TextUtils.isEmpty(callNumber)){
             callNumber =  PersistDataHelper.getAlarmNumber();
         }
@@ -108,39 +106,11 @@ public class CallAlarmHelper {
             MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
         }
         isAlarming = false;
-        unRegister();
         if(mTimer != null){
             mTimer.cancel();
             mTimer.purge();
             mTimer = null;
         }
         mAlarmResult = new AtomicBoolean(false);
-    }
-
-
-    /**
-     * 通话状态的广播
-     */
-    public class PhoneStateReceiver extends BroadcastReceiver{
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().equals("com.android.phone.FLYSCALE_PHONE_STATE")){
-                int state = intent.getIntExtra("phone_state", 0);
-                Log.i(TAG, "onReceive: " + state);
-                if(state == 2){
-                    setAlarmResult(true);
-                    destroy(false);
-                }
-            }
-        }
-    }
-
-    public void register(){
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("com.android.phone.FLYSCALE_PHONE_STATE");
-        BaseApplication.sContext.registerReceiver(mPhoneStateReceiver,filter);
-    }
-    public void unRegister(){
-        BaseApplication.sContext.unregisterReceiver(mPhoneStateReceiver);
     }
 }

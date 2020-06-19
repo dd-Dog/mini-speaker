@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.up.UAlarm;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PersistDataHelper;
@@ -18,6 +19,7 @@ import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
+import com.flyscale.alertor.netty.NettyHelper;
 
 import java.io.File;
 
@@ -37,8 +39,6 @@ public class KeyReceiver extends BroadcastReceiver{
         if(TextUtils.equals(action,"flyscale.privkey.ALARM.down")){
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
-            //110报警
-            PhoneUtil.call(BaseApplication.sContext,"15902227963");
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }
@@ -49,16 +49,25 @@ public class KeyReceiver extends BroadcastReceiver{
      * 接警时 按下报警键接听
      */
     public void alarmOrReceive(){
-        //报警
-        if(CallAlarmHelper.getInstance().isAlarming()){
-            CallAlarmHelper.getInstance().destroy(true);
+        //正在响铃  并且来电是接警电话
+        //接警
+        if(CallPhoneReceiver.isRinging() && CallPhoneReceiver.getReceiveNum().equals(PersistDataHelper.getReceiveAlarmNumber())){
+            PhoneUtil.answerCall(BaseApplication.sContext);
+            Log.i(TAG, "alarmOrReceive: 接警成功");
         }else {
-            AlarmHelper.getInstance().polling(new AlarmHelper.onAlarmFailListener() {
-                @Override
-                public void onAlarmFail() {
-                    CallAlarmHelper.getInstance().polling(PersistDataHelper.getAlarmNumber());
-                }
-            });
+            //报警
+            if(CallAlarmHelper.getInstance().isAlarming()){
+                CallAlarmHelper.getInstance().destroy(true);
+                Log.i(TAG, "alarmOrReceive: 取消报警");
+            }else {
+                Log.i(TAG, "alarmOrReceive: 开始报警");
+                AlarmHelper.getInstance().polling(new AlarmHelper.onAlarmFailListener() {
+                    @Override
+                    public void onAlarmFail() {
+                        CallAlarmHelper.getInstance().polling(PersistDataHelper.getAlarmNumber());
+                    }
+                });
+            }
         }
     }
 

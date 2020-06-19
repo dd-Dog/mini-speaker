@@ -10,11 +10,11 @@ phone_state 状态说明:
 public static final int INVALID = 0;
 public static final int IDLE = 1;           /* The call is idle.  Nothing active */
 public static final int ACTIVE = 2;         /* There is an active call 通话成功 */
-public static final int INCOMING = 3;       /* A normal incoming phone call */
+public static final int INCOMING = 3;       /* A normal incoming phone call 有电话呼入 */
 public static final int CALL_WAITING = 4;   /* Incoming call while another is active */
 public static final int DIALING = 5;        /* An outgoing call during dial phase   呼出电话 */
 public static final int REDIALING = 6;      /* Subsequent dialing attempt after a failure */
 public static final int ONHOLD = 7;         /* An active phone call placed on hold */
-public static final int DISCONNECTING = 8;  /* A call is being ended.  呼叫结束 */
+public static final int DISCONNECTING = 8;  /* A call is being ended.  呼叫正在断开 */
 public static final int DISCONNECTED = 9;   /* State after a call disconnects  呼叫断开 */
 public static final int CONFERENCED = 10;   /* Call part of a conference call */

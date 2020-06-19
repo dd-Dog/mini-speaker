@@ -200,10 +200,16 @@ public class NettyHelper {
      * @param baseData
      */
     public void send(BaseData baseData){
+        send(baseData.formatToString());
+    }
+
+    /**
+     * 直接发送报文
+     * @param message
+     */
+    public void send(String message){
         if(isConnect()){
-            String str = baseData.formatToString();
-            EventBusUtils.postMessage(1003,"上行报文：" + str);
-            mChannel.writeAndFlush(str);
+            mChannel.writeAndFlush(message);
         }else {
             connect();
             Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");

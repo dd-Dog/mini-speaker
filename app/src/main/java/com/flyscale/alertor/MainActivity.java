@@ -10,10 +10,12 @@ import android.util.Log;
 import android.widget.Toast;
 import com.flyscale.alertor.base.BaseActivity;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.receivers.CallPhoneReceiver;
 import com.flyscale.alertor.services.AlarmService;
 
 public class MainActivity extends BaseActivity {
 
+    String TAG = "gaohequanTest";
 
     @SuppressLint("SetTextI18n")
     @Override

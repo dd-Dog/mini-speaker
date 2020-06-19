@@ -9,6 +9,7 @@ import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.netty.NettyHelper;
 import com.flyscale.alertor.receivers.BatteryReceiver;
+import com.flyscale.alertor.receivers.CallPhoneReceiver;
 import com.flyscale.alertor.receivers.KeyReceiver;
 import com.flyscale.alertor.receivers.StateManagerReceiver;
 import com.flyscale.alertor.receivers.TelephonyStateReceiver;
@@ -32,6 +33,7 @@ public class AlarmService extends BaseService {
     BatteryReceiver mBatteryReceiver;
     TelephonyStateReceiver mTelephonyStateReceiver;
     KeyReceiver mKeyReceiver;
+    CallPhoneReceiver mCallPhoneReceiver;
 
     public AlarmService() {
 
@@ -55,6 +57,8 @@ public class AlarmService extends BaseService {
         mTelephonyStateReceiver.listenStrengths();
         mKeyReceiver = new KeyReceiver();
         mKeyReceiver.register(mKeyReceiver);
+        mCallPhoneReceiver = new CallPhoneReceiver();
+        mCallPhoneReceiver.register();
     }
 
     @Override
@@ -77,6 +81,7 @@ public class AlarmService extends BaseService {
         mBatteryReceiver.unRegister(mBatteryReceiver);
         mKeyReceiver.unRegister(mKeyReceiver);
         mTelephonyStateReceiver.destroy();
+        mCallPhoneReceiver.unRegister();
         if(mTimer != null){
             mTimer.cancel();
             mTimer = null;
