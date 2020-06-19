@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
+import android.telecom.Call;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,6 +20,7 @@ import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
+import com.flyscale.alertor.netty.Call110Helper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 import com.flyscale.alertor.netty.NettyHelper;
 
@@ -40,10 +42,24 @@ public class KeyReceiver extends BroadcastReceiver{
         if(TextUtils.equals(action,"flyscale.privkey.ALARM.down")){
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
+            //110报警
+            alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }
     }
+
+    /**
+     * 110报警
+     */
+    public void alarm110(){
+        if(Call110Helper.getInstance().isAlarming){
+            Call110Helper.getInstance().destroy();
+        }else {
+            Call110Helper.getInstance().polling();
+        }
+    }
+
 
     /**
      * 报警时 按下报警键报警 再次按下报警键挂机

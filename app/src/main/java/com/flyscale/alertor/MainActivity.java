@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.Toast;
 import com.flyscale.alertor.base.BaseActivity;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.receivers.CallPhoneReceiver;
 import com.flyscale.alertor.services.AlarmService;
 

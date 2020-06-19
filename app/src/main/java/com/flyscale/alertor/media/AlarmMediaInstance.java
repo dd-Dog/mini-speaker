@@ -31,9 +31,9 @@ public class AlarmMediaInstance {
         mMediaPlayer = MediaPlayer.create(BaseApplication.sContext, R.raw.alarm_ringing);
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
-        if(BuildConfig.DEBUG){
-            mMediaPlayer.setVolume(0.1f,0.1f);
-        }
+//        if(BuildConfig.DEBUG){
+//            mMediaPlayer.setVolume(0.1f,0.1f);
+//        }
     }
 
     public void stopLoopAlarm(){

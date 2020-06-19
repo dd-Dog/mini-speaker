@@ -17,6 +17,7 @@ public class PersistDataHelper {
     static final String SP_SOCKET_PORT_KEY = "SP_SOCKET_PORT_KEY";
     static final String SP_ALARM_NUMBER = "SP_ALARM_NUMBER";
     static final String SP_RECEIVE_ALARM_NUMBER = "SP_RECEIVE_ALARM_NUMBER";
+    static final String SP_SPECIAL_NUMBER = "SP_SPECIAL_NUMBER";
 
 
     private static SharedPreferences getSp(){
@@ -25,6 +26,26 @@ public class PersistDataHelper {
 
     private static SharedPreferences.Editor getEditor(){
         return getSp().edit();
+    }
+
+    /**
+     * 额外报警号码
+     * @return
+     */
+    public static String getSpecialNumber(){
+        SharedPreferences sharedPreferences = getSp();
+        String number = sharedPreferences.getString(SP_SPECIAL_NUMBER,"110");
+        return number;
+    }
+
+    /**
+     * 存储特殊号码
+     * @param number
+     */
+    private static void saveSpecialNumber(String number){
+        SharedPreferences.Editor editor = getEditor();
+        editor.putString(SP_SPECIAL_NUMBER,number);
+        editor.commit();
     }
 
     /**

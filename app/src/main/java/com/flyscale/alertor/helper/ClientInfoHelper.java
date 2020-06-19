@@ -2,6 +2,7 @@ package com.flyscale.alertor.helper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.flyscale.FlyscaleManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.provider.Settings;
@@ -106,9 +107,12 @@ public class ClientInfoHelper {
      * 型号	STRING	厂家定义终端型号
      * @return
      */
-    //todo
     public static String getTerminalModel(){
-        return "flyscale";
+        String model = Build.MODEL;
+        if(TextUtils.isEmpty(model)){
+            model = "model_is_null";
+        }
+        return model;
     }
 
     /**
