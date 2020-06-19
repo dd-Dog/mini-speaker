@@ -8,8 +8,8 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.AppActionHelper;
-import com.flyscale.alertor.helper.PersistDataHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
@@ -28,6 +28,7 @@ public class KeyReceiver extends BroadcastReceiver{
         String action = intent.getAction();
         Log.i(TAG, "onReceive: " + action);
         if(TextUtils.equals(action,"flyscale.privkey.ALARM.down")){
+//            PhoneUtil.call(BaseApplication.sContext,"15902227963");
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
@@ -60,7 +61,7 @@ public class KeyReceiver extends BroadcastReceiver{
         }
         //正在响铃  并且来电是接警电话
         //接警
-        if(CallPhoneReceiver.isRinging() && CallPhoneReceiver.getReceiveNum().equals(PersistDataHelper.getReceiveAlarmNumber())){
+        if(CallPhoneReceiver.isRinging() && PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
             PhoneUtil.answerCall(BaseApplication.sContext);
             Log.i(TAG, "alarmOrReceive: 接警成功");
         }else {

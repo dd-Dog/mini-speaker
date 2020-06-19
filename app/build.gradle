@@ -7,7 +7,7 @@ android {
         applicationId "com.flyscale.alertor"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 1
+        versionCode 10
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,5 +45,5 @@ dependencies {
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     //https://github.com/LitePalFramework/LitePal
-//    implementation 'org.litepal.guolindev:core:3.1.1'
+    implementation 'org.litepal.guolindev:core:3.1.1'
 }

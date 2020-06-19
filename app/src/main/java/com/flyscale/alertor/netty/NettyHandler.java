@@ -13,6 +13,8 @@ import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.media.AlarmMediaInstance;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 
+import java.net.InetSocketAddress;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
@@ -93,7 +95,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        Log.i(TAG, "channelActive:  ---  链接成功 ---");
+        InetSocketAddress address = (InetSocketAddress) ctx.channel().remoteAddress();
+        Log.i(TAG, "channelActive:  ---  链接成功 ---" + address.getHostName() + address.getPort());
         NettyHelper.getInstance().setConnectStatus(NettyHelper.CONNECTED);
         MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
         LedInstance.getInstance().showStateLed();

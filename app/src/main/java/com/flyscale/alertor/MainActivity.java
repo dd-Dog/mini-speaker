@@ -1,17 +1,13 @@
 package com.flyscale.alertor;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
+
 import com.flyscale.alertor.base.BaseActivity;
-import com.flyscale.alertor.base.BaseApplication;
-import com.flyscale.alertor.helper.PersistDataHelper;
-import com.flyscale.alertor.receivers.CallPhoneReceiver;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.services.AlarmService;
 
 public class MainActivity extends BaseActivity {

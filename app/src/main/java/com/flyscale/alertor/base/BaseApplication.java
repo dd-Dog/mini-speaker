@@ -5,6 +5,8 @@ import android.content.Context;
 
 import com.flyscale.alertor.helper.SoundPoolHelper;
 
+import org.litepal.LitePal;
+
 /**
  * @author 高鹤泉
  * @TIME 2020/6/11 9:28
@@ -20,5 +22,6 @@ public class BaseApplication extends Application {
         sContext = this;
 
         SoundPoolHelper.getInstance().init(this);
+        LitePal.initialize(this);
     }
 }

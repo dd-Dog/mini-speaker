@@ -3,8 +3,9 @@ package com.flyscale.alertor.netty;
 import android.text.TextUtils;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.MediaHelper;
-import com.flyscale.alertor.helper.PersistDataHelper;
+import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 
 import java.util.Timer;
@@ -61,14 +62,23 @@ public class CallAlarmHelper {
      * @param is110
      */
     public void polling(String callNumber, final boolean is110){
+        //报警时，如果网络没有连通，要提示“网络连接失败”。
+        if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
+            MediaHelper.play(MediaHelper.WORK_WRONG,true);
+            return;
+        }
+        //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
+        if(!NettyHelper.getInstance().isConnect()){
+            MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+        }
         AlarmHelper.getInstance().alarmStart();
         //当报警电话为空的时候
         //取默认110或者平台报警电话
         if(TextUtils.isEmpty(callNumber)){
             if(is110){
-                mSendNumber = PersistDataHelper.getSpecialNumber();
+                mSendNumber = PersistConfig.findConfig().getSpecialNum();
             }else {
-                mSendNumber = PersistDataHelper.getAlarmNumber();
+                mSendNumber = PersistConfig.findConfig().getAlarmNum();
             }
         }else {
             mSendNumber = callNumber;

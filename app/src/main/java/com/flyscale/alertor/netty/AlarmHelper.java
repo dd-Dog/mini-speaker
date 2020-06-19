@@ -78,10 +78,6 @@ public class AlarmHelper {
                 }else {
                     if(!mAlarmResult.get() && mSendCount> 3){
                         listener.onAlarmFail();
-                    }else {
-                        //IP报警成功
-                        alarmFinish();
-                        MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
                     }
                     destroy();
                 }
@@ -94,6 +90,9 @@ public class AlarmHelper {
      */
     public void destroy(){
         alarmFinish();
+        if(mAlarmResult.get()){
+            MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
+        }
         if(mTimer != null){
             mTimer.cancel();
             mTimer.purge();

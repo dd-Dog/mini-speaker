@@ -9,7 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
-import com.flyscale.alertor.helper.PersistDataHelper;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 
 /**
@@ -106,9 +106,9 @@ public class CallPhoneReceiver extends BroadcastReceiver {
      */
     public void destroyCallAlarm(){
         if(mCallState == CALL_SEND){
-            if(TextUtils.equals(mSendNum,PersistDataHelper.getAlarmNumber())){
+            if(TextUtils.equals(mSendNum, PersistConfig.findConfig().getAlarmNum())){
                 CallAlarmHelper.getInstance().destroy(true,true,false);
-            }else if(TextUtils.equals(mSendNum,PersistDataHelper.getSpecialNumber())){
+            }else if(TextUtils.equals(mSendNum,PersistConfig.findConfig().getSpecialNum())){
                 CallAlarmHelper.getInstance().destroy(false,true,false);
             }
         }

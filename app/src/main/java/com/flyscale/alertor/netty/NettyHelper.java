@@ -4,9 +4,8 @@ import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UHeart;
-import com.flyscale.alertor.eventBusManager.EventBusUtils;
-import com.flyscale.alertor.helper.PersistDataHelper;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
@@ -75,7 +74,7 @@ public class NettyHelper {
      * 非同步
      */
     public void connect(){
-        ChannelFuture future = mBootstrap.connect(PersistDataHelper.getSocketIp(),PersistDataHelper.getSocketPort());
+        ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
         future.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
