@@ -19,9 +19,10 @@ public class MediaHelper {
     public final static int XINJIANG_WELCOME = 4;
     public final static int CONNECT_SUCCESS = 9;
     public final static int BATTERY_LOW = 6;
+    public final static int CONNECT_FAIL = 1;
     int[] mRawIds = {R.raw.v1_platform_disconnected,R.raw.v2_welcome,R.raw.v3_platform_connect_success,R.raw.v4_xinjiang_telecom_welcome
             ,R.raw.v5_working_state_wrong,R.raw.v6_battery_low,R.raw.v7_check_simcard_please,R.raw.v8_send_alarm_success
-            ,R.raw.v9_platform_connect_success,R.raw.v10_platform_disconnected};
+            ,R.raw.v9_platform_connect_success};
 
     static List<Integer> sPlayTypeArray = new ArrayList<>();
 

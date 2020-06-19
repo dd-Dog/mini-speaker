@@ -8,6 +8,7 @@ import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.up.UAlarm;
 import com.flyscale.alertor.helper.MediaHelper;
+import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.media.AlarmMediaInstance;
@@ -50,6 +51,15 @@ public class AlarmHelper {
      * 轮询 每隔1秒发送一次报警信息
      */
     public void polling(final onAlarmFailListener listener){
+        //报警时，如果网络没有连通，要提示“网络连接失败”。
+        if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
+            MediaHelper.play(MediaHelper.WORK_WRONG,true);
+            return;
+        }
+        //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
+        if(!NettyHelper.getInstance().isConnect()){
+            MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+        }
         //闪灯和播放警铃
         alarmStart();
         if(mTimer != null){
