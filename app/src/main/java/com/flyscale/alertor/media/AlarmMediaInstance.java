@@ -15,6 +15,8 @@ import com.flyscale.alertor.helper.SoundPoolHelper;
 public class AlarmMediaInstance {
     private static final AlarmMediaInstance ourInstance = new AlarmMediaInstance();
     MediaPlayer mMediaPlayer = new MediaPlayer();
+    //是否正在播放
+    boolean isPlaying = false;
 
     public static AlarmMediaInstance getInstance() {
         return ourInstance;
@@ -31,6 +33,7 @@ public class AlarmMediaInstance {
         mMediaPlayer = MediaPlayer.create(BaseApplication.sContext, R.raw.alarm_ringing);
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
+        isPlaying = true;
 //        if(BuildConfig.DEBUG){
 //            mMediaPlayer.setVolume(0.1f,0.1f);
 //        }
@@ -38,6 +41,11 @@ public class AlarmMediaInstance {
 
     public void stopLoopAlarm(){
         mMediaPlayer.stop();
+        isPlaying = false;
         SoundPoolHelper.getInstance().releaseAudio();
+    }
+
+    public boolean isPlaying() {
+        return isPlaying;
     }
 }

@@ -93,13 +93,13 @@ public class AlarmHelper {
      * ip报警结束  不代表一定成功
      */
     public void destroy(){
+        alarmFinish();
         if(mTimer != null){
             mTimer.cancel();
             mTimer.purge();
             mTimer = null;
         }
         mSendCount = 1;
-        mAlarmResult = new AtomicBoolean(false);
     }
 
 
@@ -123,8 +123,10 @@ public class AlarmHelper {
      */
     //todo 需要静默开关控制
     public void alarmStart(){
-        AlarmMediaInstance.getInstance().playLoopAlarm();
-        LedInstance.getInstance().blinkAlarmLed();
+        if(!AlarmMediaInstance.getInstance().isPlaying()){
+            AlarmMediaInstance.getInstance().playLoopAlarm();
+            LedInstance.getInstance().blinkAlarmLed();
+        }
     }
 
 }
