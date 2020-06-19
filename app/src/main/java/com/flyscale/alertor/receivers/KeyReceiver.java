@@ -12,6 +12,7 @@ import android.util.Log;
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.up.UAlarm;
+import com.flyscale.alertor.helper.AppActionHelper;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PersistDataHelper;
@@ -49,6 +50,9 @@ public class KeyReceiver extends BroadcastReceiver{
      * 接警时 按下报警键接听
      */
     public void alarmOrReceive(){
+        if(AppActionHelper.isFastClick()){
+            return;
+        }
         //正在响铃  并且来电是接警电话
         //接警
         if(CallPhoneReceiver.isRinging() && CallPhoneReceiver.getReceiveNum().equals(PersistDataHelper.getReceiveAlarmNumber())){
