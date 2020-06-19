@@ -52,7 +52,7 @@ public class AlarmService extends BaseService {
         }
         mStateManagerReceiver = new StateManagerReceiver(this);
         mBatteryReceiver = new BatteryReceiver();
-        mBatteryReceiver.register(mBatteryReceiver);
+        mBatteryReceiver.register();
         mTelephonyStateReceiver = new TelephonyStateReceiver();
         mTelephonyStateReceiver.listenStrengths();
         mKeyReceiver = new KeyReceiver();
@@ -78,7 +78,7 @@ public class AlarmService extends BaseService {
         super.onDestroy();
         NettyHelper.getInstance().unRegister();
         mStateManagerReceiver.destroy();
-        mBatteryReceiver.unRegister(mBatteryReceiver);
+        mBatteryReceiver.unRegister();
         mKeyReceiver.unRegister(mKeyReceiver);
         mTelephonyStateReceiver.destroy();
         mCallPhoneReceiver.unRegister();

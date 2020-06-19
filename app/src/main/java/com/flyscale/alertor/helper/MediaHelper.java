@@ -18,6 +18,7 @@ public class MediaHelper {
     public final static int ALARM_SUCCESS = 8;
     public final static int XINJIANG_WELCOME = 4;
     public final static int CONNECT_SUCCESS = 9;
+    public final static int BATTERY_LOW = 6;
     int[] mRawIds = {R.raw.v1_platform_disconnected,R.raw.v2_welcome,R.raw.v3_platform_connect_success,R.raw.v4_xinjiang_telecom_welcome
             ,R.raw.v5_working_state_wrong,R.raw.v6_battery_low,R.raw.v7_check_simcard_please,R.raw.v8_send_alarm_success
             ,R.raw.v9_platform_connect_success,R.raw.v10_platform_disconnected};
@@ -55,6 +56,9 @@ public class MediaHelper {
                 break;
             case CONNECT_SUCCESS:
                 play(BaseApplication.sContext,R.raw.v9_platform_connect_success);
+                break;
+            case BATTERY_LOW:
+                play(BaseApplication.sContext,R.raw.v6_battery_low);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
