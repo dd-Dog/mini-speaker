@@ -1,5 +1,7 @@
 package com.flyscale.alertor.data.persist;
 
+import android.text.TextUtils;
+
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
@@ -13,8 +15,23 @@ public class PersistConfig extends LitePalSupport {
     int port = 9988;
     String alarmNum = "16886119";
     String specialNum = "110";
+    //是否接受其他号码呼入
+    boolean isAcceptOtherNum = false;
+    String newIp;
+    int newPort = -1;
+
+    public boolean isAcceptOtherNum() {
+        return isAcceptOtherNum;
+    }
+
+    public void setAcceptOtherNum(boolean acceptOtherNum) {
+        isAcceptOtherNum = acceptOtherNum;
+    }
 
     public String getIp() {
+        if(!TextUtils.isEmpty(newIp)){
+            return newIp;
+        }
         return ip;
     }
 
@@ -23,6 +40,9 @@ public class PersistConfig extends LitePalSupport {
     }
 
     public int getPort() {
+        if(newPort != -1){
+            return newPort;
+        }
         return port;
     }
 
@@ -46,6 +66,21 @@ public class PersistConfig extends LitePalSupport {
         this.specialNum = specialNum;
     }
 
+    public String getNewIp() {
+        return newIp;
+    }
+
+    public void setNewIp(String newIp) {
+        this.newIp = newIp;
+    }
+
+    public int getNewPort() {
+        return newPort;
+    }
+
+    public void setNewPort(int newPort) {
+        this.newPort = newPort;
+    }
 
     public static PersistConfig findConfig(){
         PersistConfig persistConfig = LitePal.findFirst(PersistConfig.class);
@@ -80,6 +115,13 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveSpecialNum(String num){
         PersistConfig persistConfig = findConfig();
         persistConfig.setSpecialNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveIsAccpetOtherNum(boolean accept){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setAcceptOtherNum(accept);
         persistConfig.save();
         return persistConfig;
     }

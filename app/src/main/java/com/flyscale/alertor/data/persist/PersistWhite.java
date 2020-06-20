@@ -6,7 +6,10 @@ import com.flyscale.alertor.helper.ListHelper;
 
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
+import org.litepal.crud.callback.SaveCallback;
 
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -40,6 +43,24 @@ public class PersistWhite extends LitePalSupport {
         PersistWhite persistWhite = new PersistWhite();
         persistWhite.setReceiveNum(num);
         persistWhite.save();
+    }
+
+    /**
+     * 添加或删除的白名单号码，最少1个，最多无限制，电话号码之间以封号”;”分割
+     * @param results
+     */
+    public static void saveList(String results){
+        String[] array = TextUtils.split(results,";");
+        for(String item : array){
+            saveNum(item);
+        }
+    }
+
+    public static void deleteList(String results){
+        String[] array = TextUtils.split(results,";");
+        for(String item : array){
+            deleteNum(item);
+        }
     }
 
     public static void deleteNum(String num){

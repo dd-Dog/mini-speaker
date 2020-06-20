@@ -4,6 +4,10 @@ import android.util.Log;
 
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.factory.BaseDataFactory;
+import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.data.up.UAddDeleteWhiteList;
+import com.flyscale.alertor.data.up.UChangeAlarmNumber;
 import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -32,6 +36,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        super.handlerAdded(ctx);
+        Log.i(TAG, "handlerAdded: ");
+    }
+
+    @Override
+    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        super.handlerRemoved(ctx);
+        Log.i(TAG, "handlerRemoved: ");
+    }
+
+    @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
         BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
         int type = BaseDataFactory.parseType(msg);
@@ -56,47 +72,84 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         }else if(type == BaseData.TYPE_VOICE_D){
             //下载报警语音包
             final String hex = baseData.getMessageBodyResp();
-            Log.i(TAG, "channelRead0: 下载语音 时间 = " + DateHelper.longToString(DateHelper.yyyyMMddHHmmss));
             ThreadPool.getSyncInstance().execute(new Runnable() {
                 @Override
                 public void run() {
                     FileHelper.byteToFile(DataConvertHelper.hexToBytes(hex),FileHelper.S_ALARM_RESP_NAME);
-                    Log.i(TAG, "run: 下载结束语音 时间 = " + DateHelper.longToString(DateHelper.yyyyMMddHHmmss));
                     //播放报警信息时候 要把 报警音关闭 但是报警灯不关
                     AlarmMediaInstance.getInstance().stopLoopAlarm();
                     ReceiveMediaInstance.getInstance().play(FileHelper.S_ALARM_RESP_FILE,3);
                 }
             });
+        }else if(type == BaseData.TYPE_CHANGE_ALARM_NUMBER_D){
+            //修改报警号码
+            String number = baseData.getAlarmNum();
+            PersistConfig.saveAlarmNum(number);
+            NettyHelper.getInstance().send(new UChangeAlarmNumber("1@"));
+        }else if(type == BaseData.TYPE_CHANGE_IP_D){
+            //修改ip
+            //todo
+            String newIp = baseData.getIpAddress();
+            String newPort = baseData.getIpPort();
+        }else if(type == BaseData.TYPE_ADD_OR_DELETE_WHITE_LIST_D){
+            //白名单 0添加1删除
+            String flag = baseData.getAddOrDeleteFlag();
+            String whiteList = baseData.getWhiteList();
+            if(TextUtils.equals("0",flag))
+                PersistWhite.saveList(whiteList);
+            else if(TextUtils.equals("1",flag))
+                PersistWhite.deleteList(whiteList);
+            NettyHelper.getInstance().send(new UAddDeleteWhiteList("1@"));
         }
+        //todo 修改110是哪个报文？？
+        //todo 终端可以接收其它电话呼入，出厂默认该功能关闭 哪个报文
     }
 
-
+    /**
+     * channel没有连接到远程节点
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         Log.i(TAG, "channelInactive:  --- 重连 ---  " + ctx.name());
+        LedInstance.getInstance().offStateLed();
         NettyHelper.getInstance().setConnectStatus(NettyHelper.DISCONNECTION);
         NettyHelper.getInstance().connect();
     }
 
+    /**
+     * channel已经注册到eventLoop
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
         Log.i(TAG, "channelRegistered: ");
     }
 
+    /**
+     * channel被创建但没有注册到eventLoop
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         super.channelUnregistered(ctx);
         Log.i(TAG, "channelUnregistered: ");
-        LedInstance.getInstance().offStateLed();
     }
 
+    /**
+     * channel处于活动状态 连接到了远程节点 可以接收和发送
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        InetSocketAddress address = (InetSocketAddress) ctx.channel().remoteAddress();
-        Log.i(TAG, "channelActive:  ---  链接成功 ---" + address.getHostName() + address.getPort());
+        Log.i(TAG, "channelActive:  ---  链接成功 ---");
         NettyHelper.getInstance().setConnectStatus(NettyHelper.CONNECTED);
         MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
         LedInstance.getInstance().showStateLed();
@@ -108,7 +161,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         Log.i(TAG, "exceptionCaught: " + cause.getMessage());
+//        ctx.close();
+//        NettyHelper.getInstance().mChannel.close();
+//        NettyHelper.getInstance().connect();
+//        cause.printStackTrace();
     }
 
-
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.userEventTriggered(ctx, evt);
+    }
 }
