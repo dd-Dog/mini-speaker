@@ -106,6 +106,7 @@ public class CallPhoneReceiver extends BroadcastReceiver {
      */
     public void destroyCallAlarm(){
         if(mCallState == CALL_SEND){
+            Log.i(TAG, "destroyCallAlarm: mSendNum = " + mSendNum + " ---- PersistConfig.findConfig().getSpecialNum() = " + PersistConfig.findConfig().getSpecialNum());
             if(TextUtils.equals(mSendNum, PersistConfig.findConfig().getAlarmNum())){
                 CallAlarmHelper.getInstance().destroy(true,true,false);
             }else if(TextUtils.equals(mSendNum,PersistConfig.findConfig().getSpecialNum())){
