@@ -88,6 +88,8 @@ public class NettyHelper {
      * 非同步
      */
     public void connect(){
+        //todo
+        // 重连这里始终有bug
         if(isConnect()){
             mChannel.close();
         }
