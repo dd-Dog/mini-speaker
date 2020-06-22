@@ -1,5 +1,7 @@
 package com.flyscale.alertor.netty;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
@@ -63,6 +65,8 @@ public class NettyHelper {
     ChannelFuture mChannelFuture;
     public Channel mChannel;
     Timer mTimer;
+    //连接次数
+    int mConnectCount = 0;
 
     public static NettyHelper getInstance() {
         return ourInstance;
@@ -70,19 +74,30 @@ public class NettyHelper {
 
     private NettyHelper(){}
 
+    public int getConnectCount() {
+        return mConnectCount;
+    }
+
     /**
      * 非同步
      */
     public void connect(){
+        if(isConnect()){
+            mChannel.close();
+        }
+        mConnectCount++;
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
         future.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
+
+
                 if(future.isSuccess()){
                     mChannelFuture = future;
                     mChannel = mChannelFuture.channel();
                     mConnectStatus = CONNECTED;
                     sendHeartLoop();
+                    mConnectCount = 0;
                 }else {
                     future.channel().eventLoop().schedule(new Runnable() {
                         @Override
@@ -214,15 +229,6 @@ public class NettyHelper {
             Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
         }
     }
-
-//    /**
-//     * 根据类型 发送报文
-//     * @param type
-//     */
-//    public void send(int type){
-//        BaseData baseData = BaseDataFactory.getDataInstance(type);
-//        send(baseData);
-//    }
 
 
     /**

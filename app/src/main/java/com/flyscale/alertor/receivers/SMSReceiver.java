@@ -20,6 +20,7 @@ public class SMSReceiver extends BroadcastReceiver {
     private static final String SPLIT_FLAG = ":";
     private static final String SMS_FORMAT_REGEX = "^\\w{1,20}" + SPLIT_FLAG + "\\w{1,20}$";
 
+
     @Override
     public void onReceive(Context context, Intent intent) {
         if (TextUtils.equals(intent.getAction(), SMS_RECEIVED)) {
@@ -45,7 +46,8 @@ public class SMSReceiver extends BroadcastReceiver {
     }
 
     private void handleSMS(String sender, String content, long msgDate) {
-        if (!checkSender(sender)) return;
+        //支持任意手机号发短信修改 所以不需要判断手机号
+//        if (!checkSender(sender)) return;
         if (!TextUtils.isEmpty(content) && content.matches(SMS_FORMAT_REGEX)) {
             String[] split = content.split(SPLIT_FLAG);
             String key = split[0];
