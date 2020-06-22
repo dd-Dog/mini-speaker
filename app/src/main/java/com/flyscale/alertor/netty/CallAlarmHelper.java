@@ -144,22 +144,37 @@ public class CallAlarmHelper {
         isRunTimerFlag = true;
     }
 
+    public void destroy(boolean playSuccess,boolean alarmResult,boolean isRunTimerFlag){
+        destroy(playSuccess,alarmResult,isRunTimerFlag,false);
+    }
+
     /**
      * 电话报警
      * 成功后结束报警 播放报警成功
      * 报警过程中主动结束  不播放报警成功
-     * @param playSuccess
+     * @param playSuccess  播放报警成功语音
+     * @param alarmResult   报警结果
+     * @param isRunTimerFlag  是否执行timer的标志
+     * @param selfCancelBeforeActive  通话成功之前主动取消报警
      */
-    public void destroy(boolean playSuccess,boolean alarmResult,boolean isRunTimerFlag){
+    public void destroy(boolean playSuccess,boolean alarmResult,boolean isRunTimerFlag,boolean selfCancelBeforeActive){
         //停止 报警音效和灯光
         setRunTimerFlag(isRunTimerFlag);
         isAlarming = false;
         mAlarmResult = new AtomicBoolean(alarmResult);
         cancelTimer();
         AlarmHelper.getInstance().alarmFinish();
+        //通话成功之前主动取消报警
+        if(selfCancelBeforeActive){
+            if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+                PhoneUtil.endCall(BaseApplication.sContext);
+            }
+        }
         if(playSuccess){
             MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
         }
     }
+
+
 
 }

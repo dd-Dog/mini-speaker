@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.AppActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
@@ -29,11 +30,14 @@ public class KeyReceiver extends BroadcastReceiver{
         String action = intent.getAction();
         Log.i(TAG, "onReceive: " + action);
         if(TextUtils.equals(action,"flyscale.privkey.ALARM.down")){
-//            PhoneUtil.call(BaseApplication.sContext,"15902227963");
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
-            alarm110();
+
+            PersistConfig.saveNewIp("192.168.1.252", 1111);
+            NettyHelper.getInstance().connect();
+
+//            alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }
@@ -44,11 +48,10 @@ public class KeyReceiver extends BroadcastReceiver{
      */
     public void alarm110(){
         if(CallAlarmHelper.getInstance().isAlarming()){
-            CallAlarmHelper.getInstance().destroy(false,false,false);
+            CallAlarmHelper.getInstance().destroy(false,false,false,true);
         }else {
             CallAlarmHelper.getInstance().polling(null,true);
         }
-
     }
 
 

@@ -29,7 +29,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class NettyHandler extends SimpleChannelInboundHandler<String> {
 
-    String TAG = NettyHelper.TAG;
+    String TAG = "NettyHandler";
 
     public NettyHandler() {
 
@@ -46,6 +46,32 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         super.handlerRemoved(ctx);
         Log.i(TAG, "handlerRemoved: ");
     }
+
+    /**
+     * channel没有连接到远程节点
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        Log.i(TAG, "channelInactive:  --- 重连 ---  ");
+        LedInstance.getInstance().offStateLed();
+        NettyHelper.getInstance().setConnectStatus(NettyHelper.DISCONNECTION);
+        NettyHelper.getInstance().connect();
+    }
+
+    /**
+     * channel被创建但没有注册到eventLoop
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelUnregistered(ctx);
+        Log.i(TAG, "channelUnregistered: ");
+    }
+
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
@@ -88,9 +114,10 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             NettyHelper.getInstance().send(new UChangeAlarmNumber("1@"));
         }else if(type == BaseData.TYPE_CHANGE_IP_D){
             //修改ip
-            //todo
             String newIp = baseData.getIpAddress();
             String newPort = baseData.getIpPort();
+            PersistConfig.saveNewIp(newIp, Integer.parseInt(newPort));
+            NettyHelper.getInstance().connect();
         }else if(type == BaseData.TYPE_ADD_OR_DELETE_WHITE_LIST_D){
             //白名单 0添加1删除
             String flag = baseData.getAddOrDeleteFlag();
@@ -105,19 +132,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         //todo 终端可以接收其它电话呼入，出厂默认该功能关闭 哪个报文
     }
 
-    /**
-     * channel没有连接到远程节点
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-        Log.i(TAG, "channelInactive:  --- 重连 ---  " + ctx.name());
-        LedInstance.getInstance().offStateLed();
-        NettyHelper.getInstance().setConnectStatus(NettyHelper.DISCONNECTION);
-        NettyHelper.getInstance().connect();
-    }
 
     /**
      * channel已经注册到eventLoop
@@ -128,17 +142,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
         Log.i(TAG, "channelRegistered: ");
-    }
-
-    /**
-     * channel被创建但没有注册到eventLoop
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelUnregistered(ctx);
-        Log.i(TAG, "channelUnregistered: ");
     }
 
     /**
@@ -161,10 +164,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         Log.i(TAG, "exceptionCaught: " + cause.getMessage());
-//        ctx.close();
-//        NettyHelper.getInstance().mChannel.close();
-//        NettyHelper.getInstance().connect();
-//        cause.printStackTrace();
     }
 
     @Override

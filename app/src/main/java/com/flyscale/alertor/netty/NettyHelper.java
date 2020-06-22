@@ -2,14 +2,18 @@ package com.flyscale.alertor.netty;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UHeart;
+import com.flyscale.alertor.helper.DateHelper;
+import com.flyscale.alertor.helper.ThreadPool;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Timer;
@@ -32,6 +36,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.unix.DatagramSocketAddress;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
@@ -78,6 +83,7 @@ public class NettyHelper {
         return mConnectCount;
     }
 
+
     /**
      * 非同步
      */
@@ -85,32 +91,44 @@ public class NettyHelper {
         if(isConnect()){
             mChannel.close();
         }
+
         mConnectCount++;
+        if(mConnectCount >= 10){
+            PersistConfig.saveNewIp("",-1);
+        }
+        Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
+        Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + PersistConfig.findConfig().getPort());
         future.addListener(new ChannelFutureListener() {
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-
-
+            public void operationComplete(final ChannelFuture future) throws Exception {
                 if(future.isSuccess()){
                     mChannelFuture = future;
                     mChannel = mChannelFuture.channel();
                     mConnectStatus = CONNECTED;
                     sendHeartLoop();
                     mConnectCount = 0;
+                    if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
+                        PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
+                        PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
+                        PersistConfig.saveNewIp("",-1);
+                    }
                 }else {
                     future.channel().eventLoop().schedule(new Runnable() {
                         @Override
                         public void run() {
+                            Log.i(TAG, "run: future.channel().eventLoop().schedule00");
                             if(isRunning){
                                 connect();
                             }
                         }
-                    },3l, TimeUnit.SECONDS);
+                    },2l, TimeUnit.SECONDS);
                 }
             }
         });
     }
+
+
 
 
     /**
@@ -225,7 +243,6 @@ public class NettyHelper {
         if(isConnect()){
             mChannel.writeAndFlush(message);
         }else {
-            connect();
             Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
         }
     }

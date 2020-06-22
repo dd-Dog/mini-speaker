@@ -17,7 +17,9 @@ public class PersistConfig extends LitePalSupport {
     String specialNum = "110";
     //是否接受其他号码呼入
     boolean isAcceptOtherNum = false;
-    String newIp;
+    //语音报警优先，IP报警优先
+    boolean isIpAlarmFirst = true;
+    String newIp = null;
     int newPort = -1;
 
     public boolean isAcceptOtherNum() {
@@ -46,8 +48,17 @@ public class PersistConfig extends LitePalSupport {
         return port;
     }
 
+
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public boolean isIpAlarmFirst() {
+        return isIpAlarmFirst;
+    }
+
+    public void setIpAlarmFirst(boolean ipAlarmFirst) {
+        isIpAlarmFirst = ipAlarmFirst;
     }
 
     public String getAlarmNum() {
@@ -91,6 +102,14 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
+    public static PersistConfig saveNewIp(String ip,int port){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setNewIp(ip);
+        persistConfig.setNewPort(port);
+        persistConfig.save();
+        return persistConfig;
+    }
+
     public static PersistConfig saveIp(String ip){
         PersistConfig persistConfig = findConfig();
         persistConfig.setIp(ip);
@@ -125,5 +144,13 @@ public class PersistConfig extends LitePalSupport {
         persistConfig.save();
         return persistConfig;
     }
+
+    public static PersistConfig saveIsIpAlarmFirst(boolean ip){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setIpAlarmFirst(ip);
+        persistConfig.save();
+        return persistConfig;
+    }
+
 
 }
