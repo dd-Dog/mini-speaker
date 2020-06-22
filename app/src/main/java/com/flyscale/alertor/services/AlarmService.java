@@ -53,7 +53,7 @@ public class AlarmService extends BaseService {
         mStateManagerReceiver = new StateManagerReceiver(this);
         mBatteryReceiver = new BatteryReceiver();
         mBatteryReceiver.register();
-        mTelephonyStateReceiver = new TelephonyStateReceiver();
+        mTelephonyStateReceiver = new TelephonyStateReceiver(this);
         mTelephonyStateReceiver.listenStrengths();
         mKeyReceiver = new KeyReceiver();
         mKeyReceiver.register(mKeyReceiver);
