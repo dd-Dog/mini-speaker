@@ -1,6 +1,7 @@
 package com.flyscale.alertor;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.util.Log;
 
 import com.flyscale.alertor.base.BaseActivity;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.helper.DateHelper;
+import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.services.AlarmService;
 
 public class MainActivity extends BaseActivity {

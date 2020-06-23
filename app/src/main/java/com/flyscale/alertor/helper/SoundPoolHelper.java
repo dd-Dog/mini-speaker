@@ -38,8 +38,8 @@ public class SoundPoolHelper {
     }
 
     private SoundPoolHelper() {
-        SoundPool.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            SoundPool.Builder builder;
             builder = new SoundPool.Builder();
             builder.setMaxStreams(mRawIds.length);
             AudioAttributes.Builder attrBuilder = new AudioAttributes.Builder();

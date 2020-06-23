@@ -98,9 +98,8 @@ public class ClientInfoHelper {
     /**
      * //网络制式	STRING
      */
-    //todo
     public static String getNetType(){
-        return "4g";
+        return InternetUtil.getNetworkTypeStr(InternetUtil.getNetworkState(BaseApplication.sContext));
     }
 
     /**

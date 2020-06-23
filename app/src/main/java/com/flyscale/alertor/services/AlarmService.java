@@ -1,13 +1,21 @@
 package com.flyscale.alertor.services;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.abupdate.fota_demo_iot.data.remote.NewVersionInfo;
+import com.flyscale.alertor.FotaAction;
+import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.base.BaseService;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.FileHelper;
+import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.netty.NettyHelper;
+import com.flyscale.alertor.receivers.AlarmLedReceiver;
 import com.flyscale.alertor.receivers.BatteryReceiver;
 import com.flyscale.alertor.receivers.CallPhoneReceiver;
 import com.flyscale.alertor.receivers.KeyReceiver;
@@ -34,6 +42,7 @@ public class AlarmService extends BaseService {
     TelephonyStateReceiver mTelephonyStateReceiver;
     KeyReceiver mKeyReceiver;
     CallPhoneReceiver mCallPhoneReceiver;
+    FotaHelper mFotaHelper;
 
     public AlarmService() {
 
@@ -43,22 +52,41 @@ public class AlarmService extends BaseService {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "onCreate: ");
-        NettyHelper.getInstance().register();
-        NettyHelper.getInstance().connect();
+        //注册socket
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "run: start = " + System.currentTimeMillis());
+                NettyHelper.getInstance().register();
+                NettyHelper.getInstance().connect();
+                Log.i(TAG, "run: end = " + System.currentTimeMillis());
+            }
+        }).start();
+
         //初始化程序默认文件夹
         File file = new File(FileHelper.getBasePath());
         if(!file.exists()){
             file.mkdirs();
         }
+        //sim卡 网络状态广播
         mStateManagerReceiver = new StateManagerReceiver(this);
+        //电池广播
         mBatteryReceiver = new BatteryReceiver();
         mBatteryReceiver.register();
+        //手机信号广播
         mTelephonyStateReceiver = new TelephonyStateReceiver(this);
         mTelephonyStateReceiver.listenStrengths();
+        //按键广播
         mKeyReceiver = new KeyReceiver();
-        mKeyReceiver.register(mKeyReceiver);
+        mKeyReceiver.register();
+        //拨打电话广播
         mCallPhoneReceiver = new CallPhoneReceiver();
         mCallPhoneReceiver.register();
+        //警报灯常亮广播
+        AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmOffOffTime());
+        //fota升级 todo 没有完成呢！！
+//        mFotaHelper = new FotaHelper(this,new FotaAction());
+//        mFotaHelper.checkVersion();
     }
 
     @Override
@@ -79,7 +107,7 @@ public class AlarmService extends BaseService {
         NettyHelper.getInstance().unRegister();
         mStateManagerReceiver.destroy();
         mBatteryReceiver.unRegister();
-        mKeyReceiver.unRegister(mKeyReceiver);
+        mKeyReceiver.unRegister();
         mTelephonyStateReceiver.destroy();
         mCallPhoneReceiver.unRegister();
         if(mTimer != null){

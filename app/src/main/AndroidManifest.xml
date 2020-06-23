@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.flyscale.alertor"> <!-- android:sharedUserId="android.uid.system" 测试的时候可以注销  -->
+    package="com.flyscale.alertor"> <!-- android:sharedUserId="android.uid.system" 测试的时候可以注销  边工说是 fota升级用的-->
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -34,6 +34,8 @@
             android:enabled="true"
             android:exported="true"/>
 
+
+        <!--    开机广播    -->
         <receiver android:name=".receivers.BootReceiver">
             <intent-filter>
                 <!--注册开机广播地址-->
@@ -41,10 +43,18 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </receiver>
+        <!--    短信广播    -->
         <receiver android:name=".receivers.SMSReceiver">
             <intent-filter android:priority="2147483647">
                 <action android:name="android.provider.Telephony.SMS_DELIVER" />
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+        <!--    报警灯开关广播    -->
+        <receiver android:name=".receivers.AlarmLedReceiver">
+            <intent-filter android:priority="1003">
+                <action android:name="ACTION_ALARM_LED_ON"/>
+                <action android:name="ACTION_ALARM_LED_OFF"/>
             </intent-filter>
         </receiver>
 

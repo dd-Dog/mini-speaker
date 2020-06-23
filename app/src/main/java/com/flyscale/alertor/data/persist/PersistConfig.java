@@ -21,6 +21,10 @@ public class PersistConfig extends LitePalSupport {
     boolean isIpAlarmFirst = true;
     String newIp = null;
     int newPort = -1;
+    boolean isMute = false;
+    //修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
+    String alarmLedOnTime = "00:00";
+    String alarmOffOffTime = "00:00";
 
     public boolean isAcceptOtherNum() {
         return isAcceptOtherNum;
@@ -28,6 +32,22 @@ public class PersistConfig extends LitePalSupport {
 
     public void setAcceptOtherNum(boolean acceptOtherNum) {
         isAcceptOtherNum = acceptOtherNum;
+    }
+
+    public String getAlarmLedOnTime() {
+        return alarmLedOnTime;
+    }
+
+    public void setAlarmLedOnTime(String alarmLedOnTime) {
+        this.alarmLedOnTime = alarmLedOnTime;
+    }
+
+    public String getAlarmOffOffTime() {
+        return alarmOffOffTime;
+    }
+
+    public void setAlarmOffOffTime(String alarmOffOffTime) {
+        this.alarmOffOffTime = alarmOffOffTime;
     }
 
     public String getIp() {
@@ -48,6 +68,13 @@ public class PersistConfig extends LitePalSupport {
         return port;
     }
 
+    public boolean isMute() {
+        return isMute;
+    }
+
+    public void setMute(boolean mute) {
+        isMute = mute;
+    }
 
     public void setPort(int port) {
         this.port = port;
@@ -99,6 +126,22 @@ public class PersistConfig extends LitePalSupport {
             persistConfig = new PersistConfig();
             persistConfig.save();
         }
+        return persistConfig;
+    }
+
+
+    public static PersistConfig saveAlarmLedTime(String start,String end){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setAlarmLedOnTime(start);
+        persistConfig.setAlarmOffOffTime(end);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveIsMute(boolean isMute){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setMute(isMute);
+        persistConfig.save();
         return persistConfig;
     }
 

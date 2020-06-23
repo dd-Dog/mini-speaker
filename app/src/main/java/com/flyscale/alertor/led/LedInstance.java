@@ -24,6 +24,7 @@ public class LedInstance {
     boolean isBlinkAlarmFlag = false;
     boolean isOnSignal = false;
     boolean isOnAlarm = false;
+    boolean isAlarmOnStatus = true;
     FlyscaleManager mFlyscaleManager;
 
     public static LedInstance getInstance() {
@@ -186,11 +187,21 @@ public class LedInstance {
     }
 
     public void cancelBlinkOffAlarmLed(){
+        isAlarmOnStatus = false;
         destroyAlarmTimer();
         offAlarmLed();
     }
     public void cancelBlinkShowAlarmLed(){
+        isAlarmOnStatus = true;
         destroyAlarmTimer();
         showAlarmLed();
+    }
+
+    /**
+     * 报警灯的开关状态
+     * @return
+     */
+    public boolean isAlarmOnStatus() {
+        return isAlarmOnStatus;
     }
 }

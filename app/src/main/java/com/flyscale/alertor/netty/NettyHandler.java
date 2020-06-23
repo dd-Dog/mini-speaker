@@ -94,7 +94,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             }
         }else if(type == BaseData.TYPE_RING_D){
             //响铃
-            AlarmHelper.getInstance().alarmStart();
+            AlarmHelper.getInstance().alarmStart(true);
         }else if(type == BaseData.TYPE_VOICE_D){
             //下载报警语音包
             final String hex = baseData.getMessageBodyResp();
