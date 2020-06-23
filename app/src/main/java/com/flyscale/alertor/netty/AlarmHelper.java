@@ -6,8 +6,12 @@ import android.media.MediaPlayer;
 import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UAlarm;
+import com.flyscale.alertor.data.up.UDoorAlarm;
+import com.flyscale.alertor.data.up.UGasAlarm;
+import com.flyscale.alertor.data.up.USmokeAlarm;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.SoundPoolHelper;
@@ -48,10 +52,12 @@ public class AlarmHelper {
         mAlarmResult.set(result);
     }
 
+
     /**
-     * 轮询 每隔1秒发送一次报警信息
+     *  轮询 每隔1秒发送一次报警信息
+     * @param type
      */
-    public void polling(final onAlarmFailListener listener){
+    public void polling(final onAlarmFailListener listener,final int type){
         //报警时，如果网络没有连通，要提示“网络连接失败”。
         if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
             MediaHelper.play(MediaHelper.WORK_WRONG,true);
@@ -74,16 +80,34 @@ public class AlarmHelper {
             @Override
             public void run() {
                 if(!mAlarmResult.get() && mSendCount <= 3){
-                    NettyHelper.getInstance().send(new UAlarm(mSendCount));
+                    if(type == BaseData.TYPE_ALARM_U){
+                        NettyHelper.getInstance().send(new UAlarm(mSendCount));
+                    }else if(type == BaseData.TYPE_DOOR_ALARM_U){
+                        NettyHelper.getInstance().send(new UDoorAlarm(mSendCount));
+                    }else if(type == BaseData.TYPE_SMOKE_ALARM_U){
+                        NettyHelper.getInstance().send(new USmokeAlarm(mSendCount));
+                    }else if(type == BaseData.TYPE_GAS_ALARM_U){
+                        NettyHelper.getInstance().send(new UGasAlarm(mSendCount));
+                    }
                     mSendCount ++;
                 }else {
                     if(!mAlarmResult.get() && mSendCount> 3){
-                        listener.onAlarmFail();
+                        if(listener != null){
+                            listener.onAlarmFail();
+                        }
+                        CallAlarmHelper.getInstance().polling(null,false);
                     }
                     destroy();
                 }
             }
         },50,1000);
+    }
+
+    /**
+     * 轮询 每隔1秒发送一次报警信息
+     */
+    public void polling(final onAlarmFailListener listener){
+        polling(listener,BaseData.TYPE_ALARM_U);
     }
 
     /**

@@ -2,6 +2,8 @@ package com.flyscale.alertor.data.persist;
 
 import android.text.TextUtils;
 
+import com.flyscale.alertor.helper.DateHelper;
+
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
@@ -25,6 +27,26 @@ public class PersistConfig extends LitePalSupport {
     //修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
     String alarmLedOnTime = "00:00";
     String alarmOffOffTime = "00:00";
+    String firstLogin = "";
+    //是否可以报警
+    boolean isCanAlarm = true;
+
+
+    public boolean isCanAlarm() {
+        return isCanAlarm;
+    }
+
+    public void setCanAlarm(boolean canAlarm) {
+        isCanAlarm = canAlarm;
+    }
+
+    public String getFirstLogin() {
+        return firstLogin;
+    }
+
+    public void setFirstLogin(String firstLogin) {
+        this.firstLogin = firstLogin;
+    }
 
     public boolean isAcceptOtherNum() {
         return isAcceptOtherNum;
@@ -127,6 +149,21 @@ public class PersistConfig extends LitePalSupport {
             persistConfig.save();
         }
         return persistConfig;
+    }
+
+    public static void saveFirstLoginTime(long time){
+        if(TextUtils.isEmpty(findConfig().getFirstLogin())){
+            String tempTime = DateHelper.longToString(time,DateHelper.yyyy_MM_dd_hh_mm_ss);
+            PersistConfig persistConfig = findConfig();
+            persistConfig.setFirstLogin(tempTime);
+            persistConfig.save();
+        }
+    }
+
+    public static void saveCanAlarm(boolean can){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCanAlarm(can);
+        persistConfig.save();
     }
 
 

@@ -1,7 +1,13 @@
 package com.flyscale.alertor.helper;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.location.Location;
 import android.location.LocationManager;
+
+import com.flyscale.alertor.base.BaseApplication;
+
+import java.util.List;
 
 /**
  * @author 高鹤泉
@@ -30,22 +36,42 @@ public class LocationHelper {
     }
 
 
+    public static Location getLocation(){
+        LocationManager locationManager = (LocationManager) BaseApplication.sContext.getSystemService(Context.LOCATION_SERVICE);
+        List<String> providers = locationManager.getProviders(true);
+        Location location = null;
+        for (String provider : providers){
+            @SuppressLint("MissingPermission")
+            Location temp = locationManager.getLastKnownLocation(provider);
+            if(temp == null){
+                continue;
+            }
+            if(location == null || temp.getAccuracy() < location.getAccuracy()){
+                location = temp;
+            }
+        }
+        return location;
+    }
 
     /**
      * 获取纬度
      * @return
      */
-    //todo
     public static String getLat(){
-        return "30.11";
+        if(getLocation() != null){
+            return getLocation().getLatitude() + "";
+        }
+        return "0.0";
     }
 
     /**
      * 获取经度
      * @return
      */
-    //todo
     public static String getLon(){
-        return "100.11";
+        if(getLocation() != null){
+            return getLocation().getLongitude() + "";
+        }
+        return "0.0";
     }
 }

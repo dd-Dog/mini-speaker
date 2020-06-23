@@ -141,7 +141,7 @@ public class NettyHelper {
             mSslContext = SslContextBuilder.forClient()
                     .keyManager(BaseApplication.sContext.getAssets().open("client.crt")
                             ,BaseApplication.sContext.getAssets().open("pkcs8_client.key"))
-                    //TODO 这里由于android的限制7.0以上无法信任用户添加的证书
+                    // 这里由于android的限制7.0以上无法信任用户添加的证书
                     // 所以信任所有证书
                     // 也许会有隐患，有时间可以优化一下
                     // https://blog.csdn.net/shadowyspirits/article/details/79756274

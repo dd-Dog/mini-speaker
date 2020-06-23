@@ -1,5 +1,4 @@
 
-    //todo 测试代码
     fotaHelper = new FotaHelper(this, new FotaHelper.FotaHelperCallbackAdapter() {
         @Override
         public void onRemoteServiceConnected() {

@@ -33,11 +33,9 @@ public class KeyReceiver extends BroadcastReceiver{
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
-
-            PersistConfig.saveNewIp("192.168.1.252", 1111);
-            NettyHelper.getInstance().connect();
-
-//            alarm110();
+//            PersistConfig.saveNewIp("192.168.1.252", 1111);
+//            NettyHelper.getInstance().connect();
+            alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.down")){
@@ -79,12 +77,7 @@ public class KeyReceiver extends BroadcastReceiver{
                 Log.i(TAG, "alarmOrReceive: 取消报警");
             }else {
                 Log.i(TAG, "alarmOrReceive: 开始报警");
-                AlarmHelper.getInstance().polling(new AlarmHelper.onAlarmFailListener() {
-                    @Override
-                    public void onAlarmFail() {
-                        CallAlarmHelper.getInstance().polling(null,false);
-                    }
-                });
+                AlarmHelper.getInstance().polling(null);
             }
         }
     }
