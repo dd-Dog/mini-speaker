@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.receivers.BatteryReceiver;
 
 import static android.content.Context.BATTERY_SERVICE;
@@ -81,18 +82,17 @@ public class ClientInfoHelper {
      * 基站信息  STRING[10]  基站1@基站2@基站3；按基站距离排序由近到远
      * @return
      */
-    //TODO
     public static String getStationsInfo(){
-        return "1@2@3";
+        return "0@0@0";
     }
 
     /**
      * 终端类型	STRING[10]	001TCL，002卡尔
+     * 和周工保持一致 写死
      * @return
      */
-    //todo
     public static String getTerminalInfo(){
-        return "002";
+        return "019";
     }
 
     /**
@@ -118,6 +118,6 @@ public class ClientInfoHelper {
      * 终端第一次登录时间	STRING	时间格式：yyyy-MM-dd hh:mm:ss，记录终端第一次登录平台的时间，永久不变
      */
     public static String getFirstLoginTime(){
-        return "2020-06-11 14:57:11";
+        return PersistConfig.findConfig().getFirstLogin();
     }
 }

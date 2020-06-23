@@ -2,9 +2,14 @@ package com.flyscale.alertor;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
+import android.telephony.NeighboringCellInfo;
+import android.telephony.TelephonyManager;
+import android.telephony.gsm.GsmCellLocation;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseActivity;
@@ -12,6 +17,8 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.services.AlarmService;
+
+import java.util.List;
 
 public class MainActivity extends BaseActivity {
 

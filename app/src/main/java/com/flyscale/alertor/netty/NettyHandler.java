@@ -73,6 +73,23 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     }
 
 
+    /**
+     * channel处于活动状态 连接到了远程节点 可以接收和发送
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        Log.i(TAG, "channelActive:  ---  链接成功 ---");
+        //保存第一次登陆的时间 永久不变
+        PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
+        NettyHelper.getInstance().setConnectStatus(NettyHelper.CONNECTED);
+        MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
+        LedInstance.getInstance().showStateLed();
+    }
+
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
         BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
@@ -128,8 +145,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                 PersistWhite.deleteList(whiteList);
             NettyHelper.getInstance().send(new UAddDeleteWhiteList("1@"));
         }
-        //todo 修改110是哪个报文？？
-        //todo 终端可以接收其它电话呼入，出厂默认该功能关闭 哪个报文
     }
 
 
@@ -142,20 +157,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
         Log.i(TAG, "channelRegistered: ");
-    }
-
-    /**
-     * channel处于活动状态 连接到了远程节点 可以接收和发送
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-        Log.i(TAG, "channelActive:  ---  链接成功 ---");
-        NettyHelper.getInstance().setConnectStatus(NettyHelper.CONNECTED);
-        MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
-        LedInstance.getInstance().showStateLed();
     }
 
 

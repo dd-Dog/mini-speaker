@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.flyscale.alertor"> <!-- android:sharedUserId="android.uid.system" 测试的时候可以注销  边工说是 fota升级用的-->
 
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -57,6 +58,13 @@
                 <action android:name="ACTION_ALARM_LED_OFF"/>
             </intent-filter>
         </receiver>
+        <!--    遥控器广播     -->
+        <receiver android:name=".receivers.RemoteControlReceiver">
+            <intent-filter android:priority="1004">
+                <action android:name="flyscale.privkey.REMOTE_CONTROL"/>
+            </intent-filter>
+        </receiver>
+
 
         <activity android:name=".MainActivity">
             <intent-filter>

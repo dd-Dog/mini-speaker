@@ -90,7 +90,7 @@ public abstract class BaseUpData extends BaseData {
 
     @Override
     public String getLat() {
-        return LocationHelper.getLon();
+        return LocationHelper.getLat();
     }
 
     @Override
