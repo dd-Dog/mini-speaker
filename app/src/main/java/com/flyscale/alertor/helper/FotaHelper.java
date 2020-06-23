@@ -288,17 +288,17 @@ public class FotaHelper {
 
         @Override
         public void onRemoteServiceConnected() {
-
+            Log.i(TAG, "onRemoteServiceConnected: ");
         }
 
         @Override
         public void onRemoteServiceDisconnected() {
-
+            Log.i(TAG, "onRemoteServiceDisconnected: ");
         }
 
         @Override
         public void hasNewVersion(NewVersionInfo newVersionInfo) {
-
+            Log.i(TAG, "hasNewVersion: ");
         }
 
         @Override

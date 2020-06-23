@@ -86,10 +86,11 @@ public class SMSReceiver extends BroadcastReceiver {
                     PersistConfig.saveIsIpAlarmFirst(true);
                 }
             }else if(key.equals("IPALARMLED")){
-                //todo 报警灯常亮时间 需求里没找到 不太理解 暂时没有时间具体功能
                 String[] ledArray = TextUtils.split(value,",");
                 String start = ledArray[0];
                 String end = ledArray[1];
+                PersistConfig.saveAlarmLedTime(start,end);
+                AlarmLedReceiver.sendRepeatAlarmBroadcast(start,end);
             }else if(key.equals("IPALARMWLM")){
                 String[] wlmArray = TextUtils.split(value,",");
                 String number = wlmArray[0];

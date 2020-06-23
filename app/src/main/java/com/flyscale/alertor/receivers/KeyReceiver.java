@@ -40,6 +40,10 @@ public class KeyReceiver extends BroadcastReceiver{
 //            alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
+        }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.down")){
+            PersistConfig.saveIsMute(true);
+        }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.up")){
+            PersistConfig.saveIsMute(false);
         }
     }
 
@@ -86,7 +90,7 @@ public class KeyReceiver extends BroadcastReceiver{
     }
 
 
-    public void register(KeyReceiver receiver){
+    public void register(){
         IntentFilter filter = new IntentFilter();
         //报警键
         filter.addAction("flyscale.privkey.ALARM.down");
@@ -104,10 +108,10 @@ public class KeyReceiver extends BroadcastReceiver{
         filter.addAction("flyscale.privkey.MUTE.down");
         filter.addAction("flyscale.privkey.MUTE.long");
         filter.addAction("flyscale.privkey.MUTE.up");
-        BaseApplication.sContext.registerReceiver(receiver,filter);
+        BaseApplication.sContext.registerReceiver(this,filter);
     }
 
-    public void unRegister(KeyReceiver receiver){
-        BaseApplication.sContext.unregisterReceiver(receiver);
+    public void unRegister(){
+        BaseApplication.sContext.unregisterReceiver(this);
     }
 }

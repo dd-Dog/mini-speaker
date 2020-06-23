@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UAlarm;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
@@ -113,19 +114,33 @@ public class AlarmHelper {
      */
     public void alarmFinish(){
         AlarmMediaInstance.getInstance().stopLoopAlarm();
-        LedInstance.getInstance().cancelBlinkOffAlarmLed();
+        if(LedInstance.getInstance().isAlarmOnStatus()){
+            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+        }else {
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+        }
     }
 
     /**
      * 开始报警
      * 闪灯 响铃
      */
-    //todo 需要静默开关控制
     public void alarmStart(){
+        alarmStart(false);
+    }
+
+    public void alarmStart(boolean isReceive){
+        boolean isMute = PersistConfig.findConfig().isMute();
+        if(isReceive){
+            //接警方 必须响警报
+            isMute = false;
+        }
+        if(isMute){
+            return;
+        }
         if(!AlarmMediaInstance.getInstance().isPlaying()){
             AlarmMediaInstance.getInstance().playLoopAlarm();
             LedInstance.getInstance().blinkAlarmLed();
         }
     }
-
 }
