@@ -8,6 +8,7 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.data.up.UAddDeleteWhiteList;
 import com.flyscale.alertor.data.up.UChangeAlarmNumber;
+import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -21,6 +22,8 @@ import java.net.InetSocketAddress;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 
 /**
  * @author 高鹤泉
@@ -57,7 +60,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         super.channelInactive(ctx);
         Log.i(TAG, "channelInactive:  --- 重连 ---  ");
         LedInstance.getInstance().offStateLed();
-        NettyHelper.getInstance().setConnectStatus(NettyHelper.DISCONNECTION);
         NettyHelper.getInstance().connect();
     }
 
@@ -84,9 +86,43 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         Log.i(TAG, "channelActive:  ---  链接成功 ---");
         //保存第一次登陆的时间 永久不变
         PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
-        NettyHelper.getInstance().setConnectStatus(NettyHelper.CONNECTED);
         MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
         LedInstance.getInstance().showStateLed();
+    }
+
+    /**
+     *    //利用写空闲发送心跳检测消息
+     * @param ctx
+     * @param evt
+     * @throws Exception
+     */
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.userEventTriggered(ctx, evt);
+        if(evt instanceof IdleStateEvent){
+            if(((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE){
+                NettyHelper.getInstance().send(new UHeart());
+            }
+        }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        super.exceptionCaught(ctx, cause);
+        Log.i(TAG, "exceptionCaught: " + cause.getMessage());
+//        cause.printStackTrace();
+//        ctx.close();
+    }
+
+    /**
+     * channel已经注册到eventLoop
+     * @param ctx
+     * @throws Exception
+     */
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+        Log.i(TAG, "channelRegistered: ");
     }
 
 
@@ -145,30 +181,5 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                 PersistWhite.deleteList(whiteList);
             NettyHelper.getInstance().send(new UAddDeleteWhiteList("1@"));
         }
-    }
-
-
-    /**
-     * channel已经注册到eventLoop
-     * @param ctx
-     * @throws Exception
-     */
-    @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-        Log.i(TAG, "channelRegistered: ");
-    }
-
-
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        super.exceptionCaught(ctx, cause);
-        Log.i(TAG, "exceptionCaught: " + cause.getMessage());
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        super.userEventTriggered(ctx, evt);
     }
 }

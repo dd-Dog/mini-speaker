@@ -33,8 +33,6 @@ public class KeyReceiver extends BroadcastReceiver{
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
-//            PersistConfig.saveNewIp("192.168.1.252", 1111);
-//            NettyHelper.getInstance().connect();
             alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 

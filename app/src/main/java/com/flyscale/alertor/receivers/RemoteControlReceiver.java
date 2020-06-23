@@ -56,7 +56,8 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                     AlarmHelper.getInstance().polling(null,BaseData.TYPE_DOOR_ALARM_U);
                 }else if(status.equals("0101")){
                     //红外报警
-                    //todo 等待需求
+                    //等待需求
+                    //周工说不管了
                 }else if(status.equals("1001")){
                     AlarmHelper.getInstance().polling(null,BaseData.TYPE_SMOKE_ALARM_U);
                 }else if(status.equals("1011")){

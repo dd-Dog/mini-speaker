@@ -42,6 +42,7 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * @author 高鹤泉
@@ -54,13 +55,10 @@ import io.netty.handler.ssl.SslContextBuilder;
 public class NettyHelper {
     private static final NettyHelper ourInstance = new NettyHelper();
 
-    public static final int DISCONNECTION = 1;
-    public static final int CONNECTED = 2;
     public static final String TAG = "NettyHelper";
 //    final String HOST = "202.100.190.14";
 //    final int PORT = 9988;
     boolean isRunning = true;
-    int mConnectStatus = DISCONNECTION;
 
     SslContext mSslContext;
     //默认的trustManager
@@ -69,7 +67,6 @@ public class NettyHelper {
     EventLoopGroup mGroup;
     ChannelFuture mChannelFuture;
     public Channel mChannel;
-    Timer mTimer;
     //连接次数
     int mConnectCount = 0;
 
@@ -88,12 +85,9 @@ public class NettyHelper {
      * 非同步
      */
     public void connect(){
-        //todo
-        // 重连这里始终有bug
         if(isConnect()){
-            mChannel.close();
+            disconnect();
         }
-
         mConnectCount++;
         if(mConnectCount >= 10){
             PersistConfig.saveNewIp("",-1);
@@ -101,33 +95,35 @@ public class NettyHelper {
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
         Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + PersistConfig.findConfig().getPort());
-        future.addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(final ChannelFuture future) throws Exception {
-                if(future.isSuccess()){
-                    mChannelFuture = future;
-                    mChannel = mChannelFuture.channel();
-                    mConnectStatus = CONNECTED;
-                    sendHeartLoop();
-                    mConnectCount = 0;
-                    if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
-                        PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
-                        PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
-                        PersistConfig.saveNewIp("",-1);
-                    }
-                }else {
-                    future.channel().eventLoop().schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i(TAG, "run: future.channel().eventLoop().schedule00");
-                            if(isRunning){
-                                connect();
-                            }
+        try {
+            future.addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(final ChannelFuture future) throws Exception {
+                    if(future.isSuccess()){
+                        mChannelFuture = future;
+                        mChannel = mChannelFuture.channel();
+                        mConnectCount = 0;
+                        if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
+                            PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
+                            PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
+                            PersistConfig.saveNewIp("",-1);
                         }
-                    },2l, TimeUnit.SECONDS);
+                    }else {
+                        future.channel().eventLoop().schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.i(TAG, "run: future.channel().eventLoop().schedule00");
+                                if(isRunning){
+                                    connect();
+                                }
+                            }
+                        },2l, TimeUnit.SECONDS);
+                    }
                 }
-            }
-        });
+            }).sync();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -157,6 +153,8 @@ public class NettyHelper {
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
                     ByteBuf delimiter = Unpooled.copiedBuffer("]".getBytes());
+                    //5s未发送数据，回调userEventTriggered
+                    pipeline.addLast(new IdleStateHandler(0,5,0,TimeUnit.SECONDS));
                     pipeline.addLast(mSslContext.newHandler(ch.alloc()));
                     pipeline.addLast(new DelimiterBasedFrameDecoder(1048576, false,delimiter));
                     pipeline.addLast(new StringDecoder());
@@ -169,39 +167,10 @@ public class NettyHelper {
         }
     }
 
-    /**
-     * 销毁定时器
-     */
-    private void cancelTimer(){
-        if(mTimer != null){
-            mTimer.cancel();
-            mTimer.purge();
-            mTimer = null;
-        }
-    }
-
-    /**
-     * 发送心跳
-     */
-    private void sendHeartLoop(){
-        cancelTimer();
-        mTimer = new Timer();
-        mTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                send(new UHeart());
-            }
-        },1000,5 * 1000);
-    }
-
-
 
     public void unRegister(){
-        cancelTimer();
         isRunning = false;
-        mConnectStatus = DISCONNECTION;
-        if(mChannelFuture != null){
-            mChannel.closeFuture();
+        if(mChannel != null){
             mChannel.close();
             mChannelFuture = null;
             mChannel = null;
@@ -218,15 +187,13 @@ public class NettyHelper {
      * @return
      */
     public boolean isConnect(){
-        return mConnectStatus == CONNECTED && mChannel != null && mChannel.isActive();
+        return mChannel != null && mChannel.isOpen() && mChannel.isActive();
     }
 
-    public int getConnectStatus() {
-        return mConnectStatus;
-    }
-
-    public void setConnectStatus(int connectStatus) {
-        mConnectStatus = connectStatus;
+    public void disconnect(){
+        if(isConnect()){
+            mChannel.disconnect();
+        }
     }
 
     /**
