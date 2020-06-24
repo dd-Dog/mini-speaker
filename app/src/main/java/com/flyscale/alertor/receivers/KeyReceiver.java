@@ -14,6 +14,8 @@ import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
+import com.flyscale.alertor.netty.NettyHelper;
+
 /**
  * @author 高鹤泉
  * @TIME 2020/6/18 11:28
@@ -31,6 +33,9 @@ public class KeyReceiver extends BroadcastReceiver{
             alarmOrReceive();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
             //110报警
+            //测试更换ip
+//            PersistConfig.saveNewIp("192.168.1.252", 1111);
+//            NettyHelper.getInstance().disconnect("123456789");
             alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 

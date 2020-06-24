@@ -11,8 +11,9 @@ import com.flyscale.alertor.data.base.BaseUpData;
 public class UUpdateVersion extends BaseUpData {
 
     //报文体 	STRING[0-128]	总包数@包序号@接收状态@失败原因
-    public UUpdateVersion(String messageBody) {
+    public UUpdateVersion(String messageBody,String tradeNum) {
         this.messageBody = messageBody;
+        this.tradeNum = tradeNum;
     }
 
     @Override
@@ -22,6 +23,6 @@ public class UUpdateVersion extends BaseUpData {
 
     @Override
     public String formatToString() {
-        return formatToString(getImei(),getTradeNum(),getType(),getIccid(),messageBody,getExtra1(),getExtra2());
+        return formatToString(getImei(),tradeNum,getType(),getIccid(),messageBody,getExtra1(),getExtra2());
     }
 }

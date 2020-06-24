@@ -9,6 +9,7 @@ import com.flyscale.alertor.FotaAction;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.up.UChangeIP;
 import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -78,6 +79,7 @@ public class NettyHelper {
     FotaHelper mFotaHelper;
     //连接次数
     int mConnectCount = 0;
+    public String mChangeIpTradeNumResp = "";
 
     public static NettyHelper getInstance() {
         return ourInstance;
@@ -100,11 +102,15 @@ public class NettyHelper {
      */
     public void connect(){
         if(isConnect()){
-            disconnect();
+            disconnect(null);
         }
         mConnectCount++;
-        if(mConnectCount >= 10){
+        if(mConnectCount >= 4){
             PersistConfig.saveNewIp("",-1);
+            if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
+                NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
+                mChangeIpTradeNumResp = "";
+            }
         }
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
@@ -121,6 +127,8 @@ public class NettyHelper {
                             PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
                             PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
                             PersistConfig.saveNewIp("",-1);
+                            NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
+                            mChangeIpTradeNumResp = "";
                         }
                     }else {
                         future.channel().eventLoop().schedule(new Runnable() {
@@ -134,7 +142,7 @@ public class NettyHelper {
                         },2l, TimeUnit.SECONDS);
                     }
                 }
-            }).sync();
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -229,8 +237,8 @@ public class NettyHelper {
      * fota升级
      * 总包数@包序号@接收状态@失败原因
      */
-    public void modifyFota(String total,String num){
-        mFotaHelper.checkVersion(total,num);
+    public void modifyFota(String total,String num,String tradeNum){
+        mFotaHelper.checkVersion(total,num,tradeNum);
     }
 
 
@@ -256,9 +264,12 @@ public class NettyHelper {
         return mChannel != null && mChannel.isOpen() && mChannel.isActive();
     }
 
-    public void disconnect(){
+    public void disconnect(String changeIpTradeNumResp){
         if(isConnect()){
             mChannel.disconnect();
+        }
+        if(!TextUtils.isEmpty(changeIpTradeNumResp)){
+            mChangeIpTradeNumResp = changeIpTradeNumResp;
         }
     }
 

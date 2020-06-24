@@ -78,7 +78,7 @@ public abstract class BaseData {
     String imei;
     //交易流水号 时间格式+4位循环 时间格式：yyyyMMddHHmmss
     //4位循环数：范围0-9999，从0开始，递增赋值，步长为1，增加到9999后，再从0开始
-    String tradeNum;
+    public String tradeNum;
     //设备号码
     String iccid;
     //市电 是否接入220V电源，0接入，1未接入

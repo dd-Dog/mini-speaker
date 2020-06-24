@@ -11,8 +11,9 @@ import com.flyscale.alertor.data.base.BaseUpData;
 public class URing extends BaseUpData {
 
 
-    public URing(@noteSendCount int sendCount) {
+    public URing(@noteSendCount int sendCount,String tradeNum) {
         this.sendCount = sendCount;
+        this.tradeNum = tradeNum;
     }
 
     @Override
@@ -22,6 +23,6 @@ public class URing extends BaseUpData {
 
     @Override
     public String formatToString() {
-        return formatToString(getImei(),getTradeNum(),getType(),getIccid(),getSendCount(),getExtra1(),getExtra2());
+        return formatToString(getImei(),tradeNum,getType(),getIccid(),getSendCount(),getExtra1(),getExtra2());
     }
 }

@@ -15,7 +15,7 @@ import com.flyscale.alertor.netty.NettyHelper;
 public class FotaAction implements FotaHelper.FotaHelperCallback {
     
     String TAG = "FotaAction";
-    String mTotal,mNum;
+    String mTotal,mNum,mTradeNum;
 
     public void setTotal(String total) {
         mTotal = total;
@@ -23,6 +23,10 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
 
     public void setNum(String num) {
         mNum = num;
+    }
+
+    public void setTradeNum(String tradeNum) {
+        mTradeNum = tradeNum;
     }
 
     @Override
@@ -79,7 +83,7 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
     public void enterRecoveryFail(int code) {
         Log.i(TAG, "enterRecoveryFail: ");
         String message = mTotal + "@" + mNum + "@1@" + code;
-        NettyHelper.getInstance().send(new UUpdateVersion(message));
+        NettyHelper.getInstance().send(new UUpdateVersion(message,mTradeNum));
     }
 
     @Override
@@ -95,7 +99,7 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
         //接收状态:0接收成功，1接收失败
         //失败原因：成功不填写（长度为0），失败填写原因
         String message = mTotal + "@" + mNum + "@0@";
-        NettyHelper.getInstance().send(new UUpdateVersion(message));
+        NettyHelper.getInstance().send(new UUpdateVersion(message,mTradeNum));
         Log.i(TAG, "upgradeSuccess: ");
     }
 }

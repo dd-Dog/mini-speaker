@@ -11,8 +11,8 @@ import com.flyscale.alertor.data.base.UDefaultChange;
  */
 public class UChangeAlarmNumber extends UDefaultChange {
 
-    public UChangeAlarmNumber(String changeResult) {
-        super(changeResult);
+    public UChangeAlarmNumber(String changeResult,String tradeNum) {
+        super(changeResult,tradeNum);
     }
 
     @Override

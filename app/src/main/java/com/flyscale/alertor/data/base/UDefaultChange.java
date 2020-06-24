@@ -9,10 +9,17 @@ public abstract class UDefaultChange extends BaseUpData {
 
     public UDefaultChange(String changeResult) {
         this.changeResult = changeResult;
+        this.tradeNum = getTradeNum();
     }
+
+    public UDefaultChange(String changeResult,String tradeNum) {
+        this.changeResult = changeResult;
+        this.tradeNum = tradeNum;
+    }
+
 
     @Override
     public String formatToString() {
-        return formatToString(getImei(),getTradeNum(),getType(),getIccid(),changeResult,getExtra1(),getExtra2());
+        return formatToString(getImei(),tradeNum,getType(),getIccid(),changeResult,getExtra1(),getExtra2());
     }
 }

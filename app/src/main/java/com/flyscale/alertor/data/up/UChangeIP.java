@@ -12,8 +12,8 @@ import com.flyscale.alertor.data.base.UDefaultChange;
  */
 public class UChangeIP extends UDefaultChange {
 
-    public UChangeIP(String changeResult) {
-        super(changeResult);
+    public UChangeIP(String changeResult,String tradeNum) {
+        super(changeResult,tradeNum);
     }
 
     @Override

@@ -14,9 +14,10 @@ import com.flyscale.alertor.data.base.BaseUpData;
  */
 public class UVoice extends BaseUpData {
 
-    public UVoice(@noteSendCount int sendCount, String messageBody) {
+    public UVoice(@noteSendCount int sendCount, String messageBody,String tradeNum) {
         this.sendCount = sendCount;
         this.messageBody = messageBody;
+        this.tradeNum = tradeNum;
     }
 
     @Override
@@ -26,6 +27,6 @@ public class UVoice extends BaseUpData {
 
     @Override
     public String formatToString() {
-        return formatToString(getImei(),getTradeNum(),getType(),getIccid(),sendCount,messageBody,getExtra1(),getExtra2());
+        return formatToString(getImei(),tradeNum,getType(),getIccid(),sendCount,messageBody,getExtra1(),getExtra2());
     }
 }

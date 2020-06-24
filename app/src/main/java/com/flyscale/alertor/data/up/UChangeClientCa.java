@@ -13,8 +13,8 @@ import com.flyscale.alertor.data.base.UDefaultChange;
  */
 public class UChangeClientCa extends UDefaultChange {
 
-    public UChangeClientCa(String changeResult) {
-        super(changeResult);
+    public UChangeClientCa(String changeResult,String tradeNum) {
+        super(changeResult,tradeNum);
     }
 
     @Override

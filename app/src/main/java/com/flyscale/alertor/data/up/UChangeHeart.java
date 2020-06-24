@@ -12,8 +12,8 @@ import com.flyscale.alertor.data.base.UDefaultChange;
  */
 public class UChangeHeart extends UDefaultChange {
 
-    public UChangeHeart(String changeResult) {
-        super(changeResult);
+    public UChangeHeart(String changeResult,String tradeNum) {
+        super(changeResult,tradeNum);
     }
 
     @Override

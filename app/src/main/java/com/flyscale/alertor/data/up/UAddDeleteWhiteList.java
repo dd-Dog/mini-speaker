@@ -10,8 +10,9 @@ import com.flyscale.alertor.data.base.BaseUpData;
  */
 public class UAddDeleteWhiteList extends BaseUpData {
 
-    public UAddDeleteWhiteList(String changeResult) {
+    public UAddDeleteWhiteList(String changeResult,String tradeNum) {
         this.changeResult = changeResult;
+        this.tradeNum = tradeNum;
     }
 
     @Override
@@ -21,6 +22,6 @@ public class UAddDeleteWhiteList extends BaseUpData {
 
     @Override
     public String formatToString() {
-        return formatToString(getImei(),getTradeNum(),getType(),getIccid(),changeResult,getExtra1(),getExtra2());
+        return formatToString(getImei(),tradeNum,getType(),getIccid(),changeResult,getExtra1(),getExtra2());
     }
 }
