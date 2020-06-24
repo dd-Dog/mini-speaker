@@ -340,6 +340,16 @@ public class FlyscaleManager {
         }
     }
 
+    public String getMuteState(){
+        Log.i(TAG, "getMuteState");
+        try {
+            return this.mService.getMuteState();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     /**
      * 手电筒是否开启
      * @return
@@ -565,5 +575,28 @@ public class FlyscaleManager {
             return 0;
         }
     }
+
+    public void createHotspot(String ssid, String passwd, int safeMode){
+        try {
+            mService.createHotspot(ssid, passwd, safeMode);
+        } catch (RemoteException e) {
+        }
+    }
+
+    public void closeHotSpot(){
+        try {
+            mService.closeHotSpot();
+        } catch (RemoteException e) {
+        }
+    }
+
+    public int getHotspotState(){
+        try {
+            return mService.getHotspotState();
+        } catch (RemoteException e) {
+            return -1;
+        }
+    }
+
 }
 

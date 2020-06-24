@@ -5,6 +5,9 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.flyscale.FlyscaleManager;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.telephony.NeighboringCellInfo;
@@ -32,6 +35,9 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
         startService(new Intent(this, AlarmService.class));
+
+        FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
+        flyscaleManager.createHotspot("alamer_ap", "12345678",  4);
     }
 
 

@@ -93,6 +93,15 @@ interface IFlyscaleManager {
     boolean isMultiSim();
 
     int getDefaultPhoneId();
+
+    String getMuteState();
+
+    void createHotspot(String ssid, String passwd, int safeMode);
+
+    void closeHotSpot();
+
+    int getHotspotState();
+
 }
 
 
