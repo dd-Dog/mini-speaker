@@ -58,49 +58,57 @@ public class AlarmHelper {
      * @param type
      */
     public void polling(final onAlarmFailListener listener,final int type){
-        //报警时，如果网络没有连通，要提示“网络连接失败”。
-        if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
-            MediaHelper.play(MediaHelper.WORK_WRONG,true);
-            return;
-        }
-        //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
-        if(!NettyHelper.getInstance().isConnect()){
-            MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
-        }
-        //闪灯和播放警铃
-        alarmStart();
-        if(mTimer != null){
-            mTimer.cancel();
-            mTimer.purge();
-        }
-        mTimer = new Timer();
-        mSendCount = 1;
-        mAlarmResult = new AtomicBoolean(false);
-        mTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if(!mAlarmResult.get() && mSendCount <= 3){
-                    if(type == BaseData.TYPE_ALARM_U){
-                        NettyHelper.getInstance().send(new UAlarm(mSendCount));
-                    }else if(type == BaseData.TYPE_DOOR_ALARM_U){
-                        NettyHelper.getInstance().send(new UDoorAlarm(mSendCount));
-                    }else if(type == BaseData.TYPE_SMOKE_ALARM_U){
-                        NettyHelper.getInstance().send(new USmokeAlarm(mSendCount));
-                    }else if(type == BaseData.TYPE_GAS_ALARM_U){
-                        NettyHelper.getInstance().send(new UGasAlarm(mSendCount));
-                    }
-                    mSendCount ++;
-                }else {
-                    if(!mAlarmResult.get() && mSendCount> 3){
-                        if(listener != null){
-                            listener.onAlarmFail();
-                        }
-                        CallAlarmHelper.getInstance().polling(null,false);
-                    }
-                    destroy();
-                }
+
+        if(PersistConfig.findConfig().isIpAlarmFirst()){
+            //ip报警优先
+            //报警时，如果网络没有连通，要提示“网络连接失败”。
+            if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
+                MediaHelper.play(MediaHelper.WORK_WRONG,true);
+                return;
             }
-        },50,1000);
+            //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
+            if(!NettyHelper.getInstance().isConnect()){
+                MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+            }
+            //闪灯和播放警铃
+            alarmStart();
+            if(mTimer != null){
+                mTimer.cancel();
+                mTimer.purge();
+            }
+            mTimer = new Timer();
+            mSendCount = 1;
+            mAlarmResult = new AtomicBoolean(false);
+            mTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if(!mAlarmResult.get() && mSendCount <= 3){
+                        if(type == BaseData.TYPE_ALARM_U){
+                            NettyHelper.getInstance().send(new UAlarm(mSendCount));
+                        }else if(type == BaseData.TYPE_DOOR_ALARM_U){
+                            NettyHelper.getInstance().send(new UDoorAlarm(mSendCount));
+                        }else if(type == BaseData.TYPE_SMOKE_ALARM_U){
+                            NettyHelper.getInstance().send(new USmokeAlarm(mSendCount));
+                        }else if(type == BaseData.TYPE_GAS_ALARM_U){
+                            NettyHelper.getInstance().send(new UGasAlarm(mSendCount));
+                        }
+                        mSendCount ++;
+                    }else {
+                        if(!mAlarmResult.get() && mSendCount> 3){
+                            if(listener != null){
+                                listener.onAlarmFail();
+                            }
+                            CallAlarmHelper.getInstance().polling(null,false);
+                        }
+                        destroy();
+                    }
+                }
+            },50,1000);
+        }else {
+            CallAlarmHelper.getInstance().polling(null,false);
+        }
+
+
     }
 
     /**

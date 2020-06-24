@@ -14,12 +14,6 @@ import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
-import com.flyscale.alertor.netty.NettyHelper;
-
-import java.util.concurrent.TimeUnit;
-
-import io.netty.handler.timeout.IdleStateHandler;
-
 /**
  * @author 高鹤泉
  * @TIME 2020/6/18 11:28
@@ -69,8 +63,13 @@ public class KeyReceiver extends BroadcastReceiver{
         }
         //正在响铃  并且来电是接警电话
         //接警
-        if(CallPhoneReceiver.isRinging() && PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
-            PhoneUtil.answerCall(BaseApplication.sContext);
+        if(CallPhoneReceiver.isRinging()){
+            if(PersistConfig.findConfig().isAcceptOtherNum()
+                || (!PersistConfig.findConfig().isAcceptOtherNum()) && PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
+                PhoneUtil.answerCall(BaseApplication.sContext);
+            }else {
+                PhoneUtil.endCall(BaseApplication.sContext);
+            }
             Log.i(TAG, "alarmOrReceive: 接警成功");
         }else {
             //报警
