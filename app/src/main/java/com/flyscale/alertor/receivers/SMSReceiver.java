@@ -65,56 +65,58 @@ public class SMSReceiver extends BroadcastReceiver {
      */
     private void handleSMS(String sender, String content, long msgDate) {
         //支持任意手机号发短信修改 所以不需要判断手机号
+        Log.i(TAG, "handleSMS: " + content);
         try {
-            String[] array = TextUtils.split(content,";");
-            for(String item : array){
-                String[] arrayItem = TextUtils.split(item,"=");
-                String key = arrayItem[0];
-                String value = arrayItem[1];
-                if(key.equals("IPALARMNUM")){
-                    String[] numArray = TextUtils.split(value,",");
-                    String number = numArray[0];
-                    String mobile = numArray[1];
-                    if(number.equals("1")){
-                        PersistConfig.saveSpecialNum(mobile);
-                    }else if(number.equals("2")){
-                        PersistConfig.saveAlarmNum(mobile);
-                    }
-                }else if(key.equals("IPALARMYUY")){
-                    if(value.equals("1")){
-                        PersistConfig.saveIsIpAlarmFirst(false);
-                    }else if(value.equals("0")){
-                        PersistConfig.saveIsIpAlarmFirst(true);
-                    }
-                }else if(key.equals("IPALARMLED")){
-                    String[] ledArray = TextUtils.split(value,",");
-                    String start = ledArray[0];
-                    String end = ledArray[1];
-                    PersistConfig.saveAlarmLedTime(start,end);
-                    AlarmLedReceiver.sendRepeatAlarmBroadcast(start,end);
-                }else if(key.equals("IPALARMWLM")){
-                    String[] wlmArray = TextUtils.split(value,",");
-                    String number = wlmArray[0];
-                    String conut = wlmArray[1];
-                    //白名单ip报文 是通过 ; 来跟分割的，这里转化一下
-                    String mobile = wlmArray[2].replace(",",";");
-                    if(number.equals("0")){
-                        PersistWhite.saveList(mobile);
-                    }else if(number.equals("1")){
-                        PersistWhite.deleteList(mobile);
-                    }
-                }else if(key.equals("IPALARMWLS")){
-                    if(value.equals("0")){
-                        PersistConfig.saveIsAccpetOtherNum(false);
-                    }else if(value.equals("1")){
-                        PersistConfig.saveIsAccpetOtherNum(true);
+            String[] array = TextUtils.split(content.trim(), ";");
+            for (String item : array) {
+                String[] arrayItem = TextUtils.split(item, "=");
+                if (arrayItem != null && arrayItem.length >= 2) {
+                    String key = arrayItem[0];
+                    String value = arrayItem[1];
+                    if (key.equals("IPALARMNUM")) {
+                        String[] numArray = TextUtils.split(value, ",");
+                        String number = numArray[0];
+                        String mobile = numArray[1];
+                        if (number.equals("1")) {
+                            PersistConfig.saveSpecialNum(mobile);
+                        } else if (number.equals("2")) {
+                            PersistConfig.saveAlarmNum(mobile);
+                        }
+                    } else if (key.equals("IPALARMYUY")) {
+                        if (value.equals("1")) {
+                            PersistConfig.saveIsIpAlarmFirst(false);
+                        } else if (value.equals("0")) {
+                            PersistConfig.saveIsIpAlarmFirst(true);
+                        }
+                    } else if (key.equals("IPALARMLED")) {
+                        String[] ledArray = TextUtils.split(value, ",");
+                        String start = ledArray[0];
+                        String end = ledArray[1];
+                        PersistConfig.saveAlarmLedTime(start, end);
+                        AlarmLedReceiver.sendRepeatAlarmBroadcast(start, end);
+                    } else if (key.equals("IPALARMWLM")) {
+                        String[] wlmArray = TextUtils.split(value, ",");
+                        String number = wlmArray[0];
+                        String conut = wlmArray[1];
+                        //白名单ip报文 是通过 ; 来跟分割的，这里转化一下
+                        String mobile = wlmArray[2].replace(",", ";");
+                        if (number.equals("0")) {
+                            PersistWhite.saveList(mobile);
+                        } else if (number.equals("1")) {
+                            PersistWhite.deleteList(mobile);
+                        }
+                    } else if (key.equals("IPALARMWLS")) {
+                        if (value.equals("0")) {
+                            PersistConfig.saveIsAccpetOtherNum(false);
+                        } else if (value.equals("1")) {
+                            PersistConfig.saveIsAccpetOtherNum(true);
+                        }
                     }
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
-
     }
 
 
