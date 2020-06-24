@@ -102,8 +102,6 @@ interface IFlyscaleManager {
 
     int getHotspotState();
 
-
-    String getMuteState();
 }
 
 
