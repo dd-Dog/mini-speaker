@@ -85,8 +85,8 @@ public class AlarmService extends BaseService {
         //警报灯常亮广播
         AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmOffOffTime());
         //fota升级 todo 没有完成呢！！
-//        mFotaHelper = new FotaHelper(this,new FotaAction());
-//        mFotaHelper.checkVersion();
+        mFotaHelper = new FotaHelper(this,new FotaAction());
+        mFotaHelper.checkVersion();
     }
 
     @Override
