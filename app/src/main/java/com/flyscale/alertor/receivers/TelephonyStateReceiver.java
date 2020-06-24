@@ -106,9 +106,11 @@ public class TelephonyStateReceiver {
                     break;
                 case InternetUtil.NETWORK_NONE:
                     Log.w(TAG, "onSignalStrengthsChanged: 当前无网络");
-                    break;
+                    setNoSignal();
+                    return;
                 default:
                     Log.e(TAG, "onSignalStrengthsChanged: 不支持的网络类型！");
+                    setNoSignal();
                     return;
             }
             try {
