@@ -42,6 +42,9 @@ public class ReceiveMediaInstance {
      */
     public void play(File file, final int playCount){
         SoundPoolHelper.getInstance().stopAudio();
+        if(!file.exists()){
+            return;
+        }
         mPlayCount = playCount;
         mMediaPlayer.reset();
         try {

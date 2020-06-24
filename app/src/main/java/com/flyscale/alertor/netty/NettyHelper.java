@@ -5,13 +5,17 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.FotaAction;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.helper.DateHelper;
+import com.flyscale.alertor.helper.FileHelper;
+import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.helper.ThreadPool;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
@@ -20,6 +24,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -42,6 +47,7 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 /**
@@ -59,6 +65,8 @@ public class NettyHelper {
 //    final String HOST = "202.100.190.14";
 //    final int PORT = 9988;
     boolean isRunning = true;
+    public static final String sIdleStateHandler = "sIdleStateHandler";
+    public static final String sSslHandler = "sSslHandler";
 
     SslContext mSslContext;
     //默认的trustManager
@@ -67,6 +75,7 @@ public class NettyHelper {
     EventLoopGroup mGroup;
     ChannelFuture mChannelFuture;
     public Channel mChannel;
+    FotaHelper mFotaHelper;
     //连接次数
     int mConnectCount = 0;
 
@@ -74,12 +83,17 @@ public class NettyHelper {
         return ourInstance;
     }
 
-    private NettyHelper(){}
+    private NettyHelper(){
+        mFotaHelper = new FotaHelper(BaseApplication.sContext,new FotaAction());
+    }
 
     public int getConnectCount() {
         return mConnectCount;
     }
 
+    public Bootstrap getBootstrap() {
+        return mBootstrap;
+    }
 
     /**
      * 非同步
@@ -133,38 +147,90 @@ public class NettyHelper {
      * 初始化的时候必须注册
      */
     public void register(){
-        try {
-            mSslContext = SslContextBuilder.forClient()
-                    .keyManager(BaseApplication.sContext.getAssets().open("client.crt")
-                            ,BaseApplication.sContext.getAssets().open("pkcs8_client.key"))
-                    // 这里由于android的限制7.0以上无法信任用户添加的证书
-                    // 所以信任所有证书
-                    // 也许会有隐患，有时间可以优化一下
-                    // https://blog.csdn.net/shadowyspirits/article/details/79756274
-                    // https://developer.android.google.cn/training/articles/security-config.html
-                    .trustManager(DEFAULT_TrustManager).build();
-            mBootstrap = new Bootstrap();
-            mGroup = new NioEventLoopGroup();
-            mBootstrap.group(mGroup);
-            mBootstrap.channel(NioSocketChannel.class);
-            mBootstrap.option(ChannelOption.SO_KEEPALIVE,true);
-            mBootstrap.handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(SocketChannel ch) throws Exception {
-                    ChannelPipeline pipeline = ch.pipeline();
-                    ByteBuf delimiter = Unpooled.copiedBuffer("]".getBytes());
-                    //5s未发送数据，回调userEventTriggered
-                    pipeline.addLast(new IdleStateHandler(0,5,0,TimeUnit.SECONDS));
-                    pipeline.addLast(mSslContext.newHandler(ch.alloc()));
-                    pipeline.addLast(new DelimiterBasedFrameDecoder(1048576, false,delimiter));
-                    pipeline.addLast(new StringDecoder());
-                    pipeline.addLast(new StringEncoder());
-                    pipeline.addLast(new NettyHandler());
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+        setSSLContext();
+        mBootstrap = new Bootstrap();
+        mGroup = new NioEventLoopGroup();
+        mBootstrap.group(mGroup);
+        mBootstrap.channel(NioSocketChannel.class);
+        mBootstrap.option(ChannelOption.SO_KEEPALIVE,true);
+        mBootstrap.handler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            protected void initChannel(SocketChannel ch) throws Exception {
+                ChannelPipeline pipeline = ch.pipeline();
+                ByteBuf delimiter = Unpooled.copiedBuffer("]".getBytes());
+                //5s未发送数据，回调userEventTriggered
+                pipeline.addLast(sIdleStateHandler,new IdleStateHandler(0,5,0,TimeUnit.SECONDS));
+                pipeline.addLast(mSslContext.newHandler(ch.alloc()));
+                pipeline.addLast(new DelimiterBasedFrameDecoder(1048576, false,delimiter));
+                pipeline.addLast(new StringDecoder());
+                pipeline.addLast(new StringEncoder());
+                pipeline.addLast(new NettyHandler());
+            }
+        });
+    }
+
+
+    /**
+     * 设置SSLContext
+     */
+    public void setSSLContext(){
+        File fileClientCrt = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_CRT_NAME);
+        File fileClientKey = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_KEY_NAME);
+        File fileRootCrt = new File(FileHelper.getBasePath() + FileHelper.S_ROOT_CRT_NAME);
+        if(fileClientKey.exists() && fileClientCrt.exists() &&fileRootCrt.exists()){
+            try {
+                mSslContext = SslContextBuilder.forClient()
+                        .keyManager(fileClientCrt,fileClientKey)
+                        .trustManager(DEFAULT_TrustManager).build();
+            } catch (SSLException e) {
+                e.printStackTrace();
+            }
+            Log.i(TAG, "setSSLContext: 通过file加载");
+        }else {
+            try {
+                mSslContext = SslContextBuilder.forClient()
+                        .keyManager(BaseApplication.sContext.getAssets().open("client.crt")
+                                ,BaseApplication.sContext.getAssets().open("pkcs8_client.key"))
+                        // 这里由于android的限制7.0以上无法信任用户添加的证书
+                        // 所以信任所有证书
+                        // 也许会有隐患，有时间可以优化一下
+                        // https://blog.csdn.net/shadowyspirits/article/details/79756274
+                        // https://developer.android.google.cn/training/articles/security-config.html
+                        .trustManager(DEFAULT_TrustManager).build();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.i(TAG, "setSSLContext: 通过assets加载");
         }
+    }
+
+
+    /**
+     * 设置心跳频率
+     * @param heartHz
+     */
+    public void modifyIdleStateHandler(int heartHz){
+        mChannel.pipeline().replace(IdleStateHandler.class,sIdleStateHandler
+                ,new IdleStateHandler(0,heartHz,0,TimeUnit.SECONDS));
+    }
+
+    /**
+     * 修改ca证书
+     */
+    public void modifySslHandler(){
+        setSSLContext();
+        if(mSslContext != null){
+            mChannel.pipeline().replace(SslHandler.class,sSslHandler
+                    ,mSslContext.newHandler(mChannel.alloc()));
+        }
+    }
+
+    /**
+     * fota升级
+     * 总包数@包序号@接收状态@失败原因
+     */
+    public void modifyFota(String total,String num){
+        mFotaHelper.checkVersion(total,num);
     }
 
 

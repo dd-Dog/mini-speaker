@@ -8,14 +8,9 @@ import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.widget.TextView;
-
-import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.receivers.BatteryReceiver;
-
-import static android.content.Context.BATTERY_SERVICE;
 
 /**
  * @author 高鹤泉
@@ -23,6 +18,8 @@ import static android.content.Context.BATTERY_SERVICE;
  * @DESCRIPTION 暂无
  */
 public class ClientInfoHelper {
+
+
     /**
      * 获取imei
      * @return

@@ -18,6 +18,9 @@ public class FileHelper {
      * 接警语音文件名
      */
     public static final String S_ALARM_RESP_NAME = "alarmResp.amr";
+    public static final String S_CLIENT_CRT_NAME = "alarmClient.crt";
+    public static final String S_CLIENT_KEY_NAME = "alarmPk8Client.key";
+    public static final String S_ROOT_CRT_NAME = "rootCa.crt";
     public static final File S_ALARM_RESP_FILE = new File(getBasePath() + S_ALARM_RESP_NAME);
 
     /**

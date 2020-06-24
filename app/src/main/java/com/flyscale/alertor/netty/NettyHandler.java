@@ -18,12 +18,17 @@ import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.media.AlarmMediaInstance;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 
+import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
+import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * @author 高鹤泉
@@ -127,7 +132,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext ctx, String msg) throws Exception {
         BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
         int type = BaseDataFactory.parseType(msg);
 
@@ -180,6 +185,33 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             else if(TextUtils.equals("1",flag))
                 PersistWhite.deleteList(whiteList);
             NettyHelper.getInstance().send(new UAddDeleteWhiteList("1@"));
+        }else if(type == BaseData.TYPE_CHANGE_HEART_D){
+            //修改心跳频率
+            int heartHZ = baseData.getHeartHZ();
+            NettyHelper.getInstance().modifyIdleStateHandler(heartHZ);
+        }else if(type == BaseData.TYPE_UPDATE_VERSION_D){
+            //终端版本升级
+            //总包数@包序号@接收状态@失败原因
+            String total = baseData.getTotalPacket();
+            String num = baseData.getPacketNum();
+            NettyHelper.getInstance().modifyFota(total,num);
+        }else if(type == BaseData.TYPE_CHANGE_CLIENT_CA_D){
+            //终端更换证书
+            String clientCa = baseData.getClientCaMessage();
+            String clientKey = baseData.getClientPwdMessage();
+            String rootCa = baseData.getRootCaMessage();
+            final byte[] clientCaB = DataConvertHelper.hexToBytes(clientCa);
+            final byte[] clientKeyB = DataConvertHelper.hexToBytes(clientKey);
+            final byte[] rootCaB = DataConvertHelper.hexToBytes(rootCa);
+            ThreadPool.getInstance().execute(new Runnable() {
+                @Override
+                public void run() {
+                    FileHelper.byteToFile(clientCaB,FileHelper.S_CLIENT_CRT_NAME);
+                    FileHelper.byteToFile(clientKeyB, FileHelper.S_CLIENT_KEY_NAME);
+                    FileHelper.byteToFile(rootCaB,FileHelper.S_ROOT_CRT_NAME);
+                    NettyHelper.getInstance().modifySslHandler();
+                }
+            });
         }
     }
 }

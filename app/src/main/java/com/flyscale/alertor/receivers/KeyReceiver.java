@@ -10,11 +10,15 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
-import com.flyscale.alertor.helper.AppActionHelper;
+import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 import com.flyscale.alertor.netty.NettyHelper;
+
+import java.util.concurrent.TimeUnit;
+
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * @author 高鹤泉
@@ -37,9 +41,9 @@ public class KeyReceiver extends BroadcastReceiver{
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.down")){
-            PersistConfig.saveIsMute(true);
-        }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.up")){
             PersistConfig.saveIsMute(false);
+        }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.up")){
+            PersistConfig.saveIsMute(true);
         }
     }
 
@@ -60,7 +64,7 @@ public class KeyReceiver extends BroadcastReceiver{
      * 接警时 按下报警键接听
      */
     public void alarmOrReceive(){
-        if(AppActionHelper.isFastClick()){
+        if(UserActionHelper.isFastClick()){
             return;
         }
         //正在响铃  并且来电是接警电话

@@ -2,7 +2,10 @@ package com.flyscale.alertor.base;
 
 import android.app.Application;
 import android.content.Context;
+import android.flyscale.FlyscaleManager;
+import android.util.Log;
 
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 
 import org.litepal.LitePal;
@@ -15,6 +18,7 @@ import org.litepal.LitePal;
 public class BaseApplication extends Application {
 
     public static Context sContext;
+    public static FlyscaleManager sFlyscaleManager;
 
     @Override
     public void onCreate() {
@@ -23,5 +27,7 @@ public class BaseApplication extends Application {
 
         SoundPoolHelper.getInstance().init(this);
         LitePal.initialize(this);
+
+        sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
     }
 }

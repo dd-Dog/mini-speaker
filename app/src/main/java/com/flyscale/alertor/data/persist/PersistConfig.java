@@ -1,7 +1,9 @@
 package com.flyscale.alertor.data.persist;
 
+import android.flyscale.FlyscaleManager;
 import android.text.TextUtils;
 
+import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.DateHelper;
 
 import org.litepal.LitePal;
@@ -23,7 +25,7 @@ public class PersistConfig extends LitePalSupport {
     boolean isIpAlarmFirst = true;
     String newIp = null;
     int newPort = -1;
-    boolean isMute = false;
+    boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
     //修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
     String alarmLedOnTime = "00:00";
     String alarmOffOffTime = "00:00";

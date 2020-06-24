@@ -13,6 +13,7 @@ import com.abupdate.fota_demo_iot.IDownloadAidlInter;
 import com.abupdate.fota_demo_iot.IOtaInter;
 import com.abupdate.fota_demo_iot.IUpdateAidlInter;
 import com.abupdate.fota_demo_iot.data.remote.NewVersionInfo;
+import com.flyscale.alertor.FotaAction;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -91,8 +92,14 @@ public class FotaHelper {
      * ⑧.版本更新内容
      * ⑨.升级包文件大小
      */
-    public void checkVersion() {
+    public void checkVersion(String total,String num) {
         try {
+            if(mCallback != null){
+                if(mCallback instanceof FotaAction){
+                    ((FotaAction) mCallback).setTotal(total);
+                    ((FotaAction) mCallback).setNum(num);
+                }
+            }
             mIOtaInter.checkVersion(new ICheckVersionAidlInter.Stub() {
                 @Override
                 public void hasNewVersion(final NewVersionInfo newVersionInfo) throws RemoteException {

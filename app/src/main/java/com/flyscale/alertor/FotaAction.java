@@ -3,7 +3,9 @@ package com.flyscale.alertor;
 import android.util.Log;
 
 import com.abupdate.fota_demo_iot.data.remote.NewVersionInfo;
+import com.flyscale.alertor.data.up.UUpdateVersion;
 import com.flyscale.alertor.helper.FotaHelper;
+import com.flyscale.alertor.netty.NettyHelper;
 
 /**
  * @author 高鹤泉
@@ -13,7 +15,16 @@ import com.flyscale.alertor.helper.FotaHelper;
 public class FotaAction implements FotaHelper.FotaHelperCallback {
     
     String TAG = "FotaAction";
-    
+    String mTotal,mNum;
+
+    public void setTotal(String total) {
+        mTotal = total;
+    }
+
+    public void setNum(String num) {
+        mNum = num;
+    }
+
     @Override
     public void onRemoteServiceConnected() {
         Log.i(TAG, "onRemoteServiceConnected: ");
@@ -67,6 +78,8 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
     @Override
     public void enterRecoveryFail(int code) {
         Log.i(TAG, "enterRecoveryFail: ");
+        String message = mTotal + "@" + mNum + "@1@" + code;
+        NettyHelper.getInstance().send(new UUpdateVersion(message));
     }
 
     @Override
@@ -76,6 +89,13 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
 
     @Override
     public void upgradeSuccess() {
+        //总包数@包序号@接收状态@失败原因
+        //总包数:语音报分包总数
+        //包序号:包序号,比如是第几个包
+        //接收状态:0接收成功，1接收失败
+        //失败原因：成功不填写（长度为0），失败填写原因
+        String message = mTotal + "@" + mNum + "@0@";
+        NettyHelper.getInstance().send(new UUpdateVersion(message));
         Log.i(TAG, "upgradeSuccess: ");
     }
 }
