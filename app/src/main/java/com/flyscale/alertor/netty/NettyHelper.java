@@ -76,6 +76,8 @@ public class NettyHelper {
     EventLoopGroup mGroup;
     ChannelFuture mChannelFuture;
     public Channel mChannel;
+    ChannelFutureListener mChannelFutureListener = new MyChannelFutureListener();
+
     FotaHelper mFotaHelper;
     //连接次数
     int mConnectCount = 0;
@@ -98,7 +100,7 @@ public class NettyHelper {
     }
 
     /**
-     * 非同步
+     * 耗时操作
      */
     public void connect(){
         if(isConnect()){
@@ -107,48 +109,45 @@ public class NettyHelper {
         mConnectCount++;
         if(mConnectCount >= 4){
             PersistConfig.saveNewIp("",-1);
-            if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
-                NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
-                mChangeIpTradeNumResp = "";
-            }
         }
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
         Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + PersistConfig.findConfig().getPort());
-        try {
-            future.addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(final ChannelFuture future) throws Exception {
-                    if(future.isSuccess()){
-                        mChannelFuture = future;
-                        mChannel = mChannelFuture.channel();
-                        mConnectCount = 0;
-                        if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
-                            PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
-                            PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
-                            PersistConfig.saveNewIp("",-1);
-                            NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
-                            mChangeIpTradeNumResp = "";
-                        }
-                    }else {
-                        future.channel().eventLoop().schedule(new Runnable() {
-                            @Override
-                            public void run() {
-                                Log.i(TAG, "run: future.channel().eventLoop().schedule00");
-                                if(isRunning){
-                                    connect();
-                                }
-                            }
-                        },3l, TimeUnit.SECONDS);
-                    }
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        future.addListener(mChannelFutureListener);
     }
 
-
+    public class MyChannelFutureListener implements ChannelFutureListener{
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+            if(future.isSuccess()){
+                mChannelFuture = future;
+                mChannel = mChannelFuture.channel();
+                mConnectCount = 0;
+                if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
+                    //新ip连接成功
+                    PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
+                    PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
+                    PersistConfig.saveNewIp("",-1);
+                    NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
+                    mChangeIpTradeNumResp = "";
+                }else if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
+                    //新ip连接失败
+                    NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
+                    mChangeIpTradeNumResp = "";
+                }
+            }else {
+                future.channel().eventLoop().schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(TAG, "run: future.channel().eventLoop().schedule00");
+                        if(isRunning){
+                            connect();
+                        }
+                    }
+                },3, TimeUnit.SECONDS);
+            }
+        }
+    }
 
 
     /**
@@ -267,6 +266,8 @@ public class NettyHelper {
     public void disconnect(String changeIpTradeNumResp){
         if(isConnect()){
             mChannel.disconnect();
+            mChannelFuture.cancel(true);
+            mChannelFuture.removeListener(mChannelFutureListener);
         }
         if(!TextUtils.isEmpty(changeIpTradeNumResp)){
             mChangeIpTradeNumResp = changeIpTradeNumResp;
