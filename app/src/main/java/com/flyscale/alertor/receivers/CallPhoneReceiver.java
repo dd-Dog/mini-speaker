@@ -41,13 +41,16 @@ public class CallPhoneReceiver extends BroadcastReceiver {
                 //呼入
                 mCallState = CALL_RECEIVE;
                 isCallActive = false;
+                Log.i(TAG, "onReceive: 呼入");
             }else if(state == 5){
                 //呼出
                 mCallState = CALL_SEND;
                 isCallActive = false;
+                Log.i(TAG, "onReceive: 呼出");
             }else if(state == 9){
                 //断开
                 mCallState = CALL_IDLE;
+                Log.i(TAG, "onReceive: 断开");
             }
             //通话成功
             if(state == 2){

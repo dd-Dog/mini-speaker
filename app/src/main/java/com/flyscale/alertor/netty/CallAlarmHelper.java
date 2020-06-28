@@ -29,7 +29,7 @@ public class CallAlarmHelper {
     boolean isAlarming = false;
     //拨打的电话
     private String mSendNumber;
-    final int DEFAULT_POLLING_TIME = 20 * 1000;
+    final int DEFAULT_POLLING_TIME = 30 * 1000;
     //是否执行timer内部的逻辑
     boolean isRunTimerFlag = true;
 
@@ -70,6 +70,7 @@ public class CallAlarmHelper {
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
         if(!NettyHelper.getInstance().isConnect()){
             MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+            return;
         }
         AlarmHelper.getInstance().alarmStart();
         //当报警电话为空的时候

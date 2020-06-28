@@ -69,6 +69,7 @@ public class AlarmHelper {
             //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
             if(!NettyHelper.getInstance().isConnect()){
                 MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+                return;
             }
             //闪灯和播放警铃
             alarmStart();
