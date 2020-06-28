@@ -120,44 +120,6 @@ public class TelephonyStateReceiver {
             }
             Log.i(TAG, "onSignalStrengthsChanged: signalLevel=" + signalLevel);
             updateSignalState();
-
-            /*int dbm = signalStrength.getCdmaDbm();
-            int asu = signalStrength.getGsmSignalStrength();
-            boolean isGsm = signalStrength.isGsm();
-            //       int asu = getGsmSignalStrength();
-            //        if (asu <= 2 || asu == 99) level = SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
-            //        else if (asu >= 12) level = SIGNAL_STRENGTH_GREAT;
-            //        else if (asu >= 8)  level = SIGNAL_STRENGTH_GOOD;
-            //        else if (asu >= 5)  level = SIGNAL_STRENGTH_MODERATE;
-            //        else level = SIGNAL_STRENGTH_POOR;
-            if (isGsm) {
-                if (asu <= 2 || asu == 99) {
-                    //没有信号
-                    LedInstance.getInstance().cancelBlinkOffSignalLed();
-                } else if (asu >= 8) {
-                    //信号好
-                    LedInstance.getInstance().cancelBlinkShowSignalLed();
-                } else {
-                    //信号差
-                    LedInstance.getInstance().blinkSignalLed();
-                }
-            } else {
-                //        if (cdmaDbm >= -75) levelDbm = SIGNAL_STRENGTH_GREAT;
-                //        else if (cdmaDbm >= -85) levelDbm = SIGNAL_STRENGTH_GOOD;
-                //        else if (cdmaDbm >= -95) levelDbm = SIGNAL_STRENGTH_MODERATE;
-                //        else if (cdmaDbm >= -100) levelDbm = SIGNAL_STRENGTH_POOR;
-                //        else levelDbm = SIGNAL_STRENGTH_NONE_OR_UNKNOWN;
-                if (dbm >= -85) {
-                    //信号好
-                    LedInstance.getInstance().cancelBlinkShowSignalLed();
-                } else if (dbm >= -100) {
-                    //信号差
-                    LedInstance.getInstance().blinkSignalLed();
-                } else {
-                    //没信号
-                    LedInstance.getInstance().cancelBlinkOffSignalLed();
-                }
-            }*/
         }
     }
 
