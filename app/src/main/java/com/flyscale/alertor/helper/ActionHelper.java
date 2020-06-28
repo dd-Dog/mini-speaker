@@ -5,9 +5,25 @@ package com.flyscale.alertor.helper;
  * @TIME 2020/6/19 14:12
  * @DESCRIPTION 暂无
  */
-public class UserActionHelper {
+public class ActionHelper {
 
     private static long sLastClickTime = 0;
+    private static long sLastConnectTime = 0;
+
+
+    /**
+     * 再次连接速度是否过快
+     * @param delay
+     * @return
+     */
+    public static boolean isFastConnect(int delay){
+        long time = System.currentTimeMillis();
+        if(time - sLastConnectTime < delay){
+            return true;
+        }
+        sLastConnectTime = time;
+        return false;
+    }
 
 
     /**

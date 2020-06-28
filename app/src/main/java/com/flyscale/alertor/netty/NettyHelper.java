@@ -139,7 +139,7 @@ public class NettyHelper {
                                     connect();
                                 }
                             }
-                        },2l, TimeUnit.SECONDS);
+                        },3l, TimeUnit.SECONDS);
                     }
                 }
             });

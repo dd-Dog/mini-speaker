@@ -15,6 +15,7 @@ import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.data.up.URing;
 import com.flyscale.alertor.data.up.UUpdateVersion;
 import com.flyscale.alertor.data.up.UVoice;
+import com.flyscale.alertor.helper.ActionHelper;
 import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -97,7 +98,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         Log.i(TAG, "channelActive:  ---  链接成功 ---");
         //保存第一次登陆的时间 永久不变
         PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
-        MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
+        if(!ActionHelper.isFastConnect(60 *1000)){
+            MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
+        }
         LedInstance.getInstance().showStateLed();
     }
 
