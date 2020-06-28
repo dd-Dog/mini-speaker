@@ -3,6 +3,7 @@ package com.flyscale.alertor.helper;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.telephony.TelephonyManager;
 
 import com.flyscale.alertor.base.BaseApplication;
 
@@ -17,6 +18,43 @@ public class NetHelper {
     public static final int MOBILE = 1;
     //wifi
     public static final int WIFI = 2;
+
+    /**
+     * 获取网络类型
+     * @return
+     */
+    public static String getNetworkTypeStr() {
+        int type = getNetworkType();
+        if (type == WIFI) {
+            return "wifi";
+        } else if (type == MOBILE) {
+            TelephonyManager telephonyManager = (TelephonyManager) BaseApplication.sContext.getSystemService(Context.TELEPHONY_SERVICE);
+            switch (telephonyManager.getNetworkType()) {
+                case TelephonyManager.NETWORK_TYPE_GPRS:
+                case TelephonyManager.NETWORK_TYPE_EDGE:
+                case TelephonyManager.NETWORK_TYPE_CDMA:
+                case TelephonyManager.NETWORK_TYPE_1xRTT:
+                case TelephonyManager.NETWORK_TYPE_IDEN:
+                    return "2g";
+                case TelephonyManager.NETWORK_TYPE_UMTS:
+                case TelephonyManager.NETWORK_TYPE_EVDO_0:
+                case TelephonyManager.NETWORK_TYPE_EVDO_A:
+                case TelephonyManager.NETWORK_TYPE_HSDPA:
+                case TelephonyManager.NETWORK_TYPE_HSUPA:
+                case TelephonyManager.NETWORK_TYPE_HSPA:
+                case TelephonyManager.NETWORK_TYPE_EVDO_B:
+                case TelephonyManager.NETWORK_TYPE_EHRPD:
+                case TelephonyManager.NETWORK_TYPE_HSPAP:
+                    return "3g";
+                case TelephonyManager.NETWORK_TYPE_LTE:
+                    return "4g";
+                default:
+                    return "";
+            }
+        } else {
+            return "";
+        }
+    }
 
     /**
      * 获取网络类型
