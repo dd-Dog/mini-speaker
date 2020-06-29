@@ -218,6 +218,7 @@ public class NettyHelper {
                 mSslContext = SslContextBuilder.forClient()
                         .keyManager(fileClientCrt,fileClientKey)
                         .trustManager(DEFAULT_TrustManager).build();
+                Log.i(TAG, "setSSLContext: file加载成功");
             } catch (SSLException e) {
                 e.printStackTrace();
             }
@@ -233,6 +234,7 @@ public class NettyHelper {
                         // https://blog.csdn.net/shadowyspirits/article/details/79756274
                         // https://developer.android.google.cn/training/articles/security-config.html
                         .trustManager(DEFAULT_TrustManager).build();
+                Log.i(TAG, "setSSLContext: assets加载成功");
             } catch (IOException e) {
                 e.printStackTrace();
             }
