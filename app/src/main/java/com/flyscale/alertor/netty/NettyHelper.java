@@ -100,6 +100,7 @@ public class NettyHelper {
             disconnectByChangeIp(null);
         }
         mConnectCount++;
+        Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         if(mConnectCount >= 4){
             PersistConfig.saveNewIp("",-1);
             //这是修改ca，ip的情况 修改失败 要一起回滚
@@ -112,7 +113,6 @@ public class NettyHelper {
                 modifySslHandler(null,false);
             }
         }
-        Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
         Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + PersistConfig.findConfig().getPort());
         future.addListener(mChannelFutureListener);
