@@ -62,7 +62,7 @@ public class BatteryReceiver extends BroadcastReceiver {
      * 当正在充电的时候
      */
     public void whenIsCharge(){
-        if(sPlugged != 0){
+        if(sPlugged == BatteryManager.BATTERY_PLUGGED_AC){
             LedInstance.getInstance().showChargeLed();
         }else {
             LedInstance.getInstance().offChargeLed();
