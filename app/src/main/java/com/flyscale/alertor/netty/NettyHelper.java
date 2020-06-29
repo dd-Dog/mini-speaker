@@ -105,7 +105,11 @@ public class NettyHelper {
             //这是修改ca，ip的情况 修改失败 要一起回滚
             if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
                 clearCaFile();
-                modifySslHandler(null);
+                //这里ca证书的回滚由于没有重新replace 有可能使用的新证书也有可能使用的老证书
+                //使用老证书通过
+                //使用新证书 但是新证书和老证书相同 通过
+                //todo 待测 使用新证书 和老证书不一样 这种情况的回滚
+                modifySslHandler(null,false);
             }
         }
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
@@ -251,15 +255,25 @@ public class NettyHelper {
         mChannel.pipeline().replace(IdleStateHandler.class,sIdleStateHandler
                 ,new IdleStateHandler(0,heartHz,0,TimeUnit.SECONDS));
     }
-
     /**
      * 修改ca证书
      */
     public void modifySslHandler(String tradeNum){
+        modifySslHandler(tradeNum,true);
+    }
+
+    public void modifySslHandler(String tradeNum,boolean changeCa){
         setSSLContext();
         if(mSslContext != null){
-            mChannel.pipeline().replace(SslHandler.class,sSslHandler
-                    ,mSslContext.newHandler(mChannel.alloc()));
+            Log.i(TAG, "modifySslHandler: 4");
+            if(mChannel != null && mChannel.pipeline().get(sSslHandler) != mSslContext.newHandler(mChannel.alloc())){
+                Log.i(TAG, "modifySslHandler: 5");
+                if(changeCa){
+                    mChannel.pipeline().replace(SslHandler.class,sSslHandler
+                            ,mSslContext.newHandler(mChannel.alloc()));
+                }
+            }
+            Log.i(TAG, "modifySslHandler: 6");
         }
         if(!TextUtils.isEmpty(tradeNum)){
             mChangeCaTradeNumResp = tradeNum;
