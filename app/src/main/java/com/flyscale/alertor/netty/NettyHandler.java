@@ -207,7 +207,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             NettyHelper.getInstance().modifyIdleStateHandler(heartHZ);
             NettyHelper.getInstance().send(new UChangeHeart("1@",tradeNum));
         }else if(type == BaseData.TYPE_UPDATE_VERSION_D){
-            //todo 再测一次
             //终端版本升级
             //总包数@包序号@接收状态@失败原因
             String total = baseData.getTotalPacket();
@@ -236,8 +235,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                     FileHelper.byteToFile(clientCaB,FileHelper.S_CLIENT_CRT_NAME);
                     FileHelper.byteToFile(clientKeyB, FileHelper.S_CLIENT_KEY_NAME);
                     FileHelper.byteToFile(rootCaB,FileHelper.S_ROOT_CRT_NAME);
-                    NettyHelper.getInstance().modifySslHandler();
-                    NettyHelper.getInstance().send(new UChangeClientCa("0",tradeNum));
+                    NettyHelper.getInstance().modifySslHandler(tradeNum);
                 }
             });
         }

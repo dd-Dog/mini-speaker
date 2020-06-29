@@ -9,6 +9,7 @@ import com.flyscale.alertor.FotaAction;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.up.UChangeClientCa;
 import com.flyscale.alertor.data.up.UChangeIP;
 import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.helper.DateHelper;
@@ -82,6 +83,7 @@ public class NettyHelper {
     //连接次数
     int mConnectCount = 0;
     public String mChangeIpTradeNumResp = "";
+    public String mChangeCaTradeNumResp = "";
 
     public static NettyHelper getInstance() {
         return ourInstance;
@@ -134,6 +136,11 @@ public class NettyHelper {
                     //新ip连接失败
                     NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
                     mChangeIpTradeNumResp = "";
+                }
+                //修改ca回复报文
+                if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                    NettyHelper.getInstance().send(new UChangeClientCa("0",mChangeCaTradeNumResp));
+                    mChangeCaTradeNumResp = "";
                 }
             }else {
                 future.channel().eventLoop().schedule(new Runnable() {
@@ -225,11 +232,14 @@ public class NettyHelper {
     /**
      * 修改ca证书
      */
-    public void modifySslHandler(){
+    public void modifySslHandler(String tradeNum){
         setSSLContext();
         if(mSslContext != null){
             mChannel.pipeline().replace(SslHandler.class,sSslHandler
                     ,mSslContext.newHandler(mChannel.alloc()));
+        }
+        if(!TextUtils.isEmpty(tradeNum)){
+            mChangeCaTradeNumResp = tradeNum;
         }
     }
 
