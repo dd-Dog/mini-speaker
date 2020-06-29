@@ -150,7 +150,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
 
         if(type == BaseData.TYPE_HEART_D){
 
-        }else if(type == BaseData.TYPE_ALARM_D){
+        }else if(type == BaseData.TYPE_ALARM_D || type == BaseData.TYPE_DOOR_ALARM_D
+                || type == BaseData.TYPE_SMOKE_ALARM_D || type == BaseData.TYPE_GAS_ALARM_D){
             //报警结果	STRING[1]	0表示正常接收，1没有正常接收，重发
             String result = baseData.getAlarmResult();
             if(TextUtils.equals(result,"0")){
