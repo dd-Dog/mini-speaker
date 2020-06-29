@@ -35,7 +35,7 @@ public class KeyReceiver extends BroadcastReceiver{
             //110报警
             //测试更换ip
 //            PersistConfig.saveNewIp("192.168.1.252", 1111);
-//            NettyHelper.getInstance().disconnect("123456789");
+//            NettyHelper.getInstance().disconnectByChangeIp("123456789");
             alarm110();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 

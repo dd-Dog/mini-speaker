@@ -1,7 +1,5 @@
 package com.flyscale.alertor.netty;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -11,19 +9,13 @@ import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UChangeClientCa;
 import com.flyscale.alertor.data.up.UChangeIP;
-import com.flyscale.alertor.data.up.UHeart;
-import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FotaHelper;
-import com.flyscale.alertor.helper.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
@@ -43,7 +35,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.channel.unix.DatagramSocketAddress;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
@@ -106,11 +97,16 @@ public class NettyHelper {
      */
     public void connect(){
         if(isConnect()){
-            disconnect(null);
+            disconnectByChangeIp(null);
         }
         mConnectCount++;
         if(mConnectCount >= 4){
             PersistConfig.saveNewIp("",-1);
+            //这是修改ca，ip的情况 修改失败 要一起回滚
+            if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                clearCaFile();
+                modifySslHandler(null);
+            }
         }
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
@@ -130,17 +126,24 @@ public class NettyHelper {
                     PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
                     PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
                     PersistConfig.saveNewIp("",-1);
-                    NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
+                    if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                        //这里是修改ca和ip
+                        //更换结果 	STRING[1]	0失败，1成功
+                        NettyHelper.getInstance().send(new UChangeClientCa("1",mChangeCaTradeNumResp));
+                    }else {
+                        //这里是单纯的修改ip
+                        NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
+                    }
+                    mChangeCaTradeNumResp = "";
                     mChangeIpTradeNumResp = "";
-                }else if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
-                    //新ip连接失败
-                    NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
-                    mChangeIpTradeNumResp = "";
-                }
-                //修改ca回复报文
-                if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                }else if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                    //修改ca和ip 失败
                     NettyHelper.getInstance().send(new UChangeClientCa("0",mChangeCaTradeNumResp));
                     mChangeCaTradeNumResp = "";
+                }else if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
+                    //修改ip连接失败
+                    NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
+                    mChangeIpTradeNumResp = "";
                 }
             }else {
                 future.channel().eventLoop().schedule(new Runnable() {
@@ -184,6 +187,24 @@ public class NettyHelper {
         });
     }
 
+
+    /**
+     * 修改ca证书失败 要清空
+     */
+    public void clearCaFile(){
+        File fileClientCrt = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_CRT_NAME);
+        File fileClientKey = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_KEY_NAME);
+        File fileRootCrt = new File(FileHelper.getBasePath() + FileHelper.S_ROOT_CRT_NAME);
+        if(fileClientCrt.exists()){
+            fileClientCrt.delete();
+        }
+        if(fileClientKey.exists()){
+            fileClientKey.delete();
+        }
+        if(fileRootCrt.exists()){
+            fileRootCrt.delete();
+        }
+    }
 
     /**
      * 设置SSLContext
@@ -240,6 +261,7 @@ public class NettyHelper {
         }
         if(!TextUtils.isEmpty(tradeNum)){
             mChangeCaTradeNumResp = tradeNum;
+            disconnectByChangeIp(tradeNum);
         }
     }
 
@@ -274,7 +296,7 @@ public class NettyHelper {
         return mChannel != null && mChannel.isOpen() && mChannel.isActive();
     }
 
-    public void disconnect(String changeIpTradeNumResp){
+    public void disconnectByChangeIp(String changeIpTradeNumResp){
         if(isConnect()){
             mChannel.disconnect();
             mChannelFuture.cancel(true);

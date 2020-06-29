@@ -8,16 +8,13 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.data.up.UAddDeleteWhiteList;
 import com.flyscale.alertor.data.up.UChangeAlarmNumber;
-import com.flyscale.alertor.data.up.UChangeClientCa;
 import com.flyscale.alertor.data.up.UChangeHeart;
-import com.flyscale.alertor.data.up.UClientAlarm;
 import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.data.up.URing;
 import com.flyscale.alertor.data.up.UUpdateVersion;
 import com.flyscale.alertor.data.up.UVoice;
 import com.flyscale.alertor.helper.ActionHelper;
 import com.flyscale.alertor.helper.DataConvertHelper;
-import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.ThreadPool;
@@ -25,17 +22,10 @@ import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.media.AlarmMediaInstance;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 
-import java.io.File;
-import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
-
-import io.netty.bootstrap.AbstractBootstrap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * @author 高鹤泉
@@ -191,7 +181,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             String newIp = baseData.getIpAddress();
             String newPort = baseData.getIpPort();
             PersistConfig.saveNewIp(newIp, Integer.parseInt(newPort));
-            NettyHelper.getInstance().disconnect(tradeNum);
+            NettyHelper.getInstance().disconnectByChangeIp(tradeNum);
         }else if(type == BaseData.TYPE_ADD_OR_DELETE_WHITE_LIST_D){
             //白名单 0添加1删除
             String flag = baseData.getAddOrDeleteFlag();
@@ -226,6 +216,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             String clientCa = baseData.getClientCaMessage();
             String clientKey = baseData.getClientPwdMessage();
             String rootCa = baseData.getRootCaMessage();
+            final String ip = baseData.getIpAddress();
+            final String port = baseData.getIpPort();
             final byte[] clientCaB = DataConvertHelper.hexToBytes(clientCa);
             final byte[] clientKeyB = DataConvertHelper.hexToBytes(clientKey);
             final byte[] rootCaB = DataConvertHelper.hexToBytes(rootCa);
@@ -235,7 +227,10 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                     FileHelper.byteToFile(clientCaB,FileHelper.S_CLIENT_CRT_NAME);
                     FileHelper.byteToFile(clientKeyB, FileHelper.S_CLIENT_KEY_NAME);
                     FileHelper.byteToFile(rootCaB,FileHelper.S_ROOT_CRT_NAME);
+                    //修改ca的同时  要修改ip  逻辑要包含修改ip
+                    PersistConfig.saveNewIp(ip, Integer.parseInt(port));
                     NettyHelper.getInstance().modifySslHandler(tradeNum);
+
                 }
             });
         }
