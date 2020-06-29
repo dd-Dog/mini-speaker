@@ -82,8 +82,8 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
     @Override
     public void enterRecoveryFail(int code) {
         Log.i(TAG, "enterRecoveryFail: ");
-        String message = mTotal + "@" + mNum + "@1@" + code;
-        NettyHelper.getInstance().send(new UUpdateVersion(message,mTradeNum));
+//        String message = mTotal + "@" + mNum + "@1@" + code;
+//        NettyHelper.getInstance().send(new UUpdateVersion(message,mTradeNum));
     }
 
     @Override
@@ -98,8 +98,8 @@ public class FotaAction implements FotaHelper.FotaHelperCallback {
         //包序号:包序号,比如是第几个包
         //接收状态:0接收成功，1接收失败
         //失败原因：成功不填写（长度为0），失败填写原因
-        String message = mTotal + "@" + mNum + "@0@";
-        NettyHelper.getInstance().send(new UUpdateVersion(message,mTradeNum));
+//        String message = mTotal + "@" + mNum + "@0@";
+//        NettyHelper.getInstance().send(new UUpdateVersion(message,mTradeNum));
         Log.i(TAG, "upgradeSuccess: ");
     }
 }

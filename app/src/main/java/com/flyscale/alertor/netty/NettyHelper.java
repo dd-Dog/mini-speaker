@@ -168,7 +168,8 @@ public class NettyHelper {
                 //5s未发送数据，回调userEventTriggered
                 pipeline.addLast(sIdleStateHandler,new IdleStateHandler(0,5,0,TimeUnit.SECONDS));
                 pipeline.addLast(mSslContext.newHandler(ch.alloc()));
-                pipeline.addLast(new DelimiterBasedFrameDecoder(1048576, false,delimiter));
+                //缓冲区2M大小
+                pipeline.addLast(new DelimiterBasedFrameDecoder(2097152, false,delimiter));
                 pipeline.addLast(new StringDecoder());
                 pipeline.addLast(new StringEncoder());
                 pipeline.addLast(new NettyHandler());

@@ -207,13 +207,23 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             NettyHelper.getInstance().modifyIdleStateHandler(heartHZ);
             NettyHelper.getInstance().send(new UChangeHeart("1@",tradeNum));
         }else if(type == BaseData.TYPE_UPDATE_VERSION_D){
+            //todo 再测一次
             //终端版本升级
             //总包数@包序号@接收状态@失败原因
             String total = baseData.getTotalPacket();
             String num = baseData.getPacketNum();
             NettyHelper.getInstance().modifyFota(total,num,tradeNum);
+            //总包数@包序号@接收状态@失败原因
+            //总包数:语音报分包总数
+            //包序号:包序号,比如是第几个包
+            //接收状态:0接收成功，1接收失败
+            //失败原因：成功不填写（长度为0），失败填写原因
+            //收到下行报文 直接回复升级成功的上行报文
+            String message = total + "@" + num + "@0@";
+            NettyHelper.getInstance().send(new UUpdateVersion(message,tradeNum));
         }else if(type == BaseData.TYPE_CHANGE_CLIENT_CA_D){
             //终端更换证书
+            //todo 再测一下
             String clientCa = baseData.getClientCaMessage();
             String clientKey = baseData.getClientPwdMessage();
             String rootCa = baseData.getRootCaMessage();

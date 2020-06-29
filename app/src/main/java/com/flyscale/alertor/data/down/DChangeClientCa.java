@@ -23,7 +23,6 @@ public class DChangeClientCa extends BaseDownData {
         setRootCaMessage(array[4]);
         setIpAddress(array[5]);
         setIpPort(array[6]);
-        setExtra1(array[7]);
         return this;
     }
 }
