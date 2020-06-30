@@ -114,6 +114,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         Log.i(TAG, "exceptionCaught: " + cause.getMessage());
+        ctx.close();
     }
 
     /**
