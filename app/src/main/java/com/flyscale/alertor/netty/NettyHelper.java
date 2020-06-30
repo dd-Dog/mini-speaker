@@ -73,6 +73,7 @@ public class NettyHelper {
     FotaHelper mFotaHelper;
     //连接次数
     int mConnectCount = 0;
+    final int MAX_CONNECT_COUNT = 4;
     public String mChangeIpTradeNumResp = "";
     public String mChangeCaTradeNumResp = "";
 
@@ -101,7 +102,7 @@ public class NettyHelper {
         }
         mConnectCount++;
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
-        if(mConnectCount >= 4){
+        if(mConnectCount >= MAX_CONNECT_COUNT){
             PersistConfig.saveNewIp("",-1);
             //这是修改ca，ip的情况 修改失败 要一起回滚
             if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
@@ -138,17 +139,15 @@ public class NettyHelper {
                         //这里是单纯的修改ip
                         NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
                     }
-                    mChangeCaTradeNumResp = "";
-                    mChangeIpTradeNumResp = "";
                 }else if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
                     //修改ca和ip 失败
                     NettyHelper.getInstance().send(new UChangeClientCa("0",mChangeCaTradeNumResp));
-                    mChangeCaTradeNumResp = "";
                 }else if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
                     //修改ip连接失败
                     NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
-                    mChangeIpTradeNumResp = "";
                 }
+                mChangeCaTradeNumResp = "";
+                mChangeIpTradeNumResp = "";
             }else {
                 future.channel().eventLoop().schedule(new Runnable() {
                     @Override
@@ -223,8 +222,12 @@ public class NettyHelper {
                         .keyManager(fileClientCrt,fileClientKey)
                         .trustManager(DEFAULT_TrustManager).build();
                 Log.i(TAG, "setSSLContext: file加载成功");
-            } catch (SSLException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                clearCaFile();
+                Log.i(TAG, "setSSLContext: file加载失败 删除file 并转为assets加载");
+                setSSLContext();
+                return;
             }
             Log.i(TAG, "setSSLContext: 通过file加载");
         }else {
