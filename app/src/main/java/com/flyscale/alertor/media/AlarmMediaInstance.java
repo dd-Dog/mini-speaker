@@ -34,9 +34,9 @@ public class AlarmMediaInstance {
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
         isPlaying = true;
-        if(BuildConfig.DEBUG){
-            mMediaPlayer.setVolume(0.05f,0.05f);
-        }
+//        if(BuildConfig.DEBUG){
+//            mMediaPlayer.setVolume(0.05f,0.05f);
+//        }
     }
 
     public void stopLoopAlarm(){
