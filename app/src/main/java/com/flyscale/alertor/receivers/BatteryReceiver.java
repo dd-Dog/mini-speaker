@@ -30,13 +30,12 @@ public class BatteryReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
+        Log.i(TAG, "onReceive: action = " + action);
         if(TextUtils.equals(action,Intent.ACTION_BATTERY_CHANGED)){
             mLastBatteryLevel = sBatteryLevel;
             sBatteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL,100);
             mBatteryStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS,BatteryManager.BATTERY_STATUS_UNKNOWN);
-
             Log.i(TAG, "onReceive: sBatteryLevel = " + sBatteryLevel);
-
         }else if(TextUtils.equals(action,Intent.ACTION_BATTERY_LOW)){
             MediaHelper.play(MediaHelper.BATTERY_LOW,true);
         }else if(TextUtils.equals(action,BRConstant.ACTION_AC)){
@@ -45,7 +44,6 @@ public class BatteryReceiver extends BroadcastReceiver {
             sPlugged = Integer.parseInt(status);
             whenIsCharge();
         }
-
     }
 
     public void register(){
@@ -68,7 +66,7 @@ public class BatteryReceiver extends BroadcastReceiver {
      * 当正在充电的时候
      */
     public void whenIsCharge(){
-        if(sPlugged == BatteryManager.BATTERY_PLUGGED_AC){
+        if(sPlugged == 1){
             LedInstance.getInstance().showChargeLed();
         }else {
             LedInstance.getInstance().offChargeLed();

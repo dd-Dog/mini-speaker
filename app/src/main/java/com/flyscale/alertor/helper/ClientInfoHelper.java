@@ -72,7 +72,7 @@ public class ClientInfoHelper {
      * @return
      */
     public static int getAC(){
-        return BatteryReceiver.sPlugged == BatteryManager.BATTERY_PLUGGED_AC ? 0 : 1;
+        return BatteryReceiver.sPlugged == 1 ? 0 : 1;
     }
 
     /**
