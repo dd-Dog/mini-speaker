@@ -102,6 +102,9 @@ interface IFlyscaleManager {
 
     int getHotspotState();
 
+    void setExternalAlarm(int status);
+
+    String getExternalAlarm();
 }
 
 

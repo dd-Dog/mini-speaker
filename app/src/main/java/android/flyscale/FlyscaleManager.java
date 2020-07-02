@@ -598,5 +598,26 @@ public class FlyscaleManager {
         }
     }
 
+    /**
+     * 设置外接警号状态
+     * @param status
+     */
+    public void setExternalAlarmStatus(int status){
+        try {
+            mService.setExternalAlarm(status);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getExternalAlarmStatus(){
+        try {
+            return mService.getExternalAlarm();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return "-1";
+    }
+
 }
 

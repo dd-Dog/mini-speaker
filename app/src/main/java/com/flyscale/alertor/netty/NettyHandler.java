@@ -213,7 +213,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             NettyHelper.getInstance().send(new UUpdateVersion(message,tradeNum));
         }else if(type == BaseData.TYPE_CHANGE_CLIENT_CA_D){
             //终端更换证书
-            //todo 再测一下
             String clientCa = baseData.getClientCaMessage();
             String clientKey = baseData.getClientPwdMessage();
             String rootCa = baseData.getRootCaMessage();
