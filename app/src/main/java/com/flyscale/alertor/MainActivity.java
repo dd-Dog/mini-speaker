@@ -37,7 +37,7 @@ public class MainActivity extends BaseActivity {
         startService(new Intent(this, AlarmService.class));
 
         FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
-        flyscaleManager.createHotspot("alamer_ap", "12345678",  4);
+        flyscaleManager.createHotspot("FLY510L-BJQ", "12345678",  4);
     }
 
 
