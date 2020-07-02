@@ -120,6 +120,10 @@ public class AlarmService extends BaseService {
 
     public void setState(int state) {
         mState = state;
+        if(mState == STATE_SIM_NET_SUCCESS && mState != mLastState){
+            MediaHelper.play(MediaHelper.XINJIANG_WELCOME,true);
+            mLastState = mState;
+        }
     }
 
     /**
