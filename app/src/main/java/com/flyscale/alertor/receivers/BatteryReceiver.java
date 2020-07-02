@@ -34,12 +34,16 @@ public class BatteryReceiver extends BroadcastReceiver {
             mLastBatteryLevel = sBatteryLevel;
             sBatteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL,100);
             mBatteryStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS,BatteryManager.BATTERY_STATUS_UNKNOWN);
-            sPlugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED,0);
 
-            Log.i(TAG, "onReceive: " + sBatteryLevel + " -- " + sPlugged);
-            whenIsCharge();
+            Log.i(TAG, "onReceive: sBatteryLevel = " + sBatteryLevel);
+
         }else if(TextUtils.equals(action,Intent.ACTION_BATTERY_LOW)){
             MediaHelper.play(MediaHelper.BATTERY_LOW,true);
+        }else if(TextUtils.equals(action,BRConstant.ACTION_AC)){
+            String status = intent.getStringExtra("status");
+            Log.i(TAG, "onReceive: sPlugged = " + status);
+            sPlugged = Integer.parseInt(status);
+            whenIsCharge();
         }
 
     }
@@ -51,6 +55,8 @@ public class BatteryReceiver extends BroadcastReceiver {
         filter.addAction(Intent.ACTION_BATTERY_LOW);
         // 从电量低恢复.
         filter.addAction(Intent.ACTION_BATTERY_OKAY);
+        // AC充电
+        filter.addAction(BRConstant.ACTION_AC);
         BaseApplication.sContext.registerReceiver(this,filter);
     }
 

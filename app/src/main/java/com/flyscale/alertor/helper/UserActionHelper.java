@@ -5,7 +5,7 @@ package com.flyscale.alertor.helper;
  * @TIME 2020/6/19 14:12
  * @DESCRIPTION 暂无
  */
-public class ActionHelper {
+public class UserActionHelper {
 
     private static long sLastClickTime = 0;
     private static long sLastConnectTime = 0;

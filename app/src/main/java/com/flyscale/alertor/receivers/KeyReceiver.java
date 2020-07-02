@@ -10,11 +10,10 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
-import com.flyscale.alertor.helper.ActionHelper;
+import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
-import com.flyscale.alertor.netty.NettyHelper;
 
 /**
  * @author 高鹤泉
@@ -63,7 +62,7 @@ public class KeyReceiver extends BroadcastReceiver{
      * 接警时 按下报警键接听
      */
     public void alarmOrReceive(){
-        if(ActionHelper.isFastClick()){
+        if(UserActionHelper.isFastClick()){
             return;
         }
         //正在响铃  并且来电是接警电话

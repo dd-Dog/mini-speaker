@@ -34,6 +34,7 @@ public class AlarmMediaInstance {
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
         isPlaying = true;
+        BaseApplication.sFlyscaleManager.setExternalAlarmStatus(1);
 //        if(BuildConfig.DEBUG){
 //            mMediaPlayer.setVolume(0.05f,0.05f);
 //        }
@@ -42,6 +43,7 @@ public class AlarmMediaInstance {
     public void stopLoopAlarm(){
         mMediaPlayer.stop();
         isPlaying = false;
+        BaseApplication.sFlyscaleManager.setExternalAlarmStatus(0);
         SoundPoolHelper.getInstance().releaseAudio();
     }
 

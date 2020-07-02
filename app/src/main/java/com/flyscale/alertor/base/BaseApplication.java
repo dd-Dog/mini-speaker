@@ -1,5 +1,6 @@
 package com.flyscale.alertor.base;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.flyscale.FlyscaleManager;
@@ -20,6 +21,7 @@ public class BaseApplication extends Application {
     public static Context sContext;
     public static FlyscaleManager sFlyscaleManager;
 
+    @SuppressLint("WrongConstant")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -29,5 +31,6 @@ public class BaseApplication extends Application {
         LitePal.initialize(this);
 
         sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
+        sFlyscaleManager.setExternalAlarmStatus(0);
     }
 }
