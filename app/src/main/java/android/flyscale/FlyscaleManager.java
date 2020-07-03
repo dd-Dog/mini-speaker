@@ -619,5 +619,14 @@ public class FlyscaleManager {
         return "-1";
     }
 
+    public String getAdapterState(){
+        try {
+            return mService.getAdapterState();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return "-1";
+    }
+
 }
 

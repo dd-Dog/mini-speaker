@@ -105,6 +105,8 @@ interface IFlyscaleManager {
     void setExternalAlarm(int status);
 
     String getExternalAlarm();
+
+    String getAdapterState();
 }
 
 

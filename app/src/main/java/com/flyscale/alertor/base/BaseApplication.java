@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.SoundPoolHelper;
+import com.flyscale.alertor.led.LedInstance;
 
 import org.litepal.LitePal;
 
@@ -32,5 +33,8 @@ public class BaseApplication extends Application {
 
         sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
         sFlyscaleManager.setExternalAlarmStatus(0);
+        if(sFlyscaleManager.getAdapterState().equals("1")){
+            LedInstance.getInstance().showChargeLed();
+        }
     }
 }
