@@ -7,6 +7,7 @@ import android.flyscale.FlyscaleManager;
 import android.util.Log;
 
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
 
@@ -36,5 +37,7 @@ public class BaseApplication extends Application {
         if(sFlyscaleManager.getAdapterState().equals("1")){
             LedInstance.getInstance().showChargeLed();
         }
+        //初始化白名单
+        PersistWhite.findList();
     }
 }

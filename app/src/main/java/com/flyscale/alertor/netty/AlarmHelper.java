@@ -2,6 +2,7 @@ package com.flyscale.alertor.netty;
 
 import android.app.AlarmManager;
 import android.media.MediaPlayer;
+import android.util.Log;
 
 import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.R;
@@ -34,6 +35,7 @@ public class AlarmHelper {
     Timer mTimer;
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
     int mSendCount = 1;
+    String TAG = "AlarmHelper";
 
 
     public static AlarmHelper getInstance() {
@@ -58,19 +60,18 @@ public class AlarmHelper {
      * @param type
      */
     public void polling(final onAlarmFailListener listener,final int type){
-
+        //报警时，如果网络没有连通，要提示“网络连接失败”。
+        if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
+            MediaHelper.play(MediaHelper.WORK_WRONG,true);
+            return;
+        }
+        //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
+        if(!NettyHelper.getInstance().isConnect()){
+            MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+            return;
+        }
         if(PersistConfig.findConfig().isIpAlarmFirst()){
             //ip报警优先
-            //报警时，如果网络没有连通，要提示“网络连接失败”。
-            if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
-                MediaHelper.play(MediaHelper.WORK_WRONG,true);
-                return;
-            }
-            //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
-            if(!NettyHelper.getInstance().isConnect()){
-                MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
-                return;
-            }
             //闪灯和播放警铃
             alarmStart();
             if(mTimer != null){
@@ -164,6 +165,7 @@ public class AlarmHelper {
 
     public void alarmStart(boolean isReceive){
         boolean isMute = PersistConfig.findConfig().isMute();
+        Log.i(TAG, "alarmStart: isMute" + isMute);
         if(isReceive){
             //接警方 必须响警报
             isMute = false;

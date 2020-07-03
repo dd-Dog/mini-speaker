@@ -57,12 +57,14 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                         }else if(status.equals("0010")){
                             CallAlarmHelper.getInstance().polling(null,true);
                         }else if(status.equals("0011")){
+                            //门磁
                             AlarmHelper.getInstance().polling(null,BaseData.TYPE_DOOR_ALARM_U);
                         }else if(status.equals("0101")){
                             //红外报警
                             //孟工说 红外的按照门磁的报警
                             AlarmHelper.getInstance().polling(null,BaseData.TYPE_DOOR_ALARM_U);
                         }else if(status.equals("1001")){
+                            //烟感
                             AlarmHelper.getInstance().polling(null,BaseData.TYPE_SMOKE_ALARM_U);
                         }else if(status.equals("1011")){
                             AlarmHelper.getInstance().polling(null,BaseData.TYPE_GAS_ALARM_U);

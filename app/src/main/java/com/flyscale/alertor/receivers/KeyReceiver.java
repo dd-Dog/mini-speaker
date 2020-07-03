@@ -67,7 +67,7 @@ public class KeyReceiver extends BroadcastReceiver{
         }
         //正在响铃  并且来电是接警电话
         //接警
-        if(CallPhoneReceiver.isRinging()){
+        if(CallPhoneReceiver.getCallState() == CallPhoneReceiver.INCOMING){
             if(PersistConfig.findConfig().isAcceptOtherNum()
                 || (!PersistConfig.findConfig().isAcceptOtherNum()) && PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
                 PhoneUtil.answerCall(BaseApplication.sContext);
@@ -78,7 +78,7 @@ public class KeyReceiver extends BroadcastReceiver{
         }else {
             //报警
             if(CallAlarmHelper.getInstance().isAlarming()){
-                CallAlarmHelper.getInstance().destroy(false,false,false);
+                CallAlarmHelper.getInstance().destroy(false,false,false,true);
                 Log.i(TAG, "alarmOrReceive: 取消报警");
             }else {
                 Log.i(TAG, "alarmOrReceive: 开始报警");

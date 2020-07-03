@@ -1,6 +1,5 @@
 package com.flyscale.alertor.data.persist;
 
-import android.flyscale.FlyscaleManager;
 import android.text.TextUtils;
 
 import com.flyscale.alertor.base.BaseApplication;
@@ -17,7 +16,7 @@ import org.litepal.crud.LitePalSupport;
 public class PersistConfig extends LitePalSupport {
     String ip = "202.100.190.14";
     int port = 9988;
-    String alarmNum = "16886119";
+    String alarmNum = "099016886119";
     String specialNum = "110";
     //是否接受其他号码呼入
     boolean isAcceptOtherNum = false;
@@ -28,7 +27,7 @@ public class PersistConfig extends LitePalSupport {
     boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
     //修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
     String alarmLedOnTime = "00:00";
-    String alarmOffOffTime = "00:00";
+    String alarmLedOffTime = "00:00";
     String firstLogin = "";
     //是否可以报警
     boolean isCanAlarm = true;
@@ -66,12 +65,12 @@ public class PersistConfig extends LitePalSupport {
         this.alarmLedOnTime = alarmLedOnTime;
     }
 
-    public String getAlarmOffOffTime() {
-        return alarmOffOffTime;
+    public String getAlarmLedOffTime() {
+        return alarmLedOffTime;
     }
 
-    public void setAlarmOffOffTime(String alarmOffOffTime) {
-        this.alarmOffOffTime = alarmOffOffTime;
+    public void setAlarmLedOffTime(String alarmLedOffTime) {
+        this.alarmLedOffTime = alarmLedOffTime;
     }
 
     public String getIp() {
@@ -172,7 +171,7 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveAlarmLedTime(String start,String end){
         PersistConfig persistConfig = findConfig();
         persistConfig.setAlarmLedOnTime(start);
-        persistConfig.setAlarmOffOffTime(end);
+        persistConfig.setAlarmLedOffTime(end);
         persistConfig.save();
         return persistConfig;
     }
@@ -248,7 +247,7 @@ public class PersistConfig extends LitePalSupport {
                 ", newPort=" + newPort +
                 ", isMute=" + isMute +
                 ", alarmLedOnTime='" + alarmLedOnTime + '\'' +
-                ", alarmOffOffTime='" + alarmOffOffTime + '\'' +
+                ", alarmLedOffTime='" + alarmLedOffTime + '\'' +
                 ", firstLogin='" + firstLogin + '\'' +
                 ", isCanAlarm=" + isCanAlarm +
                 '}';

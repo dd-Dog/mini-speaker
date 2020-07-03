@@ -1,6 +1,7 @@
 package com.flyscale.alertor.netty;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
@@ -22,14 +23,14 @@ public class CallAlarmHelper {
     Timer mTimer;
     //报警结果
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
-    String TAG = "CallAlarmHelper2";
+    String TAG = "CallAlarmHelper";
     //是否摘机
     boolean isOffhook = false;
     //是否正在报警
     boolean isAlarming = false;
     //拨打的电话
     private String mSendNumber;
-    final int DEFAULT_POLLING_TIME = 30 * 1000;
+    final int DEFAULT_POLLING_TIME = 25 * 1000;
     //是否执行timer内部的逻辑
     boolean isRunTimerFlag = true;
 
@@ -96,7 +97,7 @@ public class CallAlarmHelper {
                             //110报警直接通话了 不需要播放 报警成功的音效
                             destroy(false,true,false);
                         }else {
-                            destroy(true,true,false);
+                            destroy(false,true,false);
                         }
                     }else {
                         //报警失败
@@ -114,6 +115,7 @@ public class CallAlarmHelper {
                             }
                         }
                         PhoneUtil.call(BaseApplication.sContext,mSendNumber);
+                        Log.i(TAG, "run: 语音报警 mSendNumber = " + mSendNumber );
                     }
                 }
             }
@@ -171,9 +173,10 @@ public class CallAlarmHelper {
                 PhoneUtil.endCall(BaseApplication.sContext);
             }
         }
-        if(playSuccess){
-            MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
-        }
+        //语音报警不需要提示用户  报警成功
+//        if(playSuccess){
+//            MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
+//        }
     }
 
 

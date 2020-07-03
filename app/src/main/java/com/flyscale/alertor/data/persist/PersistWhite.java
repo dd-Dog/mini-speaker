@@ -28,6 +28,10 @@ public class PersistWhite extends LitePalSupport {
         this.receiveNum = receiveNum;
     }
 
+    /**
+     * 没有数据则初始化白名单
+     * @return
+     */
     public static List<PersistWhite> findList(){
         List<PersistWhite> list = LitePal.findAll(PersistWhite.class);
         if(ListHelper.isValidCollection(list)){
@@ -50,17 +54,25 @@ public class PersistWhite extends LitePalSupport {
      * @param results
      */
     public static void saveList(String results){
-        String[] array = TextUtils.split(results,";");
-        for(String item : array){
-            saveNum(item);
+        try {
+            String[] array = TextUtils.split(results,";");
+            for(String item : array){
+                saveNum(item);
+            }
+        }catch (Exception e){
+
         }
+
     }
 
     public static void deleteList(String results){
-        String[] array = TextUtils.split(results,";");
-        for(String item : array){
-            deleteNum(item);
-        }
+        try {
+            String[] array = TextUtils.split(results,";");
+            for(String item : array){
+                deleteNum(item);
+            }
+        }catch (Exception e){}
+
     }
 
     public static void deleteNum(String num){

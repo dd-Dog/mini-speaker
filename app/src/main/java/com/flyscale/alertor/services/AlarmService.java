@@ -1,16 +1,12 @@
 package com.flyscale.alertor.services;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.abupdate.fota_demo_iot.data.remote.NewVersionInfo;
-import com.flyscale.alertor.FotaAction;
-import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.base.BaseService;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.helper.MediaHelper;
@@ -83,7 +79,7 @@ public class AlarmService extends BaseService {
         mCallPhoneReceiver = new CallPhoneReceiver();
         mCallPhoneReceiver.register();
         //警报灯常亮广播
-        AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmOffOffTime());
+        AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmLedOffTime());
     }
 
     @Override
