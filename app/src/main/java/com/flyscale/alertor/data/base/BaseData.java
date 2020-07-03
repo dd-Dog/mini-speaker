@@ -550,7 +550,7 @@ public abstract class BaseData {
             result = result.substring(0,result.length()-1);
         }
         result = FLAG_START + result + FLAG_END;
-        Log.i(NettyHelper.TAG, "formatToString: 上行报文 = " + result);
+        Log.i(NettyHelper.TAG, "formatToString: 上行报文 = -------------------" + result);
         return result;
     }
 

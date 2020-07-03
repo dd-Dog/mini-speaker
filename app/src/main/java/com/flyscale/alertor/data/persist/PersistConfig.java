@@ -235,4 +235,22 @@ public class PersistConfig extends LitePalSupport {
     }
 
 
+    @Override
+    public String toString() {
+        return "PersistConfig{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                ", alarmNum='" + alarmNum + '\'' +
+                ", specialNum='" + specialNum + '\'' +
+                ", isAcceptOtherNum=" + isAcceptOtherNum +
+                ", isIpAlarmFirst=" + isIpAlarmFirst +
+                ", newIp='" + newIp + '\'' +
+                ", newPort=" + newPort +
+                ", isMute=" + isMute +
+                ", alarmLedOnTime='" + alarmLedOnTime + '\'' +
+                ", alarmOffOffTime='" + alarmOffOffTime + '\'' +
+                ", firstLogin='" + firstLogin + '\'' +
+                ", isCanAlarm=" + isCanAlarm +
+                '}';
+    }
 }

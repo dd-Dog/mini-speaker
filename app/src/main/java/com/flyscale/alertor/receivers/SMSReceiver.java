@@ -4,10 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 
@@ -82,18 +84,21 @@ public class SMSReceiver extends BroadcastReceiver {
                         } else if (number.equals("2")) {
                             PersistConfig.saveAlarmNum(mobile);
                         }
+                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMNUM=OK",null,null);
                     } else if (key.equals("IPALARMYUY")) {
                         if (value.equals("1")) {
                             PersistConfig.saveIsIpAlarmFirst(false);
                         } else if (value.equals("0")) {
                             PersistConfig.saveIsIpAlarmFirst(true);
                         }
+                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMYUY=OK",null,null);
                     } else if (key.equals("IPALARMLED")) {
                         String[] ledArray = TextUtils.split(value, ",");
                         String start = ledArray[0];
                         String end = ledArray[1];
                         PersistConfig.saveAlarmLedTime(start, end);
                         AlarmLedReceiver.sendRepeatAlarmBroadcast(start, end);
+                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMLED=OK",null,null);
                     } else if (key.equals("IPALARMWLM")) {
                         String[] wlmArray = TextUtils.split(value, ",");
                         String number = wlmArray[0];
@@ -105,12 +110,14 @@ public class SMSReceiver extends BroadcastReceiver {
                         } else if (number.equals("1")) {
                             PersistWhite.deleteList(mobile);
                         }
+                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLM=OK",null,null);
                     } else if (key.equals("IPALARMWLS")) {
                         if (value.equals("0")) {
                             PersistConfig.saveIsAccpetOtherNum(false);
                         } else if (value.equals("1")) {
                             PersistConfig.saveIsAccpetOtherNum(true);
                         }
+                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLS=OK",null,null);
                     }
                 }
             }

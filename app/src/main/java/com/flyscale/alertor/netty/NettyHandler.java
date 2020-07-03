@@ -134,10 +134,10 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
         int type = BaseDataFactory.parseType(msg);
         final String tradeNum = baseData.getTradeNum();
-        Log.i(TAG, "channelRead0: 开始 ---------------------");
-        Log.i(TAG, "下行报文：" + msg);
-        Log.i(TAG, "类型type : " + type );
-        Log.i(TAG, "channelRead0: 结束 =====================");
+        Log.i(TAG, "下行报文：channelRead0: 开始 ---------------------");
+        Log.i(TAG, "报文内容：" + msg);
+        Log.i(TAG, "报文类型type : " + type );
+        Log.i(TAG, "下行报文：channelRead0: 结束 =====================");
 
         if(type == BaseData.TYPE_HEART_D){
 
