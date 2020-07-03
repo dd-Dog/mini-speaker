@@ -40,9 +40,11 @@ public class MainActivity extends BaseActivity {
         FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
         flyscaleManager.createHotspot("FLY510L-BJQ", "12345678",  4);
 
+        Log.i(TAG, "onCreate: 20200703:1610");
+
 //        PersistWhite.saveNum("15902227963");
 //        PersistWhite.deleteNum("15902227963");
-//        PersistConfig.saveIsAccpetOtherNum(false);
+//        PersistConfig.saveIsAcceptOtherNum(false);
 //        PersistConfig.saveAlarmNum("099016886119");
 //        PersistConfig.saveIsIpAlarmFirst(false);
 //        PersistConfig.saveSpecialNum("15902227963");

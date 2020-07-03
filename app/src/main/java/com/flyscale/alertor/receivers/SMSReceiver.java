@@ -9,7 +9,6 @@ import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 
@@ -113,9 +112,9 @@ public class SMSReceiver extends BroadcastReceiver {
                         SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLM=OK",null,null);
                     } else if (key.equals("IPALARMWLS")) {
                         if (value.equals("0")) {
-                            PersistConfig.saveIsAccpetOtherNum(false);
+                            PersistConfig.saveIsAcceptOtherNum(true);
                         } else if (value.equals("1")) {
-                            PersistConfig.saveIsAccpetOtherNum(true);
+                            PersistConfig.saveIsAcceptOtherNum(false);
                         }
                         SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLS=OK",null,null);
                     }

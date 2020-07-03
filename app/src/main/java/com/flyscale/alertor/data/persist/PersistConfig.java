@@ -219,7 +219,7 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
-    public static PersistConfig saveIsAccpetOtherNum(boolean accept){
+    public static PersistConfig saveIsAcceptOtherNum(boolean accept){
         PersistConfig persistConfig = findConfig();
         persistConfig.setAcceptOtherNum(accept);
         persistConfig.save();
