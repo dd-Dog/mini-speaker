@@ -21,8 +21,8 @@ public class TimerTaskHelper  {
         }
     }
 
-    public void start(){
-        mTimer.schedule(mTimerTask,50,mPeriodTime);
+    public void start(int delay){
+        mTimer.schedule(mTimerTask,delay,mPeriodTime);
     }
 
     public void stop(){

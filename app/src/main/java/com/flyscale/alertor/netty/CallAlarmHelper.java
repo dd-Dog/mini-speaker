@@ -168,7 +168,6 @@ public class CallAlarmHelper {
      * @param isRunTimerFlag  是否执行timer的标志
      * @param endCall  通话成功之前主动取消报警
      */
-    //alarmResult,false,true,false
     public void destroy(boolean alarmResult,boolean isRunTimerFlag,boolean endCall,boolean setAlarming){
         setRunTimerFlag(isRunTimerFlag);
         mAlarmResult = new AtomicBoolean(alarmResult);

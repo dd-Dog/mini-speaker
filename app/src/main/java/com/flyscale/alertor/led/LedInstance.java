@@ -162,7 +162,7 @@ public class LedInstance {
                     }
                 }
             }
-        },50,100);
+        },0,100);
     }
 
     private void showAlarmLed(){
