@@ -66,6 +66,7 @@ public class CallPhoneReceiver extends BroadcastReceiver {
                 mSendNum = "";
                 mReceiveNum = "";
                 Log.i(TAG, "onReceive: 断开");
+                CallAlarmHelper.getInstance().setAlarming(false);
             }
             //通话成功
             if(state == ACTIVE){
