@@ -70,7 +70,9 @@ public class AlarmHelper {
             MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
             return;
         }
+        Log.i(TAG, "polling: ok reday");
         if(PersistConfig.findConfig().isIpAlarmFirst()){
+            Log.i(TAG, "polling: ip报警优先 type = " + type);
             //ip报警优先
             //闪灯和播放警铃
             alarmStart();
@@ -107,6 +109,7 @@ public class AlarmHelper {
                 }
             },50,1000);
         }else {
+            Log.i(TAG, "polling: 语音报警");
             CallAlarmHelper.getInstance().polling(null,false);
         }
 
