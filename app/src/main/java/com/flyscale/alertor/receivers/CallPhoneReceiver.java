@@ -51,7 +51,7 @@ public class CallPhoneReceiver extends BroadcastReceiver {
         if(action.equals("com.android.phone.FLYSCALE_PHONE_STATE")){
             //电话状态
             int state = intent.getIntExtra("phone_state", 0);
-            if(state == INCOMING){
+            if(state == INCOMING || state == CALL_WAITING){
                 //呼入
                 mCallState = state;
                 ifEndCall();

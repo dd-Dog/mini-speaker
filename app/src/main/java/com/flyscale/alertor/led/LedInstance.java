@@ -23,7 +23,7 @@ public class LedInstance {
     boolean isBlinkSignalFlag = false;
     boolean isBlinkAlarmFlag = false;
     boolean isOnSignal = false;
-    boolean isOnAlarm = false;
+    boolean isOnAlarm = true;
     boolean isAlarmOnStatus = true;
     FlyscaleManager mFlyscaleManager;
 
