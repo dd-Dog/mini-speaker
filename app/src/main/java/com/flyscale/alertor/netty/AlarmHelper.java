@@ -148,6 +148,7 @@ public class AlarmHelper {
      */
     public void alarmFinish(){
         AlarmMediaInstance.getInstance().stopLoopAlarm();
+        Log.i(TAG, "alarmFinish: 报警灯开关状态  -----  " + LedInstance.getInstance().isAlarmOnStatus());
         if(LedInstance.getInstance().isAlarmOnStatus()){
             LedInstance.getInstance().cancelBlinkShowAlarmLed();
         }else {

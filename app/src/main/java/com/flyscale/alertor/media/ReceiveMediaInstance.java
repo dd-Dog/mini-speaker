@@ -75,6 +75,7 @@ public class ReceiveMediaInstance {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
                     Log.i(TAG, "onError: " + what + " --- " + extra);
+                    AlarmHelper.getInstance().alarmFinish();
                     return true;
                 }
             });

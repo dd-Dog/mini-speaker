@@ -49,8 +49,12 @@ public class KeyReceiver extends BroadcastReceiver{
      * 110报警
      */
     public void alarm110(){
+        if(UserActionHelper.isFastClick()){
+            return;
+        }
         if(CallAlarmHelper.getInstance().isAlarming()){
-            CallAlarmHelper.getInstance().destroy(false,false,false,true);
+            boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+            CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
         }else {
             CallAlarmHelper.getInstance().polling(null,true);
         }
@@ -68,22 +72,28 @@ public class KeyReceiver extends BroadcastReceiver{
         //正在响铃  并且来电是接警电话
         //接警
         if(CallPhoneReceiver.getCallState() == CallPhoneReceiver.INCOMING){
+            //来电时候 如果接受其他号码 或者 白名单包含此号码
             if(PersistConfig.findConfig().isAcceptOtherNum()
-                || (!PersistConfig.findConfig().isAcceptOtherNum()) && PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
-                PhoneUtil.answerCall(BaseApplication.sContext);
-            }else {
-                PhoneUtil.endCall(BaseApplication.sContext);
+                || PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
+                if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+                    PhoneUtil.endCall(BaseApplication.sContext);
+                    Log.i(TAG, "alarmOrReceive: 接警中主动挂断" );
+                }else {
+                    PhoneUtil.answerCall(BaseApplication.sContext);
+                    Log.i(TAG, "alarmOrReceive: 接警成功");
+                }
             }
-            Log.i(TAG, "alarmOrReceive: 接警成功");
         }else {
             //报警
             if(CallAlarmHelper.getInstance().isAlarming()){
-                CallAlarmHelper.getInstance().destroy(false,false,false,true);
+                boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
                 Log.i(TAG, "alarmOrReceive: 取消报警");
             }else {
                 Log.i(TAG, "alarmOrReceive: 开始报警");
                 AlarmHelper.getInstance().polling(null);
             }
+            Log.i(TAG, "alarmOrReceive: 是否正在报警 ：" + CallAlarmHelper.getInstance().isAlarming());
         }
     }
 

@@ -61,6 +61,9 @@ public class MediaHelper {
             case BATTERY_LOW:
                 play(BaseApplication.sContext,R.raw.v6_battery_low);
                 break;
+            case CONNECT_FAIL:
+                play(BaseApplication.sContext,R.raw.v1_platform_disconnected);
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }

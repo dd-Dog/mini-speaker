@@ -107,11 +107,12 @@ public class CallPhoneReceiver extends BroadcastReceiver {
      */
     public void destroyCallAlarm(){
         if(mCallState == DIALING){
-            Log.i(TAG, "destroyCallAlarm: mSendNum = " + mSendNum + " ---- PersistConfig.findConfig().getSpecialNum() = " + PersistConfig.findConfig().getSpecialNum());
-            if(TextUtils.equals(mSendNum, PersistConfig.findConfig().getAlarmNum())){
-                CallAlarmHelper.getInstance().destroy(false,true,false);
-            }else if(TextUtils.equals(mSendNum,PersistConfig.findConfig().getSpecialNum())){
-                CallAlarmHelper.getInstance().destroy(false,true,false);
+            //呼出电话报警成功
+            CallAlarmHelper.getInstance().setAlarmResult(true);
+            Log.i(TAG, "destroyCallAlarm: mSendNum = " + mSendNum + " ---- getSpecialNum() = "
+                    + PersistConfig.findConfig().getSpecialNum() + " ----getAlarmNum = " + PersistConfig.findConfig().getAlarmNum());
+            if(TextUtils.equals(mSendNum, PersistConfig.findConfig().getAlarmNum()) || TextUtils.equals(mSendNum,PersistConfig.findConfig().getSpecialNum())){
+                CallAlarmHelper.getInstance().destroy(true,false,false,true);
             }
         }
     }
