@@ -46,6 +46,12 @@ public class ReceiveMediaInstance {
             return;
         }
         mPlayCount = playCount;
+        if(mMediaPlayer == null){
+            mMediaPlayer = new MediaPlayer();
+        }
+        if(mMediaPlayer.isPlaying()){
+            mMediaPlayer.stop();
+        }
         mMediaPlayer.reset();
         try {
             mMediaPlayer.setDataSource(file.getAbsolutePath());
@@ -68,7 +74,7 @@ public class ReceiveMediaInstance {
                         mp.reset();
                         AlarmHelper.getInstance().alarmFinish();
                     }
-
+                    Log.i(TAG, "onCompletion: mPlayCount = " + mPlayCount);
                 }
             });
             mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
@@ -76,7 +82,7 @@ public class ReceiveMediaInstance {
                 public boolean onError(MediaPlayer mp, int what, int extra) {
                     Log.i(TAG, "onError: " + what + " --- " + extra);
                     AlarmHelper.getInstance().alarmFinish();
-                    return true;
+                    return false;
                 }
             });
         } catch (IOException e) {

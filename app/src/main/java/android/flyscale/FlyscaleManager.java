@@ -628,5 +628,16 @@ public class FlyscaleManager {
         return "-1";
     }
 
+    public String getAlarmLedState(){
+        try {
+            return mService.getAlarmLedState();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return "-1";
+    }
+
+
+
 }
 

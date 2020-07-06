@@ -102,13 +102,13 @@ public class AlarmHelper {
                         }
                         mSendCount ++;
                     }else {
+                        destroy();
                         if(!mAlarmResult.get() && mSendCount> 3){
                             if(listener != null){
                                 listener.onAlarmFail();
                             }
                             CallAlarmHelper.getInstance().polling(null,false);
                         }
-                        destroy();
                     }
                 }
             },50,1000);
@@ -173,7 +173,7 @@ public class AlarmHelper {
 
     public void alarmStart(boolean isReceive){
         boolean isMute = PersistConfig.findConfig().isMute();
-        Log.i(TAG, "alarmStart: isMute" + isMute);
+        Log.i(TAG, "alarmStart: isMute == " + isMute);
         if(isReceive){
             //接警方 必须响警报
             isMute = false;

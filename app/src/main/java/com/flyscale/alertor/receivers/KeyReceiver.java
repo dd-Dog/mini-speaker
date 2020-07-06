@@ -42,6 +42,9 @@ public class KeyReceiver extends BroadcastReceiver{
             PersistConfig.saveIsMute(false);
         }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.up")){
             PersistConfig.saveIsMute(true);
+        }else if(TextUtils.equals(action,BRConstant.ACTION_ALARM_LED_STATUS)){
+            //报警灯常亮常闭
+            AlarmLedReceiver.sendRepeatAlarmBroadcast();
         }
     }
 
@@ -116,6 +119,8 @@ public class KeyReceiver extends BroadcastReceiver{
         filter.addAction("flyscale.privkey.MUTE.down");
         filter.addAction("flyscale.privkey.MUTE.long");
         filter.addAction("flyscale.privkey.MUTE.up");
+        //报警灯开关
+        filter.addAction(BRConstant.ACTION_ALARM_LED_STATUS);
         BaseApplication.sContext.registerReceiver(this,filter);
     }
 

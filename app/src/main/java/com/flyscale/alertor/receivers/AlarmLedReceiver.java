@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.led.LedInstance;
 
@@ -61,21 +62,35 @@ public class AlarmLedReceiver extends BroadcastReceiver {
         return mOffPendingIntent = PendingIntent.getBroadcast(BaseApplication.sContext,1004,intentOff,0);
     }
 
+    /**
+     * 外置开关控制报警灯常亮常闭  打开 可以执行短信逻辑
+     *                          关闭 不会执行短信逻辑
+     * @param onTime
+     * @param offTime
+     */
     public static void sendRepeatAlarmBroadcast(String onTime,String offTime){
         cancelAlarmBroadcast();
-        if(onTime.equals("00:00") && offTime.equals("00:00")){
-            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+        if(BaseApplication.sFlyscaleManager.getAlarmLedState().equals("0")){
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
         }else {
-            String currentTime = DateHelper.longToString(DateHelper.yyyyMMdd);
-            String tempOn = currentTime + onTime;
-            String tempOff = currentTime + offTime;
-            long on = DateHelper.stringToLong(tempOn,DateHelper.yyyyMMddHH_mm);
-            long off = DateHelper.stringToLong(tempOff,DateHelper.yyyyMMddHH_mm);
-            Log.i(TAG, "sendRepeatAlarmBroadcast: on = " + on);
-            Log.i(TAG, "sendRepeatAlarmBroadcast: off = " + off);
-            getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,on,getOnPending());
-            getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,off,getOffPending());
+            if(onTime.equals("00:00") && offTime.equals("00:00")){
+                LedInstance.getInstance().cancelBlinkShowAlarmLed();
+            }else {
+                String currentTime = DateHelper.longToString(DateHelper.yyyyMMdd);
+                String tempOn = currentTime + onTime;
+                String tempOff = currentTime + offTime;
+                long on = DateHelper.stringToLong(tempOn,DateHelper.yyyyMMddHH_mm);
+                long off = DateHelper.stringToLong(tempOff,DateHelper.yyyyMMddHH_mm);
+                Log.i(TAG, "sendRepeatAlarmBroadcast: on = " + on);
+                Log.i(TAG, "sendRepeatAlarmBroadcast: off = " + off);
+                getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,on,getOnPending());
+                getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,off,getOffPending());
+            }
         }
+    }
+
+    public static void sendRepeatAlarmBroadcast(){
+        sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmLedOffTime());
     }
 
     private static void cancelAlarmBroadcast(){

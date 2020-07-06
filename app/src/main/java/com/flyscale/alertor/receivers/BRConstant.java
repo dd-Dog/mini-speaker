@@ -13,4 +13,6 @@ public interface BRConstant {
     String ACTION_PHONE_INCOME = "com.android.phone.FLYSCALE_PHONE_STATE.INCOMING_CALL";
     //自检
     String ACTION_CHECK_SELF = "flyscale.privkey.SELF_CHECK";
+    //报警灯开关
+    String ACTION_ALARM_LED_STATUS = "flyscale.privkey.status.ALARM_LED";
 }
