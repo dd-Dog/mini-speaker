@@ -12,6 +12,7 @@ import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.PhoneUtil;
+import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 
 /**
@@ -23,6 +24,7 @@ public class CallPhoneReceiver extends BroadcastReceiver {
     static String mSendNum = "",mReceiveNum = "";
     static int mCallState = 1;
     String TAG = "CallPhoneReceiver";
+    boolean isActivated = false;
 
     public static final int INVALID = 0;
     public static final int IDLE = 1;           /* The call is idle.  Nothing active */
@@ -62,11 +64,17 @@ public class CallPhoneReceiver extends BroadcastReceiver {
                 Log.i(TAG, "onReceive: 呼出");
             }else if(state == DISCONNECTED){
                 //断开
+                if(mCallState == DIALING){
+                    if(isActivated){
+                        //呼出的电话  已经通过话  现在断开了
+                        CallAlarmHelper.getInstance().setAlarming(false);
+                    }
+                }
                 mCallState = state;
+                isActivated = false;
                 mSendNum = "";
                 mReceiveNum = "";
                 Log.i(TAG, "onReceive: 断开");
-                CallAlarmHelper.getInstance().setAlarming(false);
             }
             //通话成功
             if(state == ACTIVE){
@@ -109,6 +117,7 @@ public class CallPhoneReceiver extends BroadcastReceiver {
     public void destroyCallAlarm(){
         if(mCallState == DIALING){
             //呼出电话报警成功
+            isActivated = true;
             CallAlarmHelper.getInstance().setAlarmResult(true);
             Log.i(TAG, "destroyCallAlarm: mSendNum = " + mSendNum + " ---- getSpecialNum() = "
                     + PersistConfig.findConfig().getSpecialNum() + " ----getAlarmNum = " + PersistConfig.findConfig().getAlarmNum());

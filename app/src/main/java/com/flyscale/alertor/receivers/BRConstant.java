@@ -11,4 +11,6 @@ public interface BRConstant {
     String ACTION_AC = "flyscale.privkey.adapter";
     //来电广播（有电话呼入）
     String ACTION_PHONE_INCOME = "com.android.phone.FLYSCALE_PHONE_STATE.INCOMING_CALL";
+    //自检
+    String ACTION_CHECK_SELF = "flyscale.privkey.SELF_CHECK";
 }

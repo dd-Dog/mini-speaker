@@ -20,6 +20,10 @@ public class MediaHelper {
     public final static int CONNECT_SUCCESS = 9;
     public final static int BATTERY_LOW = 6;
     public final static int CONNECT_FAIL = 1;
+    public final static int NET_CONNECT_SUCCESS = 10;//网络连接成功
+    public final static int NET_CONNECT_FAIL = 11;//网络连接失败
+    public final static int SERVER_CONNECT_SUCCESS = 12;//连接服务器成功
+    public final static int SERVER_CONNECT_FAIL = 13;//连接服务器失败
     int[] mRawIds = {R.raw.v1_platform_disconnected,R.raw.v2_welcome,R.raw.v3_platform_connect_success,R.raw.v4_xinjiang_telecom_welcome
             ,R.raw.v5_working_state_wrong,R.raw.v6_battery_low,R.raw.v7_check_simcard_please,R.raw.v8_send_alarm_success
             ,R.raw.v9_platform_connect_success};
