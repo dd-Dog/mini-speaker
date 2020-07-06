@@ -1,5 +1,6 @@
 package com.flyscale.alertor.led;
 
+import android.content.Context;
 import android.flyscale.FlyscaleManager;
 import android.util.Log;
 
@@ -160,6 +161,7 @@ public class LedInstance {
                     }else {
                         showAlarmLed();
                     }
+                    Log.i(TAG, "run:blinkAlarmLed isOnAlarm  = " + isOnAlarm);
                 }
             }
         },0,100);
@@ -190,11 +192,13 @@ public class LedInstance {
         isAlarmOnStatus = false;
         destroyAlarmTimer();
         offAlarmLed();
+        Log.i(TAG, "cancelBlinkOffAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
     public void cancelBlinkShowAlarmLed(){
         isAlarmOnStatus = true;
         destroyAlarmTimer();
         showAlarmLed();
+        Log.i(TAG, "cancelBlinkShowAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
 
     /**
