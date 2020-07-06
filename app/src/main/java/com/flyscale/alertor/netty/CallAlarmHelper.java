@@ -80,13 +80,17 @@ public class CallAlarmHelper {
      */
     public void polling(String callNumber, final boolean is110){
         //报警时，如果网络没有连通，要提示“网络连接失败”。
+        boolean fail = false;
         if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
             MediaHelper.play(MediaHelper.WORK_WRONG,true);
-            return;
+            fail = true;
         }
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
         if(!NettyHelper.getInstance().isConnect()){
             MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+            fail = true;
+        }
+        if(fail){
             return;
         }
         AlarmHelper.getInstance().alarmStart();
