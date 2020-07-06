@@ -43,6 +43,8 @@ public class ReceiveMediaInstance {
     public void play(File file, final int playCount){
         SoundPoolHelper.getInstance().stopAudio();
         if(!file.exists()){
+            AlarmHelper.getInstance().alarmFinish();
+            Log.i(TAG, "play: 文件不存在");
             return;
         }
         mPlayCount = playCount;
@@ -52,11 +54,12 @@ public class ReceiveMediaInstance {
         if(mMediaPlayer.isPlaying()){
             mMediaPlayer.stop();
         }
-        mMediaPlayer.reset();
         try {
+            mMediaPlayer.reset();
             mMediaPlayer.setDataSource(file.getAbsolutePath());
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.prepare();
+            // 通过异步的方式装载媒体资源
+            mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
@@ -71,8 +74,8 @@ public class ReceiveMediaInstance {
                         mp.start();
                     }else {
                         SoundPoolHelper.getInstance().releaseAudio();
-                        mp.reset();
                         AlarmHelper.getInstance().alarmFinish();
+                        destroyMedia();
                     }
                     Log.i(TAG, "onCompletion: mPlayCount = " + mPlayCount);
                 }
@@ -81,14 +84,22 @@ public class ReceiveMediaInstance {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
                     Log.i(TAG, "onError: " + what + " --- " + extra);
-                    AlarmHelper.getInstance().alarmFinish();
+                    //onError返回值返回false会触发onCompletion，所以返回false，一般意味着会退出播放。
                     return false;
                 }
             });
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            AlarmHelper.getInstance().alarmFinish();
         }
     }
 
+
+    public void destroyMedia(){
+        if(mMediaPlayer != null){
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+    }
 
 }

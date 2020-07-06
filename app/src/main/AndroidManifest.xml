@@ -62,8 +62,14 @@
         </receiver>
         <!--    遥控器广播     -->
         <receiver android:name=".receivers.RemoteControlReceiver">
-            <intent-filter android:priority="1004">
+            <intent-filter android:priority="1003">
                 <action android:name="flyscale.privkey.REMOTE_CONTROL"/>
+            </intent-filter>
+        </receiver>
+        <!--   自检广播     -->
+        <receiver android:name=".receivers.CheckSelfReceiver">
+            <intent-filter android:priority="1003">
+                <action android:name="flyscale.privkey.SELF_CHECK"/>
             </intent-filter>
         </receiver>
 

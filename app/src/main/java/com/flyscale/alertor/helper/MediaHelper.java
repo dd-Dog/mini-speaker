@@ -68,6 +68,18 @@ public class MediaHelper {
             case CONNECT_FAIL:
                 play(BaseApplication.sContext,R.raw.v1_platform_disconnected);
                 break;
+            case NET_CONNECT_SUCCESS:
+
+                break;
+            case NET_CONNECT_FAIL:
+
+                break;
+            case SERVER_CONNECT_SUCCESS:
+
+                break;
+            case SERVER_CONNECT_FAIL:
+
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }

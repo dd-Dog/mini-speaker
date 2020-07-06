@@ -41,16 +41,16 @@ public class MainActivity extends BaseActivity {
         flyscaleManager.createHotspot("FLY510L-BJQ", "12345678",  4);
 
 
-        Log.i(TAG, "onCreate: 20200705:1347");
+        Log.i(TAG, "onCreate: 20200706:1735");
 
         //18199007916
         //13319054517
 //        PersistWhite.saveNum("13319054517");
 //        PersistWhite.deleteNum("15902227963");
 //        PersistConfig.saveIsAcceptOtherNum(false);
-//        PersistConfig.saveAlarmNum("18199007916");
-//        PersistConfig.saveIsIpAlarmFirst(false);
-//        PersistConfig.saveSpecialNum("15902227963");
+//        PersistConfig.saveAlarmNum("19902012807");
+//        PersistConfig.saveIsIpAlarmFirst(true);
+//        PersistConfig.saveSpecialNum("19902012807");
     }
 
 

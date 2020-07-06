@@ -4,6 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
+
+import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.netty.NettyHelper;
 
@@ -17,6 +20,8 @@ public class CheckSelfReceiver extends BroadcastReceiver {
     String TAG = "CheckSelfReceiver";
     @Override
     public void onReceive(Context context, Intent intent) {
+
+        Log.i(TAG, "onReceive: " + intent.getAction());
 
         if(TextUtils.equals(intent.getAction(),BRConstant.ACTION_CHECK_SELF)){
             if(NetHelper.isNetworkConnected(context)){
