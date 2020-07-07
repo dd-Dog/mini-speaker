@@ -72,6 +72,12 @@
                 <action android:name="flyscale.privkey.SELF_CHECK"/>
             </intent-filter>
         </receiver>
+        <!--    定制广播     -->
+        <receiver android:name=".receivers.FlyscaleReceiver">
+            <intent-filter android:priority="1003">
+                <action android:name="flyscale.privkey.TOGGLE_USB_CONFIG"/>
+            </intent-filter>
+        </receiver>
 
 
         <activity android:name=".MainActivity">
