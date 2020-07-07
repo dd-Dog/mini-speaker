@@ -44,7 +44,7 @@ public class KeyReceiver extends BroadcastReceiver{
             PersistConfig.saveIsMute(true);
         }else if(TextUtils.equals(action,BRConstant.ACTION_ALARM_LED_STATUS)){
             //报警灯常亮常闭
-            AlarmLedReceiver.sendRepeatAlarmBroadcast();
+            AlarmLedReceiver.sendRepeatAlarmBroadcastBySwitch();
         }
     }
 

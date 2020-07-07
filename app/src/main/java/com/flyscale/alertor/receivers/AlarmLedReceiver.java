@@ -93,6 +93,17 @@ public class AlarmLedReceiver extends BroadcastReceiver {
         sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmLedOffTime());
     }
 
+    /**
+     * 通过外置开关 开闭报警灯
+     */
+    public static void sendRepeatAlarmBroadcastBySwitch(){
+        if(BaseApplication.sFlyscaleManager.getAlarmLedState().equals("0")){
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+        }else {
+            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+        }
+    }
+
     private static void cancelAlarmBroadcast(){
         getAlarmManager().cancel(getOnPending());
         getAlarmManager().cancel(getOffPending());
