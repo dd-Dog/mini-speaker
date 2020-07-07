@@ -16,7 +16,7 @@ import org.litepal.crud.LitePalSupport;
 public class PersistConfig extends LitePalSupport {
     String ip = "202.100.190.14";
     int port = 9988;
-    String alarmNum = "099016886119";
+    String alarmNum = "099116886119";
     String specialNum = "110";
     //是否接受其他号码呼入
     boolean isAcceptOtherNum = false;

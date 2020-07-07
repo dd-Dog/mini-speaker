@@ -36,7 +36,15 @@ public class BaseApplication extends Application {
         sFlyscaleManager.setExternalAlarmStatus(0);
         if(sFlyscaleManager.getAdapterState().equals("1")){
             LedInstance.getInstance().showChargeLed();
+        }else {
+            LedInstance.getInstance().offChargeLed();
         }
+        if(sFlyscaleManager.getAlarmLedState().equals("0")){
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+        }else {
+            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+        }
+
         //初始化白名单
         PersistWhite.findList();
     }
