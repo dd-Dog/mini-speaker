@@ -129,7 +129,7 @@ public class AlarmService extends BaseService {
         if(mState == STATE_NO_SIM){
             MediaHelper.play(MediaHelper.CHECKOUT_SIM,true);
         }else if(mState == STATE_NO_NET){
-            MediaHelper.play(MediaHelper.WORK_WRONG,true);
+            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
         }else if(mState == STATE_SIM_NET_SUCCESS){
             if(mState != mLastState){
                 MediaHelper.play(MediaHelper.XINJIANG_WELCOME,true);

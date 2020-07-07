@@ -25,14 +25,14 @@ public class CheckSelfReceiver extends BroadcastReceiver {
 
         if(TextUtils.equals(intent.getAction(),BRConstant.ACTION_CHECK_SELF)){
             if(NetHelper.isNetworkConnected(context)){
-//                MediaHelper.play(MediaHelper.NET_CONNECT_SUCCESS,true);
+                MediaHelper.play(MediaHelper.NET_CONNECT_SUCCESS,true);
             }else {
-//                MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
+                MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
             }
             if(NettyHelper.getInstance().isConnect()){
-//                MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
+                MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
             }else {
-//                MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
+                MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
             }
         }
     }

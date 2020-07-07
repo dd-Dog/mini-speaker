@@ -24,6 +24,7 @@ public class MediaHelper {
     public final static int NET_CONNECT_FAIL = 11;//网络连接失败
     public final static int SERVER_CONNECT_SUCCESS = 12;//连接服务器成功
     public final static int SERVER_CONNECT_FAIL = 13;//连接服务器失败
+    public final static int BATTERY_LOW_CHARGE = 14;//电量低请充电
     int[] mRawIds = {R.raw.v1_platform_disconnected,R.raw.v2_welcome,R.raw.v3_platform_connect_success,R.raw.v4_xinjiang_telecom_welcome
             ,R.raw.v5_working_state_wrong,R.raw.v6_battery_low,R.raw.v7_check_simcard_please,R.raw.v8_send_alarm_success
             ,R.raw.v9_platform_connect_success};
@@ -50,35 +51,38 @@ public class MediaHelper {
             case CHECKOUT_SIM:
                 play(BaseApplication.sContext,R.raw.v7_check_simcard_please);
                 break;
-            case WORK_WRONG:
-                play(BaseApplication.sContext,R.raw.v5_working_state_wrong);
-                break;
+//            case WORK_WRONG:
+//                play(BaseApplication.sContext,R.raw.v5_working_state_wrong);
+//                break;
             case ALARM_SUCCESS:
                 play(BaseApplication.sContext,R.raw.v8_send_alarm_success);
                 break;
             case XINJIANG_WELCOME:
                 play(BaseApplication.sContext,R.raw.v4_xinjiang_telecom_welcome);
                 break;
-            case CONNECT_SUCCESS:
-                play(BaseApplication.sContext,R.raw.v9_platform_connect_success);
+//            case CONNECT_SUCCESS:
+//                play(BaseApplication.sContext,R.raw.v9_platform_connect_success);
+//                break;
+//            case BATTERY_LOW:
+//                play(BaseApplication.sContext,R.raw.v6_battery_low);
+//                break;
+            case BATTERY_LOW_CHARGE:
+                play(BaseApplication.sContext,R.raw.battery_low_charge);
                 break;
-            case BATTERY_LOW:
-                play(BaseApplication.sContext,R.raw.v6_battery_low);
-                break;
-            case CONNECT_FAIL:
-                play(BaseApplication.sContext,R.raw.v1_platform_disconnected);
-                break;
+//            case CONNECT_FAIL:
+//                play(BaseApplication.sContext,R.raw.v1_platform_disconnected);
+//                break;
             case NET_CONNECT_SUCCESS:
-
+                play(BaseApplication.sContext,R.raw.net_connect_success);
                 break;
             case NET_CONNECT_FAIL:
-
+                play(BaseApplication.sContext,R.raw.net_connect_fail);
                 break;
             case SERVER_CONNECT_SUCCESS:
-
+                play(BaseApplication.sContext,R.raw.server_connect_success);
                 break;
             case SERVER_CONNECT_FAIL:
-
+                play(BaseApplication.sContext,R.raw.server_connect_fail);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);

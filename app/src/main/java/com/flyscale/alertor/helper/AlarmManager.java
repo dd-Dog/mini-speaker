@@ -90,12 +90,12 @@ public class AlarmManager {
     public void polling(int type){
         //报警时，如果网络没有连通，要提示“网络连接失败”。
         if(!NetHelper.isNetworkConnected(mContext)){
-            MediaHelper.play(MediaHelper.WORK_WRONG,true);
+            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
             return;
         }
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
         if(!NettyHelper.getInstance().isConnect()){
-            MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
+            MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
             return;
         }
         Log.i(TAG, "polling: 准备报警");

@@ -38,7 +38,7 @@ public class BatteryReceiver extends BroadcastReceiver {
             Log.i(TAG, "onReceive: sBatteryLevel = " + sBatteryLevel);
         }else if(TextUtils.equals(action,Intent.ACTION_BATTERY_LOW)){
             if(sPlugged == 0){
-                MediaHelper.play(MediaHelper.BATTERY_LOW,true);
+                MediaHelper.play(MediaHelper.BATTERY_LOW_CHARGE,true);
             }
         }else if(TextUtils.equals(action,BRConstant.ACTION_AC)){
             String status = intent.getStringExtra("status");

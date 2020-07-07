@@ -91,7 +91,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         //保存第一次登陆的时间 永久不变
         PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
         if(!UserActionHelper.isFastConnect(120 *1000)){
-            MediaHelper.play(MediaHelper.CONNECT_SUCCESS,true);
+            MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
         }
         LedInstance.getInstance().showStateLed();
     }
