@@ -36,7 +36,7 @@ public class AlarmHelper {
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
     int mSendCount = 1;
     String TAG = "AlarmHelper";
-
+    boolean isAlarming = false;
 
     public static AlarmHelper getInstance() {
         return ourInstance;
@@ -44,6 +44,14 @@ public class AlarmHelper {
 
     private AlarmHelper() {
 
+    }
+
+    public boolean isAlarming() {
+        return isAlarming;
+    }
+
+    public void setAlarming(boolean alarming) {
+        isAlarming = alarming;
     }
 
     /**
@@ -61,19 +69,13 @@ public class AlarmHelper {
      */
     public void polling(final onAlarmFailListener listener,final int type){
         //报警时，如果网络没有连通，要提示“网络连接失败”。
-        boolean fail = false;
         if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
-//            MediaHelper.play(MediaHelper.WORK_WRONG,true);
             MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
-            fail = true;
+            return;
         }
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
         if(!NettyHelper.getInstance().isConnect()){
-//            MediaHelper.play(MediaHelper.CONNECT_FAIL,true);
             MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
-            fail = true;
-        }
-        if(fail){
             return;
         }
         Log.i(TAG, "polling: ok reday");
@@ -89,6 +91,7 @@ public class AlarmHelper {
             mTimer = new Timer();
             mSendCount = 1;
             mAlarmResult = new AtomicBoolean(false);
+            isAlarming = true;
             mTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
@@ -143,6 +146,7 @@ public class AlarmHelper {
             mTimer = null;
         }
         mSendCount = 1;
+        isAlarming = false;
     }
 
 

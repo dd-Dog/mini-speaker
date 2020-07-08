@@ -33,8 +33,14 @@ public class ReceiveMediaInstance {
     /**
      * 暂停播放
      */
-    public void stop(){
+    public void finish(){
         mMediaPlayer.stop();
+        destroyMedia();
+        AlarmHelper.getInstance().alarmFinish();
+    }
+
+    public boolean isPlay(){
+        return mMediaPlayer.isPlaying();
     }
 
     /**

@@ -9,6 +9,7 @@ import android.util.Log;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.ThreadPool;
+import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 
@@ -51,23 +52,46 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                         //如果是门磁和红外 孟工说 红外的按照门磁的报警
                         if(PersistConfig.findConfig().isArming()){
                             //如果布防
+                            cancelReceive();
                             AlarmHelper.getInstance().polling(null,BaseData.TYPE_DOOR_ALARM_U);
                         }
                     }
 
+
                     if(status.equals("0100")){
-                        AlarmHelper.getInstance().polling(null);
+                        //报警
+                        if(ReceiveMediaInstance.getInstance().isPlay()){
+                            ReceiveMediaInstance.getInstance().finish();
+                        }else {
+                            AlarmHelper.getInstance().polling(null);
+                        }
                     }else if(status.equals("0010")){
+                        cancelReceive();
                         CallAlarmHelper.getInstance().polling(null,true);
                     }else if(status.equals("1001")){
                         //烟感
+                        cancelReceive();
                         AlarmHelper.getInstance().polling(null,BaseData.TYPE_SMOKE_ALARM_U);
                     }else if(status.equals("1011")){
+                        cancelReceive();
                         AlarmHelper.getInstance().polling(null,BaseData.TYPE_GAS_ALARM_U);
                     }
                 }
             }
         });
 
+    }
+
+    /**
+     * 取消正在接警等状态
+     */
+    public void cancelReceive(){
+        if(ReceiveMediaInstance.getInstance().isPlay()){
+            ReceiveMediaInstance.getInstance().finish();
+        }
+        if(CallAlarmHelper.getInstance().isAlarming()){
+            boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+            CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+        }
     }
 }

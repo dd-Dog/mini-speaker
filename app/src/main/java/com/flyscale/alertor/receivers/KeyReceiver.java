@@ -12,6 +12,7 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
+import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
 
@@ -55,11 +56,16 @@ public class KeyReceiver extends BroadcastReceiver{
         if(UserActionHelper.isFastClick()){
             return;
         }
-        if(CallAlarmHelper.getInstance().isAlarming()){
-            boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
-            CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+        if(ReceiveMediaInstance.getInstance().isPlay()) {
+            ReceiveMediaInstance.getInstance().finish();
+            Log.i(TAG, "alarm110: ip接警正在播放 --> 取消播放");
         }else {
-            CallAlarmHelper.getInstance().polling(null,true);
+            if(CallAlarmHelper.getInstance().isAlarming()){
+                boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+            }else {
+                CallAlarmHelper.getInstance().polling(null,true);
+            }
         }
     }
 
@@ -87,16 +93,28 @@ public class KeyReceiver extends BroadcastReceiver{
                 }
             }
         }else {
-            //报警
-            if(CallAlarmHelper.getInstance().isAlarming()){
-                boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
-                CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
-                Log.i(TAG, "alarmOrReceive: 取消报警");
+            //正在播放接警信息
+            if(ReceiveMediaInstance.getInstance().isPlay()){
+                ReceiveMediaInstance.getInstance().finish();
+                Log.i(TAG, "alarmOrReceive: ip接警正在播放 --> 取消播放");
             }else {
-                Log.i(TAG, "alarmOrReceive: 开始报警");
-                AlarmHelper.getInstance().polling(null);
+                //正在ip报警
+                if(AlarmHelper.getInstance().isAlarming()){
+                    AlarmHelper.getInstance().setAlarming(false);
+                    AlarmHelper.getInstance().destroy();
+                    Log.i(TAG, "alarmOrReceive: ip接警正在报警 --> 然后取消");
+                }else {
+                    //正在语音报警
+                    if(CallAlarmHelper.getInstance().isAlarming()){
+                        boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                        CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+                        Log.i(TAG, "alarmOrReceive: 语音报警正在报警 --> 取消报警");
+                    }else {
+                        AlarmHelper.getInstance().polling(null);
+                        Log.i(TAG, "alarmOrReceive: 开始报警");
+                    }
+                }
             }
-            Log.i(TAG, "alarmOrReceive: 是否正在报警 ：" + CallAlarmHelper.getInstance().isAlarming());
         }
     }
 
