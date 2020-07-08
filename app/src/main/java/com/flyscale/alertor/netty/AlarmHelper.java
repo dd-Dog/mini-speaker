@@ -143,7 +143,7 @@ public class AlarmHelper {
         if(mAlarmResult.get()){
             alarmFinish();
             MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
-            mAlarmHandler.sendEmptyMessageDelayed(1003,3);
+            mAlarmHandler.sendEmptyMessageDelayed(1003,3000);
         }
         if(mTimer != null){
             mTimer.cancel();
