@@ -2,6 +2,8 @@ package com.flyscale.alertor.netty;
 
 import android.app.AlarmManager;
 import android.media.MediaPlayer;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.flyscale.alertor.BuildConfig;
@@ -37,6 +39,7 @@ public class AlarmHelper {
     int mSendCount = 1;
     String TAG = "AlarmHelper";
     boolean isAlarming = false;
+    AlarmHandler mAlarmHandler = new AlarmHandler();
 
     public static AlarmHelper getInstance() {
         return ourInstance;
@@ -138,7 +141,9 @@ public class AlarmHelper {
     public void destroy(){
 //        alarmFinish();
         if(mAlarmResult.get()){
+            alarmFinish();
             MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
+            mAlarmHandler.sendEmptyMessageDelayed(1003,3);
         }
         if(mTimer != null){
             mTimer.cancel();
@@ -149,6 +154,15 @@ public class AlarmHelper {
         isAlarming = false;
     }
 
+    public class AlarmHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(msg.what == 1003){
+                alarmStart();
+            }
+        }
+    }
 
 
     public interface onAlarmFailListener{
