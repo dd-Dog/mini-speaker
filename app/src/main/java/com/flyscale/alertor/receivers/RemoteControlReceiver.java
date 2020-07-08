@@ -60,10 +60,15 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 
                     if(status.equals("0100")){
                         //报警
-                        if(ReceiveMediaInstance.getInstance().isPlay()){
-                            ReceiveMediaInstance.getInstance().finish();
+                        if(AlarmHelper.getInstance().isSoundLightAlarming()){
+                            AlarmHelper.getInstance().alarmFinish();
                         }else {
-                            AlarmHelper.getInstance().polling(null);
+                            if(ReceiveMediaInstance.getInstance().isPlay()){
+                                ReceiveMediaInstance.getInstance().finish();
+                                AlarmHelper.getInstance().alarmFinish();
+                            }else {
+                                AlarmHelper.getInstance().polling(null);
+                            }
                         }
                     }else if(status.equals("0010")){
                         cancelReceive();
@@ -88,6 +93,9 @@ public class RemoteControlReceiver extends BroadcastReceiver {
     public void cancelReceive(){
         if(ReceiveMediaInstance.getInstance().isPlay()){
             ReceiveMediaInstance.getInstance().finish();
+        }
+        if(AlarmHelper.getInstance().isSoundLightAlarming()){
+            AlarmHelper.getInstance().alarmFinish();
         }
         if(CallAlarmHelper.getInstance().isAlarming()){
             boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
