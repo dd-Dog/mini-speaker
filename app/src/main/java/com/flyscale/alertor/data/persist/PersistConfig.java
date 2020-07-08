@@ -29,16 +29,16 @@ public class PersistConfig extends LitePalSupport {
     String alarmLedOnTime = "00:00";
     String alarmLedOffTime = "00:00";
     String firstLogin = "";
-    //是否可以报警
-    boolean isCanAlarm = true;
+    //是否布防 布防状态门磁和红外
+    boolean isArming = true;
 
 
-    public boolean isCanAlarm() {
-        return isCanAlarm;
+    public boolean isArming() {
+        return isArming;
     }
 
-    public void setCanAlarm(boolean canAlarm) {
-        isCanAlarm = canAlarm;
+    public void setArming(boolean arming) {
+        isArming = arming;
     }
 
     public String getFirstLogin() {
@@ -161,9 +161,9 @@ public class PersistConfig extends LitePalSupport {
         }
     }
 
-    public static void saveCanAlarm(boolean can){
+    public static void saveIsArming(boolean arming){
         PersistConfig persistConfig = findConfig();
-        persistConfig.setCanAlarm(can);
+        persistConfig.setArming(arming);
         persistConfig.save();
     }
 
@@ -249,7 +249,7 @@ public class PersistConfig extends LitePalSupport {
                 ", alarmLedOnTime='" + alarmLedOnTime + '\'' +
                 ", alarmLedOffTime='" + alarmLedOffTime + '\'' +
                 ", firstLogin='" + firstLogin + '\'' +
-                ", isCanAlarm=" + isCanAlarm +
+                ", isArming=" + isArming +
                 '}';
     }
 }

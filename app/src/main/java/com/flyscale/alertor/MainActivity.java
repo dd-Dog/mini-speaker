@@ -41,7 +41,7 @@ public class MainActivity extends BaseActivity {
         flyscaleManager.createHotspot("FLY510L-BJQ", "12345678",  4);
 
 
-        Log.i(TAG, "onCreate: 20200706:1753");
+        Log.i(TAG, "onCreate: 20200708:0915");
 
         //18199007916
         //13319054517

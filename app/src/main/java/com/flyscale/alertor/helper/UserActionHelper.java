@@ -41,6 +41,6 @@ public class UserActionHelper {
     }
 
     public static boolean isFastClick(){
-        return isFastClick(500);
+        return isFastClick(1000);
     }
 }
