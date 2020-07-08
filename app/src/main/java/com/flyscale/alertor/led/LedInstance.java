@@ -192,6 +192,10 @@ public class LedInstance {
         }
     }
 
+    public boolean isBlinkAlarmFlag() {
+        return isBlinkAlarmFlag;
+    }
+
     public void cancelBlinkOffAlarmLed(){
         isAlarmOnStatus = false;
         destroyAlarmTimer();

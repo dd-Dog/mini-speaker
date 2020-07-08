@@ -170,9 +170,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                 public void run() {
                     Log.i(TAG, "run: 下载文件");
                     File file = FileHelper.byteToFile(DataConvertHelper.hexToBytes(hex),FileHelper.S_ALARM_RESP_NAME);
-                    //播放报警信息时候 要把 报警音关闭 但是报警灯不关
-                    Log.i(TAG, "run: file = " + file.getPath());
-                    AlarmMediaInstance.getInstance().stopLoopAlarm();
+//                    //播放报警信息时候 要把 报警音关闭 但是报警灯不关
+//                    Log.i(TAG, "run: file = " + file.getPath());
+//                    AlarmMediaInstance.getInstance().stopLoopAlarm();
                     ReceiveMediaInstance.getInstance().play(FileHelper.S_ALARM_RESP_FILE,3);
                 }
             });

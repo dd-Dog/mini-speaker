@@ -136,7 +136,7 @@ public class AlarmHelper {
      * ip报警结束  不代表一定成功
      */
     public void destroy(){
-        alarmFinish();
+//        alarmFinish();
         if(mAlarmResult.get()){
             MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
         }
@@ -156,6 +156,17 @@ public class AlarmHelper {
     }
 
     /**
+     * 是否正在声光报警
+     * @return
+     */
+    public boolean isSoundLightAlarming(){
+        if(AlarmMediaInstance.getInstance().isPlaying() || LedInstance.getInstance().isBlinkAlarmFlag()){
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * 报警结束
      * 关闭闪光灯 关闭报警音
      */
@@ -168,6 +179,7 @@ public class AlarmHelper {
             LedInstance.getInstance().cancelBlinkOffAlarmLed();
         }
     }
+
 
     /**
      * 开始报警

@@ -35,7 +35,6 @@ public class ReceiveMediaInstance {
      */
     public void finish(){
         destroyMedia();
-        AlarmHelper.getInstance().alarmFinish();
     }
 
     public boolean isPlay(){
@@ -51,10 +50,12 @@ public class ReceiveMediaInstance {
     public void play(File file, final int playCount){
         SoundPoolHelper.getInstance().stopAudio();
         if(!file.exists()){
-            AlarmHelper.getInstance().alarmFinish();
+//            AlarmHelper.getInstance().alarmFinish();
             Log.i(TAG, "play: 文件不存在");
             return;
         }
+        //播放语音之前 关闭声光报警
+        AlarmHelper.getInstance().alarmFinish();
         mPlayCount = playCount;
         if(mMediaPlayer == null){
             mMediaPlayer = new MediaPlayer();
@@ -82,7 +83,8 @@ public class ReceiveMediaInstance {
                         mp.start();
                     }else {
                         SoundPoolHelper.getInstance().releaseAudio();
-                        AlarmHelper.getInstance().alarmFinish();
+                        //语音报警结束打开声光报警
+                        AlarmHelper.getInstance().alarmStart();
                         destroyMedia();
                     }
                     Log.i(TAG, "onCompletion: mPlayCount = " + mPlayCount);
@@ -98,7 +100,8 @@ public class ReceiveMediaInstance {
             });
         } catch (Exception e) {
             e.printStackTrace();
-            AlarmHelper.getInstance().alarmFinish();
+            //语音报警结束打开声光报警
+            AlarmHelper.getInstance().alarmStart();
         }
     }
 

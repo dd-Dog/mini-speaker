@@ -93,25 +93,30 @@ public class KeyReceiver extends BroadcastReceiver{
                 }
             }
         }else {
-            //正在播放接警信息
-            if(ReceiveMediaInstance.getInstance().isPlay()){
-                ReceiveMediaInstance.getInstance().finish();
-                Log.i(TAG, "alarmOrReceive: ip接警正在播放 --> 取消播放");
+            if(AlarmHelper.getInstance().isSoundLightAlarming()){
+                AlarmHelper.getInstance().alarmFinish();
             }else {
-                //正在ip报警
-                if(AlarmHelper.getInstance().isAlarming()){
-                    AlarmHelper.getInstance().setAlarming(false);
-                    AlarmHelper.getInstance().destroy();
-                    Log.i(TAG, "alarmOrReceive: ip接警正在报警 --> 然后取消");
+                //正在播放接警信息
+                if(ReceiveMediaInstance.getInstance().isPlay()){
+                    ReceiveMediaInstance.getInstance().finish();
+                    AlarmHelper.getInstance().alarmFinish();
+                    Log.i(TAG, "alarmOrReceive: ip接警正在播放 --> 取消播放");
                 }else {
-                    //正在语音报警
-                    if(CallAlarmHelper.getInstance().isAlarming()){
-                        boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
-                        CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
-                        Log.i(TAG, "alarmOrReceive: 语音报警正在报警 --> 取消报警");
+                    //正在ip报警
+                    if(AlarmHelper.getInstance().isAlarming()){
+                        AlarmHelper.getInstance().setAlarming(false);
+                        AlarmHelper.getInstance().destroy();
+                        Log.i(TAG, "alarmOrReceive: ip接警正在报警 --> 然后取消");
                     }else {
-                        AlarmHelper.getInstance().polling(null);
-                        Log.i(TAG, "alarmOrReceive: 开始报警");
+                        //正在语音报警
+                        if(CallAlarmHelper.getInstance().isAlarming()){
+                            boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                            CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+                            Log.i(TAG, "alarmOrReceive: 语音报警正在报警 --> 取消报警");
+                        }else {
+                            AlarmHelper.getInstance().polling(null);
+                            Log.i(TAG, "alarmOrReceive: 开始报警");
+                        }
                     }
                 }
             }
