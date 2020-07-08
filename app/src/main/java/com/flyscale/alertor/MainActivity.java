@@ -18,6 +18,7 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseActivity;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.services.AlarmService;
@@ -38,10 +39,12 @@ public class MainActivity extends BaseActivity {
         startService(new Intent(this, AlarmService.class));
 
         FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
-        flyscaleManager.createHotspot("FLY510L-BJQ", "12345678",  4);
+        String iccid = ClientInfoHelper.getICCID();
+        int length = iccid.length();
+        flyscaleManager.createHotspot("FLY510L-BJQ" + iccid.substring(length-4,length),"12345678",  4);
 
 
-        Log.i(TAG, "onCreate: 20200708:0915");
+        Log.i(TAG, "onCreate: 20200708:1638");
 
         //18199007916
         //13319054517

@@ -9,8 +9,10 @@ import android.telephony.SmsMessage;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.netty.NettyHelper;
 
 /**
  * @author bianjb
@@ -57,6 +59,8 @@ public class SMSReceiver extends BroadcastReceiver {
      *    添加删除白名单：        IPALARMWLM=0,2,15710089835,112;    --  0是增加，2是两个,
      * 						   IPALARMWLM=1,1,15710089835;        --  1是删除，1代表1个号码
      *    修改白名单开关：        IPALARMWLS=0;                      --  0是关，1是开
+     *
+     *    flyscale  fota开关   FLYSCALEFOTA=1;
      *
      *    注意：短信必须以分号结尾，所有字符需在英文输入法下编辑
      *
@@ -117,6 +121,12 @@ public class SMSReceiver extends BroadcastReceiver {
                             PersistConfig.saveIsAcceptOtherNum(false);
                         }
                         SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLS=OK",null,null);
+                    }
+                    //小后门测试fota升级
+                    else if(key.equals("FLYSCALEFOTA")){
+                        if(BuildConfig.DEBUG && value.equals("1")){
+                            NettyHelper.getInstance().modifyFota("1","1","20200708");
+                        }
                     }
                 }
             }
