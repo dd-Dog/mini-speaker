@@ -41,7 +41,7 @@ public class MainActivity extends BaseActivity {
 
         FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
         String iccid = ClientInfoHelper.getICCID();
-        if (TextUtils.isEmpty(iccid)) {
+        if (TextUtils.isEmpty(iccid) || "null".equals(iccid)) {
             iccid = "0000";
         }
         int length = iccid.length();
