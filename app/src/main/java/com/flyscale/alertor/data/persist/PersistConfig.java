@@ -24,7 +24,6 @@ public class PersistConfig extends LitePalSupport {
     boolean isIpAlarmFirst = true;
     String newIp = null;
     int newPort = -1;
-    boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
     //修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
     String alarmLedOnTime = "00:00";
     String alarmLedOffTime = "00:00";
@@ -89,14 +88,6 @@ public class PersistConfig extends LitePalSupport {
             return newPort;
         }
         return port;
-    }
-
-    public boolean isMute() {
-        return isMute;
-    }
-
-    public void setMute(boolean mute) {
-        isMute = mute;
     }
 
     public void setPort(int port) {
@@ -176,13 +167,6 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
-    public static PersistConfig saveIsMute(boolean isMute){
-        PersistConfig persistConfig = findConfig();
-        persistConfig.setMute(isMute);
-        persistConfig.save();
-        return persistConfig;
-    }
-
     public static PersistConfig saveNewIp(String ip,int port){
         PersistConfig persistConfig = findConfig();
         persistConfig.setNewIp(ip);
@@ -245,7 +229,6 @@ public class PersistConfig extends LitePalSupport {
                 ", isIpAlarmFirst=" + isIpAlarmFirst +
                 ", newIp='" + newIp + '\'' +
                 ", newPort=" + newPort +
-                ", isMute=" + isMute +
                 ", alarmLedOnTime='" + alarmLedOnTime + '\'' +
                 ", alarmLedOffTime='" + alarmLedOffTime + '\'' +
                 ", firstLogin='" + firstLogin + '\'' +

@@ -178,7 +178,7 @@ public class AlarmHelper {
     }
 
     public void alarmStart(boolean isReceive){
-        boolean isMute = PersistConfig.findConfig().isMute();
+        boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
         Log.i(TAG, "alarmStart: isMute == " + isMute);
         if(isReceive){
             //接警方 必须响警报

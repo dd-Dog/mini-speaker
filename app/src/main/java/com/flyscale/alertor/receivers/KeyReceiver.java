@@ -40,9 +40,9 @@ public class KeyReceiver extends BroadcastReceiver{
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.up")){
 
         }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.down")){
-            PersistConfig.saveIsMute(false);
+
         }else if(TextUtils.equals(action,"flyscale.privkey.MUTE.up")){
-            PersistConfig.saveIsMute(true);
+
         }else if(TextUtils.equals(action,BRConstant.ACTION_ALARM_LED_STATUS)){
             //报警灯常亮常闭
             AlarmLedReceiver.sendRepeatAlarmBroadcastBySwitch();

@@ -124,7 +124,7 @@ public class AlarmManager {
      * @param isReceive
      */
     public void alarmStart(boolean isReceive){
-        boolean isMute = PersistConfig.findConfig().isMute();
+        boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
         Log.i(TAG, "alarmStart: isMute 是否静默 = " + isMute);
         if(isReceive){
             //接警方 必须响警报
