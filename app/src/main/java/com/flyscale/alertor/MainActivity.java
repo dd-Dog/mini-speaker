@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.telephony.NeighboringCellInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.gsm.GsmCellLocation;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseActivity;
@@ -40,8 +41,11 @@ public class MainActivity extends BaseActivity {
 
         FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
         String iccid = ClientInfoHelper.getICCID();
+        if (TextUtils.isEmpty(iccid)) {
+            iccid = "0000";
+        }
         int length = iccid.length();
-        flyscaleManager.createHotspot("FLY510L-BJQ" + iccid.substring(length-4,length),"12345678",  4);
+        flyscaleManager.createHotspot("FLY510L-BJQ_" + iccid.substring(length - 4, length), "12345678", 4);
 
 
         Log.i(TAG, "onCreate: 20200708:1638");
