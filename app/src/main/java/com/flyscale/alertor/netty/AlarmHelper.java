@@ -161,7 +161,7 @@ public class AlarmHelper {
      */
     public void alarmFinish(){
         AlarmMediaInstance.getInstance().stopLoopAlarm();
-        Log.i(TAG, "alarmFinish: 报警灯开关状态  -----  " + LedInstance.getInstance().isAlarmOnStatus());
+        Log.i(TAG, "alarmVoiceFinish: 报警灯开关状态  -----  " + LedInstance.getInstance().isAlarmOnStatus());
         if(LedInstance.getInstance().isAlarmOnStatus()){
             LedInstance.getInstance().cancelBlinkShowAlarmLed();
         }else {
@@ -179,7 +179,7 @@ public class AlarmHelper {
 
     public void alarmStart(boolean isReceive){
         boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
-        Log.i(TAG, "alarmStart: isMute == " + isMute);
+        Log.i(TAG, "alarmVoiceStart: isMute == " + isMute);
         if(isReceive){
             //接警方 必须响警报
             isMute = false;

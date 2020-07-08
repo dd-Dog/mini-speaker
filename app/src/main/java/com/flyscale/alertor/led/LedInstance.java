@@ -1,7 +1,10 @@
 package com.flyscale.alertor.led;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.flyscale.FlyscaleManager;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
@@ -27,6 +30,7 @@ public class LedInstance {
     boolean isOnAlarm = true;
     boolean isAlarmOnStatus = true;
     FlyscaleManager mFlyscaleManager;
+    AlarmHandler mAlarmHandler = new AlarmHandler();
 
     public static LedInstance getInstance() {
         return ourInstance;
@@ -164,7 +168,7 @@ public class LedInstance {
                     Log.i(TAG, "run:blinkAlarmLed isOnAlarm  = " + isOnAlarm);
                 }
             }
-        },0,100);
+        },50,100);
     }
 
     private void showAlarmLed(){
@@ -191,15 +195,16 @@ public class LedInstance {
     public void cancelBlinkOffAlarmLed(){
         isAlarmOnStatus = false;
         destroyAlarmTimer();
-        offAlarmLed();
+        mAlarmHandler.sendEmptyMessageDelayed(offWhat,101);
         Log.i(TAG, "cancelBlinkOffAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
     public void cancelBlinkShowAlarmLed(){
         isAlarmOnStatus = true;
         destroyAlarmTimer();
-        showAlarmLed();
+        mAlarmHandler.sendEmptyMessageDelayed(showWhat,101);
         Log.i(TAG, "cancelBlinkShowAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
+
 
     /**
      * 报警灯的开关状态
@@ -207,5 +212,23 @@ public class LedInstance {
      */
     public boolean isAlarmOnStatus() {
         return isAlarmOnStatus;
+    }
+
+    int showWhat = 1;
+    int offWhat = 2;
+    @SuppressLint("HandlerLeak")
+    public class AlarmHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            int what = msg.what;
+            if(what == showWhat){
+                showAlarmLed();
+                Log.i(TAG, "handleMessage: showAlarmLed()" );
+            }else if(what == offWhat){
+                offAlarmLed();
+                Log.i(TAG, "handleMessage: offAlarmLed()");
+            }
+        }
     }
 }
