@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.telecom.Call;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -96,6 +97,10 @@ public class KeyReceiver extends BroadcastReceiver{
         }else {
             if(AlarmHelper.getInstance().isSoundLightAlarming()){
                 AlarmHelper.getInstance().alarmFinish();
+                if(CallAlarmHelper.getInstance().isAlarming()){
+                    boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                    CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+                }
             }else {
                 //正在播放接警信息
                 if(ReceiveMediaInstance.getInstance().isPlay()){

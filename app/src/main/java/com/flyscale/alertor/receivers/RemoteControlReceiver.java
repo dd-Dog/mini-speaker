@@ -129,6 +129,10 @@ public class RemoteControlReceiver extends BroadcastReceiver {
         }else {
             if(AlarmHelper.getInstance().isSoundLightAlarming()){
                 AlarmHelper.getInstance().alarmFinish();
+                if(CallAlarmHelper.getInstance().isAlarming()){
+                    boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                    CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+                }
             }else {
                 //正在播放接警信息
                 if(ReceiveMediaInstance.getInstance().isPlay()){
