@@ -18,6 +18,12 @@ import com.flyscale.alertor.netty.NettyHelper;
 public class AlarmManager {
 
     static String TAG = "AlarmManager";
+    public static final int STATUS_IP_ALARMING = 1;//ip正在报警
+    public static final int STATUS_IP_PLAY_ALARM_SUCCESS = 2;//ip报警播放您的报警信息已发出
+    public static final int STATUS_IP_ALARM_SUCCESS = 3;//ip报警成功 都结束了 算成功
+    public static final int STATUS_IP_ALARM_FAIL = 4;//ip报警失败 此时会转语音报警
+
+
 
     /**
      * 开始声光警报
@@ -32,9 +38,8 @@ public class AlarmManager {
         if(isMute){
             return;
         }
-        if(!isSoundLightAlarming()){
-            AlarmMediaInstance.getInstance().playLoopAlarm();
-            LedInstance.getInstance().blinkAlarmLed();
+        if(AlarmMediaInstance.getInstance().isPlaying()){
+
         }
     }
 
