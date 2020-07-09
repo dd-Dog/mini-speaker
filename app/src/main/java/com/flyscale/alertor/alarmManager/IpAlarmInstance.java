@@ -1,5 +1,7 @@
 package com.flyscale.alertor.alarmManager;
 
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 /**
@@ -17,6 +19,7 @@ public class IpAlarmInstance {
 
     String TAG = "IpAlarmInstance";
     int mStatus = STATUS_NONE;
+    int mSendCount =1;
 
     public static IpAlarmInstance getInstance() {
         return ourInstance;
@@ -29,6 +32,16 @@ public class IpAlarmInstance {
     public void polling(int type){
         if(AlarmManager.isFineNet()){
 
+        }
+    }
+
+    public class AlarmHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(msg.what == 1003){
+
+            }
         }
     }
 }

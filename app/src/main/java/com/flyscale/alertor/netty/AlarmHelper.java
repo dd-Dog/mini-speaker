@@ -213,7 +213,7 @@ public class AlarmHelper {
         if(isMute){
             return;
         }
-        if(!AlarmMediaInstance.getInstance().isPlaying()){
+        if(!isSoundLightAlarming()){
             AlarmMediaInstance.getInstance().playLoopAlarm();
             LedInstance.getInstance().blinkAlarmLed();
         }

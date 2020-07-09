@@ -32,7 +32,7 @@ public class AlarmManager {
         if(isMute){
             return;
         }
-        if(!AlarmMediaInstance.getInstance().isPlaying()){
+        if(!isSoundLightAlarming()){
             AlarmMediaInstance.getInstance().playLoopAlarm();
             LedInstance.getInstance().blinkAlarmLed();
         }
@@ -68,5 +68,15 @@ public class AlarmManager {
             return false;
         }
         return true;
+    }
+    /**
+     * 是否正在声光报警
+     * @return
+     */
+    public static boolean isSoundLightAlarming(){
+        if(AlarmMediaInstance.getInstance().isPlaying() || LedInstance.getInstance().isBlinkAlarmFlag()){
+            return true;
+        }
+        return false;
     }
 }
