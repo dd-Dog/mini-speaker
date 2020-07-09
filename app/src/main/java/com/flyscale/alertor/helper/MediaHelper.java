@@ -2,6 +2,8 @@ package com.flyscale.alertor.helper;
 
 import android.content.Context;
 import android.media.MediaPlayer;
+import android.util.Log;
+
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 
@@ -45,7 +47,10 @@ public class MediaHelper {
     public static void play(int type,boolean isAddTypeToReadyPlayList){
         if(isAddTypeToReadyPlayList){
             sPlayTypeArray.add(type);
+            Log.i(TAG, "play: sPlayTypeArray.size() = " + sPlayTypeArray.size());
         }
+        Log.i(TAG, "play: " + type);
+
         switch (type){
             case WELCOME_USE:
                 play(BaseApplication.sContext,R.raw.v2_welcome);
@@ -100,6 +105,7 @@ public class MediaHelper {
         if(!isPlayInArray){
             isPlayInArray = true;
             mMediaPlayer = MediaPlayer.create(context, resId);
+            Log.i(TAG, "play: mMediaPlayer");
             if(resId == R.raw.v8_send_alarm_success){
                 isPlayAlarmSuccessing = true;
             }
@@ -114,11 +120,13 @@ public class MediaHelper {
                     if(ListHelper.isValidCollection(sPlayTypeArray)){
                         play(sPlayTypeArray.get(0),false);
                     }
+                    Log.i(TAG, "onCompletion: ");
                 }
             });
             mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
+                    Log.i(TAG, "onError: ");
                     return false;
                 }
             });
@@ -139,11 +147,16 @@ public class MediaHelper {
 
 
     public static void stopAlarmSuccess(){
-        stop();
+        if(mMediaPlayer != null){
+            mMediaPlayer.pause();
+        }
         isPlayAlarmSuccessing = false;
+        isPlayInArray = false;
+        Log.i(TAG, "stopAlarmSuccess: ");
         if(ListHelper.isValidCollection(sPlayTypeArray)){
-            if(sPlayTypeArray.get(0) == R.raw.v8_send_alarm_success){
+            if(sPlayTypeArray.get(0) == ALARM_SUCCESS){
                 sPlayTypeArray.remove(0);
+                Log.i(TAG, "stopAlarmSuccess: remove");
             }
         }
     }
