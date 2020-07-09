@@ -6,9 +6,14 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.helper.MediaHelper;
+import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.ThreadPool;
+import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.netty.CallAlarmHelper;
@@ -59,20 +64,9 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 
 
                     if(status.equals("0100")){
-                        //报警
-                        if(AlarmHelper.getInstance().isSoundLightAlarming()){
-                            AlarmHelper.getInstance().alarmFinish();
-                        }else {
-                            if(ReceiveMediaInstance.getInstance().isPlay()){
-                                ReceiveMediaInstance.getInstance().finish();
-                                AlarmHelper.getInstance().alarmFinish();
-                            }else {
-                                AlarmHelper.getInstance().polling(null);
-                            }
-                        }
+                        alarmOrReceive();
                     }else if(status.equals("0010")){
-                        cancelReceive();
-                        CallAlarmHelper.getInstance().polling(null,true);
+                        alarm110();
                     }else if(status.equals("1001")){
                         //烟感
                         cancelReceive();
@@ -87,8 +81,90 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 
     }
 
+
+
     /**
-     * 取消正在接警等状态
+     * 110报警
+     */
+    public void alarm110(){
+        if(UserActionHelper.isFastClick()){
+            return;
+        }
+        if(ReceiveMediaInstance.getInstance().isPlay()) {
+            ReceiveMediaInstance.getInstance().finish();
+            Log.i(TAG, "alarm110: ip接警正在播放 --> 取消播放");
+        }else {
+            if(CallAlarmHelper.getInstance().isAlarming()){
+                boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+            }else {
+                CallAlarmHelper.getInstance().polling(null,true);
+            }
+        }
+    }
+
+
+    /**
+     * 报警时 按下报警键报警 再次按下报警键挂机
+     * 接警时 按下报警键接听
+     */
+    public void alarmOrReceive(){
+        if(UserActionHelper.isFastClick()){
+            return;
+        }
+        //正在响铃  并且来电是接警电话
+        //接警
+        if(CallPhoneReceiver.getCallState() == CallPhoneReceiver.INCOMING){
+            //来电时候 如果接受其他号码 或者 白名单包含此号码
+            if(PersistConfig.findConfig().isAcceptOtherNum()
+                    || PersistWhite.isContains(CallPhoneReceiver.getReceiveNum())){
+                if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+                    PhoneUtil.endCall(BaseApplication.sContext);
+                    Log.i(TAG, "alarmOrReceive: 接警中主动挂断" );
+                }else {
+                    PhoneUtil.answerCall(BaseApplication.sContext);
+                    Log.i(TAG, "alarmOrReceive: 接警成功");
+                }
+            }
+        }else {
+            if(AlarmHelper.getInstance().isSoundLightAlarming()){
+                AlarmHelper.getInstance().alarmFinish();
+            }else {
+                //正在播放接警信息
+                if(ReceiveMediaInstance.getInstance().isPlay()){
+                    ReceiveMediaInstance.getInstance().finish();
+                    AlarmHelper.getInstance().alarmFinish();
+                    Log.i(TAG, "alarmOrReceive: ip接警正在播放 --> 取消播放");
+                }else {
+                    //正在ip报警
+                    if(AlarmHelper.getInstance().isAlarming()){
+                        AlarmHelper.getInstance().setAlarming(false);
+                        AlarmHelper.getInstance().destroy();
+                        Log.i(TAG, "alarmOrReceive: ip接警正在报警 --> 然后取消");
+                    }else {
+                        //正在语音报警
+                        if(CallAlarmHelper.getInstance().isAlarming()){
+                            boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();
+                            CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
+                            Log.i(TAG, "alarmOrReceive: 语音报警正在报警 --> 取消报警");
+                        }else {
+                            if(MediaHelper.isPlayAlarmSuccessing){
+                                AlarmHelper.getInstance().stopAlarmSuccessAndFinishAlarm();
+                            }else {
+                                AlarmHelper.getInstance().polling(null);
+                                Log.i(TAG, "alarmOrReceive: 开始报警");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+
+    /**
+     * 取消正在接警报警等状态
      */
     public void cancelReceive(){
         if(ReceiveMediaInstance.getInstance().isPlay()){
@@ -96,6 +172,9 @@ public class RemoteControlReceiver extends BroadcastReceiver {
         }
         if(AlarmHelper.getInstance().isSoundLightAlarming()){
             AlarmHelper.getInstance().alarmFinish();
+        }
+        if(MediaHelper.isPlayAlarmSuccessing){
+            AlarmHelper.getInstance().stopAlarmSuccessAndFinishAlarm();
         }
         if(CallAlarmHelper.getInstance().isAlarming()){
             boolean alarmResult = CallAlarmHelper.getInstance().getAlarmResult();

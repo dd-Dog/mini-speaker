@@ -168,7 +168,7 @@ public class LedInstance {
                     Log.i(TAG, "run:blinkAlarmLed isOnAlarm  = " + isOnAlarm);
                 }
             }
-        },50,100);
+        },50,300);
     }
 
     private void showAlarmLed(){
@@ -199,13 +199,13 @@ public class LedInstance {
     public void cancelBlinkOffAlarmLed(){
         isAlarmOnStatus = false;
         destroyAlarmTimer();
-        mAlarmHandler.sendEmptyMessageDelayed(offWhat,101);
+        mAlarmHandler.sendEmptyMessageDelayed(offWhat,305);
         Log.i(TAG, "cancelBlinkOffAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
     public void cancelBlinkShowAlarmLed(){
         isAlarmOnStatus = true;
         destroyAlarmTimer();
-        mAlarmHandler.sendEmptyMessageDelayed(showWhat,101);
+        mAlarmHandler.sendEmptyMessageDelayed(showWhat,305);
         Log.i(TAG, "cancelBlinkShowAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
 

@@ -139,7 +139,6 @@ public class AlarmHelper {
      * ip报警结束  不代表一定成功
      */
     public void destroy(){
-//        alarmFinish();
         if(mAlarmResult.get()){
             alarmFinish();
             MediaHelper.play(MediaHelper.ALARM_SUCCESS,true);
@@ -160,8 +159,19 @@ public class AlarmHelper {
             super.handleMessage(msg);
             if(msg.what == 1003){
                 alarmStart();
+            }else if(msg.what == 1004){
+                alarmFinish();
             }
         }
+    }
+
+    /**
+     * 停止播放您的报警信息已发出 并停止警报声
+     */
+    public void stopAlarmSuccessAndFinishAlarm(){
+        MediaHelper.stopAlarmSuccess();
+        mAlarmHandler.removeMessages(1003);
+        mAlarmHandler.sendEmptyMessageDelayed(1004,100);
     }
 
 

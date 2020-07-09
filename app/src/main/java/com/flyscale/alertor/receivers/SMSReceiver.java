@@ -58,7 +58,7 @@ public class SMSReceiver extends BroadcastReceiver {
      *    修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
      *    添加删除白名单：        IPALARMWLM=0,2,15710089835,112;    --  0是增加，2是两个,
      * 						   IPALARMWLM=1,1,15710089835;        --  1是删除，1代表1个号码
-     *    修改白名单开关：        IPALARMWLS=0;                      --  0是关，1是开
+     *    修改白名单开关：        IPALARMWLS=0;                      --  0是关，1是开Re
      *
      *    flyscale  fota开关   FLYSCALEFOTA=1;
      *

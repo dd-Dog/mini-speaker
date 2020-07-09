@@ -10,6 +10,7 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
@@ -114,8 +115,12 @@ public class KeyReceiver extends BroadcastReceiver{
                             CallAlarmHelper.getInstance().destroy(alarmResult,false,true,false);
                             Log.i(TAG, "alarmOrReceive: 语音报警正在报警 --> 取消报警");
                         }else {
-                            AlarmHelper.getInstance().polling(null);
-                            Log.i(TAG, "alarmOrReceive: 开始报警");
+                            if(MediaHelper.isPlayAlarmSuccessing){
+                                AlarmHelper.getInstance().stopAlarmSuccessAndFinishAlarm();
+                            }else {
+                                AlarmHelper.getInstance().polling(null);
+                                Log.i(TAG, "alarmOrReceive: 开始报警");
+                            }
                         }
                     }
                 }

@@ -34,6 +34,8 @@ public class MediaHelper {
     static String TAG = "MediaHelper";
     //是否正在播放数组里的音频
     private static boolean isPlayInArray = false;
+    //是否正在播放 您的报警信息已发出
+    public static boolean isPlayAlarmSuccessing = false;
 
     /**
      *
@@ -94,18 +96,30 @@ public class MediaHelper {
      * @param context
      * @param resId
      */
-    private static void play(Context context, int resId) {
+    private static void play(Context context, final int resId) {
         if(!isPlayInArray){
             isPlayInArray = true;
             mMediaPlayer = MediaPlayer.create(context, resId);
+            if(resId == R.raw.v8_send_alarm_success){
+                isPlayAlarmSuccessing = true;
+            }
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     sPlayTypeArray.remove(0);
                     isPlayInArray = false;
+                    if(resId == R.raw.v8_send_alarm_success){
+                        isPlayAlarmSuccessing = false;
+                    }
                     if(ListHelper.isValidCollection(sPlayTypeArray)){
                         play(sPlayTypeArray.get(0),false);
                     }
+                }
+            });
+            mMediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    return false;
                 }
             });
             mMediaPlayer.start();
@@ -121,6 +135,17 @@ public class MediaHelper {
             }
         });
         mMediaPlayer.start();
+    }
+
+
+    public static void stopAlarmSuccess(){
+        stop();
+        isPlayAlarmSuccessing = false;
+        if(ListHelper.isValidCollection(sPlayTypeArray)){
+            if(sPlayTypeArray.get(0) == R.raw.v8_send_alarm_success){
+                sPlayTypeArray.remove(0);
+            }
+        }
     }
 
     public static void stop() {
