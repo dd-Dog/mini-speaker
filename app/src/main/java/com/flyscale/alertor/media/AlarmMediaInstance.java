@@ -35,9 +35,6 @@ public class AlarmMediaInstance {
         mMediaPlayer.start();
         isPlaying = true;
         BaseApplication.sFlyscaleManager.setExternalAlarmStatus(1);
-//        if(BuildConfig.DEBUG){
-//            mMediaPlayer.setVolume(0.05f,0.05f);
-//        }
     }
 
     public void stopLoopAlarm(){
