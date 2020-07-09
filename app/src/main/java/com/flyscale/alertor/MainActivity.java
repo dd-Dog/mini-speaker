@@ -40,7 +40,7 @@ public class MainActivity extends BaseActivity {
         startService(new Intent(this, AlarmService.class));
 
         FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
-        String iccid = ClientInfoHelper.getICCID();
+        String iccid = ClientInfoHelper.getIMEI();
         if (TextUtils.isEmpty(iccid) || "null".equals(iccid)) {
             iccid = "0000";
         }
