@@ -112,7 +112,9 @@ public class MediaHelper {
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    sPlayTypeArray.remove(0);
+                    if(ListHelper.isValidCollection(sPlayTypeArray)){
+                        sPlayTypeArray.remove(0);
+                    }
                     isPlayInArray = false;
                     if(resId == R.raw.v8_send_alarm_success){
                         isPlayAlarmSuccessing = false;
