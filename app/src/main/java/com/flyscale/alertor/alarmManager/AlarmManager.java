@@ -1,8 +1,10 @@
 package com.flyscale.alertor.alarmManager;
 
+import android.media.MediaPlayer;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.led.LedInstance;
@@ -24,6 +26,13 @@ public class AlarmManager {
     public static final int STATUS_IP_ALARM_FAIL = 4;//ip报警失败 此时会转语音报警
 
 
+    /**
+     * 报警
+     */
+    public static void pollingAlarming(){
+
+    }
+
 
     /**
      * 开始声光警报
@@ -38,16 +47,15 @@ public class AlarmManager {
         if(isMute){
             return;
         }
-        if(AlarmMediaInstance.getInstance().isPlaying()){
-
-        }
+        AlarmMediaPlayer.getInstance().playLoopAlarm();
+        LedInstance.getInstance().blinkAlarmLed();
     }
 
     /**
      * 关闭声光警报
      */
     public static void finishAlarmBlink(){
-        AlarmMediaInstance.getInstance().stopLoopAlarm();
+        AlarmMediaPlayer.getInstance().stopLoopAlarm();
         boolean alarmLedOn = LedInstance.getInstance().isAlarmOnStatus();
         Log.i(TAG, "finishAlarmBlink: 报警灯默认的开关状态 ---> " + alarmLedOn);
         if(alarmLedOn){
@@ -74,14 +82,28 @@ public class AlarmManager {
         }
         return true;
     }
+
     /**
-     * 是否正在声光报警
+     * 是否正在声音报警
      * @return
      */
-    public static boolean isSoundLightAlarming(){
-        if(AlarmMediaInstance.getInstance().isPlaying() || LedInstance.getInstance().isBlinkAlarmFlag()){
-            return true;
-        }
-        return false;
+    public static boolean isSoundAlarming(){
+        return AlarmMediaPlayer.getInstance().isPlayLoopAlarm();
+    }
+
+    /**
+     * 是否正在闪灯报警
+     * @return
+     */
+    public static boolean isLightAlarming(){
+        return LedInstance.getInstance().isBlinkAlarmFlag();
+    }
+
+    /**
+     * 是否IP报警优先
+     * @return
+     */
+    public static boolean isIpAlarmFirst(){
+        return PersistConfig.findConfig().isIpAlarmFirst();
     }
 }
