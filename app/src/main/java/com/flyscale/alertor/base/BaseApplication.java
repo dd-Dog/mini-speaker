@@ -10,6 +10,7 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
+import com.flyscale.alertor.netty.AlarmHelper;
 
 import org.litepal.LitePal;
 
@@ -31,6 +32,7 @@ public class BaseApplication extends Application {
 
         SoundPoolHelper.getInstance().init(this);
         LitePal.initialize(this);
+        AlarmHelper.getInstance();
 
         sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
         sFlyscaleManager.setExternalAlarmStatus(0);
