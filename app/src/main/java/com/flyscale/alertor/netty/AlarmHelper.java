@@ -79,6 +79,7 @@ public class AlarmHelper {
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
         if(!NettyHelper.getInstance().isConnect()){
             MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
+            CallAlarmHelper.getInstance().polling(null,false);
             return;
         }
         Log.i(TAG, "polling: ok reday");
