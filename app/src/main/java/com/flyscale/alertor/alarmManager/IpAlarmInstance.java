@@ -44,6 +44,14 @@ public class IpAlarmInstance {
 
     public void setStatus(int status) {
         mStatus = status;
+        if(mStatus == STATUS_ALARM_FINISH){
+            AlarmMediaPlayer.getInstance().stopAlarmSuccess();
+            AlarmManager.finishAlarmBlink();
+        }
+    }
+
+    public int getStatus() {
+        return mStatus;
     }
 
     public void polling(final int type){
@@ -73,7 +81,7 @@ public class IpAlarmInstance {
                             //如果报警次数大于3次 则放弃ip报警 ip报警时比
                             //转语音报警
                             mStatus = STATUS_ALARM_FAIL;
-                            CallAlarmInstance.getInstance().polling();
+                            CallAlarmInstance.getInstance().polling(false);
                         }else {
                             //报警成功 小于3次
                             //停止报警声 播放报警已发出
@@ -91,19 +99,6 @@ public class IpAlarmInstance {
                 }
             },DEFAULT_PERIOD);
             mTimerTaskHelper.start(50);
-        }
-    }
-
-
-
-
-    public class AlarmHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if(msg.what == 1003){
-
-            }
         }
     }
 }
