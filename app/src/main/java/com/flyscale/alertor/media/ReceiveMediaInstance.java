@@ -84,7 +84,7 @@ public class ReceiveMediaInstance {
                     }else {
                         SoundPoolHelper.getInstance().releaseAudio();
                         //语音报警结束打开声光报警
-                        AlarmHelper.getInstance().alarmStart();
+                        AlarmHelper.getInstance().alarmStart(true);
                         destroyMedia();
                     }
                     Log.i(TAG, "onCompletion: mPlayCount = " + mPlayCount);
