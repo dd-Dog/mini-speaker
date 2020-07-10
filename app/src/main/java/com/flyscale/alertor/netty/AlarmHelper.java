@@ -149,7 +149,6 @@ public class AlarmHelper {
             mTimer.purge();
             mTimer = null;
         }
-        mSendCount = 1;
         isAlarming = false;
     }
 
