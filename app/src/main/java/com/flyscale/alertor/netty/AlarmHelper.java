@@ -33,20 +33,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AlarmHelper {
 
 
-    private static final AlarmHelper ourInstance = new AlarmHelper();
+//    private static final AlarmHelper ourInstance = new AlarmHelper();
     Timer mTimer;
     AtomicBoolean mAlarmResult = new AtomicBoolean(false);
     int mSendCount = 1;
     String TAG = "AlarmHelper";
     boolean isAlarming = false;
     AlarmHandler mAlarmHandler = new AlarmHandler();
+    static AlarmHelper sAlarmHelper;
 
-    public static AlarmHelper getInstance() {
-        return ourInstance;
-    }
+//    public static AlarmHelper getInstance() {
+//        return ourInstance;
+//    }
 
     private AlarmHelper() {
 
+    }
+
+    public static AlarmHelper getInstance(){
+        if(sAlarmHelper == null){
+            synchronized (AlarmHelper.class){
+                if(sAlarmHelper == null){
+                    sAlarmHelper = new AlarmHelper();
+                }
+            }
+        }
+        return sAlarmHelper;
     }
 
     public boolean isAlarming() {
