@@ -15,4 +15,9 @@ public class CallAlarmInstance {
 
     private CallAlarmInstance() {
     }
+
+
+    public void polling(){
+
+    }
 }
