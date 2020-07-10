@@ -68,7 +68,9 @@ public class AlarmMediaPlayer {
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                listener.onPlayFinish();
+                if(listener != null){
+                    listener.onPlayFinish();
+                }
                 isPlayAlarmSuccess = false;
             }
         });

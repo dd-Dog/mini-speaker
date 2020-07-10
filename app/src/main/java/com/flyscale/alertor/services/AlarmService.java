@@ -36,7 +36,7 @@ public class AlarmService extends BaseService {
     StateManagerReceiver mStateManagerReceiver;
     BatteryReceiver mBatteryReceiver;
     TelephonyStateReceiver mTelephonyStateReceiver;
-    KeyReceiver mKeyReceiver;
+//    KeyReceiver mKeyReceiver;
     CallPhoneReceiver mCallPhoneReceiver;
     FotaHelper mFotaHelper;
 
@@ -73,8 +73,8 @@ public class AlarmService extends BaseService {
         mTelephonyStateReceiver = new TelephonyStateReceiver(this);
         mTelephonyStateReceiver.listenStrengths();
         //按键广播
-        mKeyReceiver = new KeyReceiver();
-        mKeyReceiver.register();
+//        mKeyReceiver = new KeyReceiver();
+//        mKeyReceiver.register();
         //拨打电话广播
         mCallPhoneReceiver = new CallPhoneReceiver();
         mCallPhoneReceiver.register();
@@ -91,16 +91,18 @@ public class AlarmService extends BaseService {
         }
         mTimer = new Timer();
         mTimer.schedule(new CheckStateTask(),2000,CHECK_STATE_PERIOD);
+
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i(TAG, "onDestroy: ");
         NettyHelper.getInstance().unRegister();
         mStateManagerReceiver.destroy();
         mBatteryReceiver.unRegister();
-        mKeyReceiver.unRegister();
+//        mKeyReceiver.unRegister();
         mTelephonyStateReceiver.destroy();
         mCallPhoneReceiver.unRegister();
         if(mTimer != null){

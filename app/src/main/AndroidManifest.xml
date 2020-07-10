@@ -78,6 +78,24 @@
                 <action android:name="flyscale.privkey.TOGGLE_USB_CONFIG"/>
             </intent-filter>
         </receiver>
+        <!--    按键广播    -->
+        <receiver android:name=".receivers.KeyReceiver">
+            <intent-filter android:priority="1003">
+                <action android:name="flyscale.privkey.ALARM.down"/>
+                <action android:name="flyscale.privkey.ALARM.long"/>
+                <action android:name="flyscale.privkey.ALARM.up"/>
+                <action android:name="flyscale.privkey.EMERGENCY.down"/>
+                <action android:name="flyscale.privkey.EMERGENCY.long"/>
+                <action android:name="flyscale.privkey.EMERGENCY.up"/>
+                <action android:name="flyscale.privkey.EXTRA_SPEAKER.down"/>
+                <action android:name="flyscale.privkey.EXTRA_SPEAKER.long"/>
+                <action android:name="flyscale.privkey.EXTRA_SPEAKER.up"/>
+                <action android:name="flyscale.privkey.MUTE.down"/>
+                <action android:name="flyscale.privkey.MUTE.long"/>
+                <action android:name="flyscale.privkey.MUTE.up"/>
+                <action android:name="flyscale.privkey.status.ALARM_LED"/>
+            </intent-filter>
+        </receiver>
 
 
         <activity android:name=".MainActivity">
