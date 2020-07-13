@@ -25,7 +25,6 @@ public class IpAlarmInstance {
     public static final int STATUS_NONE = 0;//初始状态
     public static final int STATUS_ALARMING = 1;//正在报警
     public static final int STATUS_ALARM_SUCCESS = 2;//报警成功
-    public static final int STATUS_ALARM_FAIL =3;//报警失败
     public static final int STATUS_ALARM_FINISH = 4;//报警结束
 
     String TAG = "IpAlarmInstance";
@@ -47,6 +46,9 @@ public class IpAlarmInstance {
         if(mStatus == STATUS_ALARM_FINISH){
             AlarmMediaPlayer.getInstance().stopAlarmSuccess();
             AlarmManager.finishAlarmBlink();
+            if(!mTimerTaskHelper.isStop()){
+                mTimerTaskHelper.stop();
+            }
         }
     }
 
@@ -55,50 +57,48 @@ public class IpAlarmInstance {
     }
 
     public void polling(final int type){
-        if(AlarmManager.isFineNet()){
-            //网络连接正常 开始声光报警
-            AlarmManager.startAlarmBlink(false);
-            mStatus = STATUS_ALARMING;
-            mSendCount = 1;
-            mTimerTaskHelper = new TimerTaskHelper(new TimerTask() {
-                @Override
-                public void run() {
-                    if(mStatus != STATUS_ALARM_SUCCESS && mSendCount <= 3){
-                        //ip报警未成功并且报警次数小于3次 则继续ip报警
-                        if(type == BaseData.TYPE_ALARM_U){
-                            NettyHelper.getInstance().send(new UAlarm(mSendCount));
-                        }else if(type == BaseData.TYPE_DOOR_ALARM_U){
-                            NettyHelper.getInstance().send(new UDoorAlarm(mSendCount));
-                        }else if(type == BaseData.TYPE_SMOKE_ALARM_U){
-                            NettyHelper.getInstance().send(new USmokeAlarm(mSendCount));
-                        }else if(type == BaseData.TYPE_GAS_ALARM_U){
-                            NettyHelper.getInstance().send(new UGasAlarm(mSendCount));
-                        }
-                        mSendCount++;
+        //网络连接正常 开始声光报警
+        AlarmManager.startAlarmBlink(false);
+        mStatus = STATUS_ALARMING;
+        mSendCount = 1;
+        mTimerTaskHelper = new TimerTaskHelper(new TimerTask() {
+            @Override
+            public void run() {
+                if(mStatus != STATUS_ALARM_SUCCESS && mSendCount <= 3){
+                    //ip报警未成功并且报警次数小于3次 则继续ip报警
+                    if(type == BaseData.TYPE_ALARM_U){
+                        NettyHelper.getInstance().send(new UAlarm(mSendCount));
+                    }else if(type == BaseData.TYPE_DOOR_ALARM_U){
+                        NettyHelper.getInstance().send(new UDoorAlarm(mSendCount));
+                    }else if(type == BaseData.TYPE_SMOKE_ALARM_U){
+                        NettyHelper.getInstance().send(new USmokeAlarm(mSendCount));
+                    }else if(type == BaseData.TYPE_GAS_ALARM_U){
+                        NettyHelper.getInstance().send(new UGasAlarm(mSendCount));
+                    }
+                    mSendCount++;
+                }else {
+                    mTimerTaskHelper.stop();
+                    if(mSendCount > 3){
+                        //如果报警次数大于3次 则放弃ip报警 ip报警失败
+                        //转语音报警
+                        setStatus(STATUS_ALARM_FINISH);
+                        CallAlarmInstance.getInstance().polling(false);
                     }else {
-                        mTimerTaskHelper.stop();
-                        if(mSendCount > 3){
-                            //如果报警次数大于3次 则放弃ip报警 ip报警时比
-                            //转语音报警
-                            mStatus = STATUS_ALARM_FAIL;
-                            CallAlarmInstance.getInstance().polling(false);
-                        }else {
-                            //报警成功 小于3次
-                            //停止报警声 播放报警已发出
-                            //然后再响报警声
-                            mStatus = STATUS_ALARM_SUCCESS;
-                            AlarmMediaPlayer.getInstance().stopLoopAlarm();
-                            AlarmMediaPlayer.getInstance().playAlarmSuccess(new AlarmMediaPlayer.OnPlayFinishListener() {
-                                @Override
-                                public void onPlayFinish() {
-                                    AlarmMediaPlayer.getInstance().playLoopAlarm();
-                                }
-                            });
-                        }
+                        //报警成功 小于3次
+                        //停止报警声 播放报警已发出
+                        //然后再响报警声
+                        mStatus = STATUS_ALARM_SUCCESS;
+                        AlarmMediaPlayer.getInstance().stopLoopAlarm();
+                        AlarmMediaPlayer.getInstance().playAlarmSuccess(new AlarmMediaPlayer.OnPlayFinishListener() {
+                            @Override
+                            public void onPlayFinish() {
+                                AlarmMediaPlayer.getInstance().playLoopAlarm();
+                            }
+                        });
                     }
                 }
-            },DEFAULT_PERIOD);
-            mTimerTaskHelper.start(50);
-        }
+            }
+        },DEFAULT_PERIOD);
+        mTimerTaskHelper.start(50);
     }
 }
