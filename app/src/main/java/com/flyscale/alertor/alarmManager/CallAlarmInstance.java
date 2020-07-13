@@ -22,7 +22,6 @@ public class CallAlarmInstance {
     public static final int STATUS_NONE = 10;//初始状态
     public static final int STATUS_ALARMING = 11;//正在报警
     public static final int STATUS_ALARM_SUCCESS = 12;//报警成功
-    public static final int STATUS_ALARM_FAIL =13;//报警失败
     public static final int STATUS_ALARM_FINISH = 14;//报警结束
     int mStatus = STATUS_NONE;
     //是否摘机
@@ -45,11 +44,13 @@ public class CallAlarmInstance {
         if(mStatus == STATUS_ALARM_FINISH){
             PhoneUtil.endCall(BaseApplication.sContext);
             AlarmManager.finishAlarmBlink();
+            if(!mTimerTaskHelper.isStop()){
+                mTimerTaskHelper.stop();
+            }
         }
     }
 
     public void polling(boolean is110){
-        IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
         AlarmManager.startAlarmBlink(false);
         final String sendNumber;
         if(is110){

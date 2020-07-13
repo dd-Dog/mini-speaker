@@ -3,10 +3,15 @@ package com.flyscale.alertor.alarmManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.util.Log;
 
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.Constant;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * @author 高鹤泉
@@ -20,8 +25,12 @@ public class AlarmMediaPlayer {
     AudioManager mAudioManager;
     Context mContext;
 
+    //播放次数
+    int mPlayCount = 3;
     boolean isPlayLoopAlarm = false;
     boolean isPlayAlarmSuccess = false;
+    boolean isPlayReceive = false;
+    String TAG = "AlarmMediaPlayer";
 
     public static AlarmMediaPlayer getInstance() {
         return ourInstance;
@@ -30,6 +39,63 @@ public class AlarmMediaPlayer {
     private AlarmMediaPlayer() {
         mAudioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
         mContext = BaseApplication.sContext;
+    }
+
+    /**
+     * 播放接警信息
+     * @param file
+     * @param playCount
+     */
+    public void playReceive(File file,int playCount){
+        stopAudio();
+        if(!file.exists()){
+            Log.i(TAG, "playReceive: voiceFile no exist");
+            return;
+        }
+        //播放语音之前 关闭警报声
+        stopLoopAlarm();
+        isPlayReceive = true;
+        mPlayCount = playCount;
+        mMediaPlayer = new MediaPlayer();
+        try {
+            mMediaPlayer.setDataSource(file.getAbsolutePath());
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            // 通过异步的方式装载媒体资源
+            mMediaPlayer.prepareAsync();
+            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mMediaPlayer.start();
+                }
+            });
+            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    mPlayCount--;
+                    if(mPlayCount > 0){
+                        mMediaPlayer.start();
+                    }else {
+                        //语音报警结束打开声警报声
+                        stopReceive();
+                        playLoopAlarm();
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            playLoopAlarm();
+            stopReceive();
+        }
+    }
+
+    /**
+     * 停止播放接警信息
+     */
+    public void stopReceive(){
+        if(mMediaPlayer != null){
+            mMediaPlayer.stop();
+        }
+        isPlayReceive = false;
     }
 
 
@@ -65,6 +131,7 @@ public class AlarmMediaPlayer {
         mMediaPlayer = MediaPlayer.create(mContext,R.raw.v8_send_alarm_success);
         mMediaPlayer.setLooping(false);
         mMediaPlayer.start();
+        isPlayAlarmSuccess = true;
         mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -74,7 +141,6 @@ public class AlarmMediaPlayer {
                 isPlayAlarmSuccess = false;
             }
         });
-        isPlayAlarmSuccess = true;
     }
 
     /**
@@ -96,6 +162,23 @@ public class AlarmMediaPlayer {
         return isPlayAlarmSuccess;
     }
 
+    public boolean isPlayReceive() {
+        return isPlayReceive;
+    }
+
+    /**
+     * 是否正在播放其中一个
+     * @return
+     */
+    public boolean isPlaySomeone(){
+        return isPlayLoopAlarm || isPlayAlarmSuccess || isPlayReceive;
+    }
+
+    public void stopAll(){
+        stopLoopAlarm();
+        stopAlarmSuccess();
+        stopReceive();
+    }
 
     /**
      * 停止其他播放 抢占焦点

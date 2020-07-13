@@ -12,6 +12,8 @@ public class TimerTaskHelper  {
     Timer mTimer;
     TimerTask mTimerTask;
     long mPeriodTime;
+    boolean isStop = true;
+
 
     public TimerTaskHelper(TimerTask timerTask, long periodTime) {
         mTimerTask = timerTask;
@@ -23,6 +25,7 @@ public class TimerTaskHelper  {
 
     public void start(int delay){
         mTimer.schedule(mTimerTask,delay,mPeriodTime);
+        isStop = false;
     }
 
     public void stop(){
@@ -33,5 +36,10 @@ public class TimerTaskHelper  {
             }
             mTimer.purge();
         }
+        isStop = true;
+    }
+
+    public boolean isStop() {
+        return isStop;
     }
 }
