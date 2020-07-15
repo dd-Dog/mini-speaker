@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.flyscale.FlyscaleManager;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
@@ -30,7 +31,7 @@ public class LedInstance {
     boolean isOnAlarm = true;
     boolean isAlarmOnStatus = true;
     FlyscaleManager mFlyscaleManager;
-    AlarmHandler mAlarmHandler = new AlarmHandler();
+    AlarmHandler mAlarmHandler = new AlarmHandler(Looper.myLooper());
 
     public static LedInstance getInstance() {
         return ourInstance;
@@ -222,6 +223,11 @@ public class LedInstance {
     int offWhat = 2;
     @SuppressLint("HandlerLeak")
     public class AlarmHandler extends Handler{
+
+        public AlarmHandler(Looper looper) {
+            super(looper);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);

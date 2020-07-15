@@ -73,7 +73,7 @@ public class AlarmManager {
     }
 
     /**
-     * 按下110按键 有可能报警 也有可能接警
+     * 按下110按键 有可能报警
      */
     public static void press110Key(){
         if(UserActionHelper.isFastClick()){
@@ -90,6 +90,25 @@ public class AlarmManager {
         }
     }
 
+    /**
+     * 结束上一次报警或者接警
+     */
+    public static void finishLastAlarmOrReceive(){
+        int ipStatus = IpAlarmInstance.getInstance().getStatus();
+        int callStatus = CallAlarmInstance.getInstance().getStatus();
+        if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
+            IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
+        }
+        if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
+            CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
+        }
+        if(AlarmMediaPlayer.getInstance().isPlaySomeone()){
+            AlarmMediaPlayer.getInstance().stopAll();
+        }
+        if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+            PhoneUtil.endCall(BaseApplication.sContext);
+        }
+    }
 
     /**
      * 开始声光警报

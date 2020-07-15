@@ -51,6 +51,10 @@ public class CallAlarmInstance {
     }
 
     public void polling(boolean is110){
+        int ipStatus = IpAlarmInstance.getInstance().getStatus();
+        if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
+            IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
+        }
         AlarmManager.startAlarmBlink(false);
         final String sendNumber;
         if(is110){

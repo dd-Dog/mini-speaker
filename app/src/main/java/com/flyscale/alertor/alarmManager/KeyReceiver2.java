@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.MessageQueue;
 import android.text.TextUtils;
 import android.util.Log;
 
