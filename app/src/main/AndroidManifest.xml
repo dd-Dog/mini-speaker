@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:sharedUserId="android.uid.system"
     package="com.flyscale.alertor"> <!-- android:sharedUserId="android.uid.system" 测试的时候可以注销  边工说是 fota升级用的-->
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
