@@ -61,8 +61,7 @@ public class LedInstance {
         return result;
     }
 
-
-    long mBlinkChargeTime = 0;
+    int mBlinkChargeCount = 0;
     TimerTaskHelper mBlinkChargeTimerHelper;
 
     public void blinkChargeLed(){
@@ -74,10 +73,10 @@ public class LedInstance {
                 }else {
                     offChargeLed();
                 }
-                mBlinkChargeTime += 300;
-                if(mBlinkChargeTime >= 900){
+                mBlinkChargeCount ++;
+                if(mBlinkChargeCount >= 3){
                     mBlinkChargeTimerHelper.stop();
-                    mBlinkChargeTime = 0;
+                    mBlinkChargeCount = 0;
                     if(BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
                         showChargeLed();
                     }else {
