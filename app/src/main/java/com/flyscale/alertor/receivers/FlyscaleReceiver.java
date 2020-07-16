@@ -34,7 +34,7 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             if(remain > 4500){
                 MediaHelper.play(MediaHelper.PAIR_CLEAR,true);
                 PersistPair.clearAll(true);
-            }else if(1500 < remain && remain < 2500){
+            }else if(1200 < remain && remain < 2500){
                 MediaHelper.play(MediaHelper.PAIR_STUDY,true);
             }
         }
