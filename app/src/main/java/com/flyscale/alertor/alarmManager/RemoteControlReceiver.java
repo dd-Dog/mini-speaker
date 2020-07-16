@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistPair;
@@ -41,9 +42,11 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                     if(status.equals("0001")){
                         //布防
                         PersistConfig.saveIsArming(true);
+                        MediaHelper.play(MediaHelper.PAIR_ARMING,true);
                     }else if(status.equals("1000")){
                         //撤防
                         PersistConfig.saveIsArming(false);
+                        MediaHelper.play(MediaHelper.PAIR_DISARMING,true);
                     }
                     if(TextUtils.equals(status,"0011") || TextUtils.equals(status,"0101")){
                         if(TextUtils.equals(status,"0011")){//门磁
@@ -77,12 +80,23 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                         //todo
 //                        AlarmManager.press110Key();
                     }else if(status.equals("1001")){
-                        //烟感
-                        AlarmManager.finishLastAlarmOrReceive();
-                        AlarmManager.pollingAlarm(BaseData.TYPE_SMOKE_ALARM_U,false);
+                        if(PersistPair.findPair().isSmoke()){
+                            //烟感
+                            AlarmManager.finishLastAlarmOrReceive();
+                            AlarmManager.pollingAlarm(BaseData.TYPE_SMOKE_ALARM_U,false);
+                        }else {
+                            MediaHelper.play(MediaHelper.PAIR_SMOKE,true);
+                            PersistPair.saveSmoke(true);
+                        }
                     }else if(status.equals("1011")){
-                        AlarmManager.finishLastAlarmOrReceive();
-                        AlarmManager.pollingAlarm(BaseData.TYPE_GAS_ALARM_U,false);
+                        //气感
+                        if(PersistPair.findPair().isGas()){
+                            AlarmManager.finishLastAlarmOrReceive();
+                            AlarmManager.pollingAlarm(BaseData.TYPE_GAS_ALARM_U,false);
+                        }else {
+                            MediaHelper.play(MediaHelper.PAIR_GAS,true);
+                            PersistPair.saveGas(true);
+                        }
                     }
                 }
             }

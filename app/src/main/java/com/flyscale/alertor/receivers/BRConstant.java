@@ -17,4 +17,7 @@ public interface BRConstant {
     String ACTION_ALARM_LED_STATUS = "flyscale.privkey.status.ALARM_LED";
     //ADB开关  (能否连接usb)
     String ACTION_USB_TOGGLE = "flyscale.privkey.TOGGLE_USB_CONFIG";
+    //学习键按下
+    String ACTION_STUDY_DOWN = "flyscale.privkey.SENSOR_LEARN.down";
+    String ACTION_STUDY_UP = "flyscale.privkey.SENSOR_LEARN.up";
 }

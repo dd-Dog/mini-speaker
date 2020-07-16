@@ -50,6 +50,9 @@ public class IpAlarmInstance {
             if(!mTimerTaskHelper.isStop()){
                 mTimerTaskHelper.stop();
             }
+            if(UserActionHelper.isMute()){
+                LedInstance.getInstance().blinkChargeLed();
+            }
         }else if(mStatus == STATUS_ALARM_SUCCESS){
             if(!mTimerTaskHelper.isStop()){
                 mTimerTaskHelper.stop();

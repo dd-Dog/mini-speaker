@@ -16,7 +16,6 @@ public class PersistPair extends LitePalSupport {
     boolean infrared;
     boolean gas;
     boolean smoke;
-    boolean clearAll;
 
 
 
@@ -60,14 +59,6 @@ public class PersistPair extends LitePalSupport {
         this.smoke = smoke;
     }
 
-    public boolean isClearAll() {
-        return clearAll;
-    }
-
-    public void setClearAll(boolean clearAll) {
-        this.clearAll = clearAll;
-    }
-
 
     public static PersistPair findPair(){
         PersistPair persistPair = LitePal.findFirst(PersistPair.class);
@@ -104,11 +95,8 @@ public class PersistPair extends LitePalSupport {
         persistPair.save();
     }
 
-    public static void saveClearAll(boolean clearAll){
-        PersistPair persistPair = findPair();
-        persistPair.setClearAll(clearAll);
-        persistPair.save();
-        if(persistPair.isClearAll()){
+    public static void clearAll(boolean clearAll){
+        if(clearAll){
             saveControl(false);
             saveDoor(false);
             saveInfrared(false);

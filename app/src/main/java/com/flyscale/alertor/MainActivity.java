@@ -39,16 +39,16 @@ public class MainActivity extends BaseActivity {
 
         startService(new Intent(this, AlarmService.class));
 
-        FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
-        String iccid = ClientInfoHelper.getIMEI();
-        if (TextUtils.isEmpty(iccid) || "null".equals(iccid)) {
-            iccid = "0000";
-        }
-        int length = iccid.length();
-        flyscaleManager.createHotspot("FLY510L-BJQ_" + iccid.substring(length - 4, length), "12345678", 4);
+//        FlyscaleManager flyscaleManager = (FlyscaleManager) getSystemService("flyscale");
+//        String iccid = ClientInfoHelper.getIMEI();
+//        if (TextUtils.isEmpty(iccid) || "null".equals(iccid)) {
+//            iccid = "0000";
+//        }
+//        int length = iccid.length();
+//        flyscaleManager.createHotspot("FLY510L-BJQ_" + iccid.substring(length - 4, length), "12345678", 4);
 
 
-        Log.i(TAG, "onCreate: 20200710:1438");
+        Log.i(TAG, "onCreate: 20200716:1130");
 
         //18199007916
         //13319054517

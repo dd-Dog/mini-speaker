@@ -70,7 +70,7 @@ public class NettyHelper {
     public Channel mChannel;
     ChannelFutureListener mChannelFutureListener = new MyChannelFutureListener();
 
-    FotaHelper mFotaHelper;
+//    FotaHelper mFotaHelper;
     //连接次数
     int mConnectCount = 0;
     final int MAX_CONNECT_COUNT = 4;
@@ -82,7 +82,7 @@ public class NettyHelper {
     }
 
     private NettyHelper(){
-        mFotaHelper = new FotaHelper(BaseApplication.sContext,new FotaAction());
+//        mFotaHelper = new FotaHelper(BaseApplication.sContext,new FotaAction());
     }
 
     public int getConnectCount() {
@@ -289,7 +289,7 @@ public class NettyHelper {
      * 总包数@包序号@接收状态@失败原因
      */
     public void modifyFota(String total,String num,String tradeNum){
-        mFotaHelper.checkVersion(total,num,tradeNum);
+//        mFotaHelper.checkVersion(total,num,tradeNum);
     }
 
 

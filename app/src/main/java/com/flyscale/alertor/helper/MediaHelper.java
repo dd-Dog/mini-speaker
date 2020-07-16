@@ -30,6 +30,12 @@ public class MediaHelper {
     public final static int PAIR_REMOTE_CONTROL = 15;//遥控器配对
     public final static int PAIR_INFRARED = 16;//红外配对
     public final static int PAIR_DOOR = 17;//门磁配对
+    public final static int PAIR_SMOKE = 18;//烟感
+    public final static int PAIR_GAS = 19;//
+    public final static int PAIR_ARMING = 20;//布防
+    public final static int PAIR_DISARMING = 21;//撤防
+    public final static int PAIR_STUDY = 22;//开始学习
+    public final static int PAIR_CLEAR = 23;//解除配对
 
 
     static List<Integer> sPlayTypeArray = new ArrayList<>();
@@ -99,6 +105,24 @@ public class MediaHelper {
             case PAIR_DOOR:
                 play(BaseApplication.sContext,R.raw.p_door);
                 break;
+            case PAIR_SMOKE:
+                play(BaseApplication.sContext,R.raw.p_smoke);
+                break;
+            case PAIR_GAS:
+                play(BaseApplication.sContext,R.raw.p_gas);
+                break;
+            case PAIR_ARMING:
+                play(BaseApplication.sContext,R.raw.p_arming);
+                break;
+            case PAIR_DISARMING:
+                play(BaseApplication.sContext,R.raw.p_disarming);
+                break;
+            case PAIR_STUDY:
+                play(BaseApplication.sContext,R.raw.p_study);
+                break;
+            case PAIR_CLEAR:
+                play(BaseApplication.sContext,R.raw.p_clear);
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
@@ -138,16 +162,6 @@ public class MediaHelper {
         }
     }
 
-    public static void playNormal(Context context, int resId) {
-        mMediaPlayer = MediaPlayer.create(context, resId);
-        mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-
-            }
-        });
-        mMediaPlayer.start();
-    }
 
     public static void stop() {
         if (mMediaPlayer != null) {
