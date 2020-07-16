@@ -32,7 +32,6 @@ public class BaseApplication extends Application {
 
         SoundPoolHelper.getInstance().init(this);
         LitePal.initialize(this);
-        AlarmHelper.getInstance();
 
         sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
         sFlyscaleManager.setExternalAlarmStatus(0);

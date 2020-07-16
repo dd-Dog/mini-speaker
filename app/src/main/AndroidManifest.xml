@@ -61,8 +61,8 @@
             </intent-filter>
         </receiver>
         <!--    遥控器广播     -->
-        <receiver android:name=".receivers.RemoteControlReceiver">
-            <intent-filter android:priority="1003">
+        <receiver android:name=".alarmManager.RemoteControlReceiver">
+            <intent-filter android:priority="1000">
                 <action android:name="flyscale.privkey.REMOTE_CONTROL"/>
             </intent-filter>
         </receiver>
@@ -78,9 +78,9 @@
                 <action android:name="flyscale.privkey.TOGGLE_USB_CONFIG"/>
             </intent-filter>
         </receiver>
-        <!--    按键广播    -->
-        <receiver android:name=".receivers.KeyReceiver">
-            <intent-filter android:priority="1003">
+        <!--   按键广播     -->
+        <receiver android:name=".alarmManager.KeyReceiver2">
+            <intent-filter android:priority="1000">
                 <action android:name="flyscale.privkey.ALARM.down"/>
                 <action android:name="flyscale.privkey.ALARM.long"/>
                 <action android:name="flyscale.privkey.ALARM.up"/>
@@ -96,7 +96,6 @@
                 <action android:name="flyscale.privkey.status.ALARM_LED"/>
             </intent-filter>
         </receiver>
-
 
         <activity android:name=".MainActivity">
             <intent-filter>

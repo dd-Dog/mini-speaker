@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.MediaPlayer;
 import android.os.BatteryManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -24,7 +23,6 @@ public class BatteryReceiver extends BroadcastReceiver {
     public static int sBatteryLevel = -1;
     int mLastBatteryLevel = -1;
     int mBatteryStatus = BatteryManager.BATTERY_STATUS_UNKNOWN;
-    public static int sPlugged = 0;
     String TAG = "BatteryReceiver";
 
     @Override
@@ -37,13 +35,12 @@ public class BatteryReceiver extends BroadcastReceiver {
             mBatteryStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS,BatteryManager.BATTERY_STATUS_UNKNOWN);
             Log.i(TAG, "onReceive: sBatteryLevel = " + sBatteryLevel);
         }else if(TextUtils.equals(action,Intent.ACTION_BATTERY_LOW)){
-            if(sPlugged == 0){
+            if(!BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
                 MediaHelper.play(MediaHelper.BATTERY_LOW_CHARGE,true);
             }
         }else if(TextUtils.equals(action,BRConstant.ACTION_AC)){
             String status = intent.getStringExtra("status");
             Log.i(TAG, "onReceive: sPlugged = " + status);
-            sPlugged = Integer.parseInt(status);
             whenIsCharge();
         }
     }
@@ -68,7 +65,7 @@ public class BatteryReceiver extends BroadcastReceiver {
      * 当正在充电的时候
      */
     public void whenIsCharge(){
-        if(sPlugged == 1){
+        if(BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
             LedInstance.getInstance().showChargeLed();
         }else {
             LedInstance.getInstance().offChargeLed();

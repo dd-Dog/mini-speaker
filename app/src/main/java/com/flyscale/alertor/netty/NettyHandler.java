@@ -2,6 +2,9 @@ package com.flyscale.alertor.netty;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.alarmManager.AlarmManager;
+import com.flyscale.alertor.alarmManager.AlarmMediaPlayer;
+import com.flyscale.alertor.alarmManager.IpAlarmInstance;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.factory.BaseDataFactory;
 import com.flyscale.alertor.data.persist.PersistConfig;
@@ -148,12 +151,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             //报警结果	STRING[1]	0表示正常接收，1没有正常接收，重发
             String result = baseData.getAlarmResult();
             if(TextUtils.equals(result,"0")){
-                //报警成功
-                AlarmHelper.getInstance().setAlarmResult(true);
+                //ip报警成功
+                IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_SUCCESS);
             }
         }else if(type == BaseData.TYPE_RING_D){
             //响铃
-            AlarmHelper.getInstance().alarmStart(true);
             NettyHelper.getInstance().send(new URing(baseData.getSendCount(),tradeNum));
         }else if(type == BaseData.TYPE_VOICE_D){
             //下载报警语音包
@@ -169,11 +171,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                 @Override
                 public void run() {
                     Log.i(TAG, "run: 下载文件");
-                    File file = FileHelper.byteToFile(DataConvertHelper.hexToBytes(hex),FileHelper.S_ALARM_RESP_NAME);
-//                    //播放报警信息时候 要把 报警音关闭 但是报警灯不关
-//                    Log.i(TAG, "run: file = " + file.getPath());
-//                    AlarmMediaInstance.getInstance().stopLoopAlarm();
-                    ReceiveMediaInstance.getInstance().play(FileHelper.S_ALARM_RESP_FILE,3);
+                    FileHelper.byteToFile(DataConvertHelper.hexToBytes(hex),FileHelper.S_ALARM_RESP_NAME);
+                    //文件下载成功之后再去响铃
+                    AlarmManager.startAlarmBlink(true);
+                    AlarmMediaPlayer.getInstance().playReceive(FileHelper.S_ALARM_RESP_FILE,3);
+//                    ReceiveMediaInstance.getInstance().play(FileHelper.S_ALARM_RESP_FILE,3);
                 }
             });
         }else if(type == BaseData.TYPE_CHANGE_ALARM_NUMBER_D){

@@ -72,7 +72,7 @@ public class ClientInfoHelper {
      * @return
      */
     public static int getAC(){
-        return BatteryReceiver.sPlugged == 1 ? 0 : 1;
+        return BaseApplication.sFlyscaleManager.getAdapterState().equals("1") ? 0 : 1;
     }
 
     /**

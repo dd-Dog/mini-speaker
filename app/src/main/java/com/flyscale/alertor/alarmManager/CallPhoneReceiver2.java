@@ -18,7 +18,6 @@ import com.flyscale.alertor.receivers.BRConstant;
  * @TIME 2020/7/10 17:53
  * @DESCRIPTION 暂无
  */
-@Deprecated
 public class CallPhoneReceiver2 extends BroadcastReceiver {
     public static final int INVALID = 0;
     public static final int IDLE = 1;           /* The call is idle.  Nothing active */

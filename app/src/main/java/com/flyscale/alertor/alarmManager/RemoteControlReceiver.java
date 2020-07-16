@@ -8,16 +8,16 @@ import android.util.Log;
 
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistPair;
+import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.ThreadPool;
-import com.flyscale.alertor.netty.AlarmHelper;
 
 /**
  * @author 高鹤泉
  * @TIME 2020/7/15 11:00
  * @DESCRIPTION 暂无
  */
-@Deprecated
-public class RemoteControlReceiver2 extends BroadcastReceiver {
+public class RemoteControlReceiver extends BroadcastReceiver {
     final String ACTION = "flyscale.privkey.REMOTE_CONTROL";
     String TAG = "RemoteControlReceiver";
 
@@ -46,6 +46,20 @@ public class RemoteControlReceiver2 extends BroadcastReceiver {
                         PersistConfig.saveIsArming(false);
                     }
                     if(TextUtils.equals(status,"0011") || TextUtils.equals(status,"0101")){
+                        if(TextUtils.equals(status,"0011")){//门磁
+                            if(!PersistPair.findPair().isDoor()){
+                                MediaHelper.play(MediaHelper.PAIR_DOOR,true);
+                                PersistPair.saveDoor(true);
+                                return;
+                            }
+                        }
+                        if(TextUtils.equals(status,"0101")){//红外
+                            if(!PersistPair.findPair().isInfrared()){
+                                MediaHelper.play(MediaHelper.PAIR_INFRARED,true);
+                                PersistPair.saveInfrared(true);
+                                return;
+                            }
+                        }
                         //如果是门磁和红外 孟工说 红外的按照门磁的报警
                         if(PersistConfig.findConfig().isArming()){
                             //如果布防
@@ -53,9 +67,15 @@ public class RemoteControlReceiver2 extends BroadcastReceiver {
                             AlarmManager.pollingAlarm(BaseData.TYPE_DOOR_ALARM_U,false);
                         }
                     }else if(status.equals("0100")){
-                        AlarmManager.pressAlarmKey();
+                        if(!PersistPair.findPair().isRemoteControl()){
+                            MediaHelper.play(MediaHelper.PAIR_REMOTE_CONTROL,true);
+                            PersistPair.saveControl(true);
+                        }else {
+                            AlarmManager.pressAlarmKey();
+                        }
                     }else if(status.equals("0010")){
-                        AlarmManager.press110Key();
+                        //todo
+//                        AlarmManager.press110Key();
                     }else if(status.equals("1001")){
                         //烟感
                         AlarmManager.finishLastAlarmOrReceive();

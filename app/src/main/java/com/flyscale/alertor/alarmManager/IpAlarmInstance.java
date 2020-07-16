@@ -10,6 +10,8 @@ import com.flyscale.alertor.data.up.UDoorAlarm;
 import com.flyscale.alertor.data.up.UGasAlarm;
 import com.flyscale.alertor.data.up.USmokeAlarm;
 import com.flyscale.alertor.helper.TimerTaskHelper;
+import com.flyscale.alertor.helper.UserActionHelper;
+import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.netty.NettyHelper;
 
 import java.util.TimerTask;
@@ -19,7 +21,6 @@ import java.util.TimerTask;
  * @TIME 2020/7/8 13:11
  * @DESCRIPTION 暂无
  */
-@Deprecated
 public class IpAlarmInstance {
     private static final IpAlarmInstance ourInstance = new IpAlarmInstance();
     public static final int STATUS_NONE = 0;//初始状态
@@ -48,6 +49,21 @@ public class IpAlarmInstance {
             AlarmManager.finishAlarmBlink();
             if(!mTimerTaskHelper.isStop()){
                 mTimerTaskHelper.stop();
+            }
+        }else if(mStatus == STATUS_ALARM_SUCCESS){
+            if(!mTimerTaskHelper.isStop()){
+                mTimerTaskHelper.stop();
+            }
+            if(UserActionHelper.isMute()){
+                LedInstance.getInstance().blinkChargeLed();
+            }else {
+                AlarmMediaPlayer.getInstance().stopLoopAlarm();
+                AlarmMediaPlayer.getInstance().playAlarmSuccess(new AlarmMediaPlayer.OnPlayFinishListener() {
+                    @Override
+                    public void onPlayFinish() {
+                        AlarmMediaPlayer.getInstance().playLoopAlarm();
+                    }
+                });
             }
         }
     }
@@ -87,14 +103,7 @@ public class IpAlarmInstance {
                         //报警成功 小于3次
                         //停止报警声 播放报警已发出
                         //然后再响报警声
-                        mStatus = STATUS_ALARM_SUCCESS;
-                        AlarmMediaPlayer.getInstance().stopLoopAlarm();
-                        AlarmMediaPlayer.getInstance().playAlarmSuccess(new AlarmMediaPlayer.OnPlayFinishListener() {
-                            @Override
-                            public void onPlayFinish() {
-                                AlarmMediaPlayer.getInstance().playLoopAlarm();
-                            }
-                        });
+                        setStatus(STATUS_ALARM_SUCCESS);
                     }
                 }
             }

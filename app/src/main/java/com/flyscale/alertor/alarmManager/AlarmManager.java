@@ -1,5 +1,7 @@
 package com.flyscale.alertor.alarmManager;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
@@ -8,32 +10,46 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
+import com.flyscale.alertor.helper.TimerTaskHelper;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.netty.NettyHelper;
+
+import java.util.TimerTask;
 
 /**
  * @author 高鹤泉
  * @TIME 2020/7/8 13:53
  * @DESCRIPTION 暂无
  */
-@Deprecated
 public class AlarmManager {
 
     static String TAG = "AlarmManager";
+    static TimerTaskHelper mTimerTaskHelper;
 
     /**
      * 报警
      */
-    public static void pollingAlarm(int type, boolean is110){
+    public static void pollingAlarm(int type, final boolean is110){
         if(isIpAlarmFirst()){
             //ip优先
             if(isNetConnect() && isServiceConnect()){
                 //网络和服务器连接正常
                 IpAlarmInstance.getInstance().polling(type);
-            }else if(isNetConnect() && !isServiceConnect()){
-                //网络正常 服务器连接不正常
-                CallAlarmInstance.getInstance().polling(is110);
+            }else if(!isNetConnect()){
+                //网络连接失败
+                MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
+            }else if(!isServiceConnect()){
+                //服务器连接失败
+                MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
+                mTimerTaskHelper = new TimerTaskHelper(new TimerTask() {
+                    @Override
+                    public void run() {
+                        mTimerTaskHelper.stop();
+                        CallAlarmInstance.getInstance().polling(is110);
+                    }
+                },-1);
+                mTimerTaskHelper.start(2500);
             }
         }else {
             //语音优先
@@ -62,11 +78,21 @@ public class AlarmManager {
                 //2.正在语音报警
                 Log.i(TAG, "pressAlarmKey: 正在语音报警");
                 CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
+            }else if(AlarmMediaPlayer.getInstance().isPlayReceive()){
+                Log.i(TAG, "pressAlarmKey: 正在播放接警信息");
+                AlarmMediaPlayer.getInstance().stopReceive();
+            }else if(AlarmMediaPlayer.getInstance().isWaitPlayReceive){
+                Log.i(TAG, "pressAlarmKey: 正在等待播放 接警信息");
+                AlarmMediaPlayer.getInstance().playReceiveNow();
             }else if(AlarmMediaPlayer.getInstance().isPlaySomeone()){
+                //以上情况 已经包含了这种情况 所以此条件应该不会出现
+                //暂时想到的可能性为
+                //1.接警文件异常，此时会声光报警
                 Log.i(TAG, "pressAlarmKey: loop -- success -- receive 其中一个正在播放");
                 AlarmMediaPlayer.getInstance().stopAll();
                 finishAlarmBlink();
             }else {
+                Log.i(TAG, "pressAlarmKey: 去报警");
                 pollingAlarm(BaseData.TYPE_ALARM_U,false);
             }
         }
@@ -121,8 +147,13 @@ public class AlarmManager {
             isMute = false;
         }
         if(isMute){
+            //静默
+            AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,0,AudioManager.FLAG_PLAY_SOUND);
             return;
         }
+        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
         if(!isSoundAlarming()){
             AlarmMediaPlayer.getInstance().playLoopAlarm();
         }
@@ -135,6 +166,8 @@ public class AlarmManager {
      * 关闭声光警报
      */
     public static void finishAlarmBlink(){
+        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
         AlarmMediaPlayer.getInstance().stopLoopAlarm();
         boolean alarmLedOn = LedInstance.getInstance().isAlarmOnStatus();
         Log.i(TAG, "finishAlarmBlink: 报警灯默认的开关状态 ---> " + alarmLedOn);
@@ -151,7 +184,7 @@ public class AlarmManager {
     public static boolean isNetConnect(){
         //报警时，如果网络没有连通，要提示“网络连接失败”。
         if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
-            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
+//            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
             return false;
         }
         return true;
@@ -164,7 +197,8 @@ public class AlarmManager {
     public static boolean isServiceConnect(){
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
         if(!NettyHelper.getInstance().isConnect()){
-            MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
+            Log.i(TAG, "isServiceConnect: 服务器连接失败");
+//            MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
             return false;
         }
         return true;

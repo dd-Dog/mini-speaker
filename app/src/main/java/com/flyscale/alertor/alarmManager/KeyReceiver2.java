@@ -17,7 +17,6 @@ import com.flyscale.alertor.receivers.BRConstant;
  * @TIME 2020/7/10 17:44
  * @DESCRIPTION 暂无
  */
-@Deprecated
 public class KeyReceiver2 extends BroadcastReceiver {
     String TAG = "KeyReceiver2";
     @Override
@@ -28,7 +27,8 @@ public class KeyReceiver2 extends BroadcastReceiver {
             //按下报警键
             AlarmManager.pressAlarmKey();
         }else if(TextUtils.equals(action,"flyscale.privkey.EMERGENCY.down")){
-            AlarmManager.press110Key();
+            //todo 屏蔽 110
+//            AlarmManager.press110Key();
         }else if(TextUtils.equals(action,BRConstant.ACTION_ALARM_LED_STATUS)){
             //报警灯常亮常闭
             AlarmLedReceiver.sendRepeatAlarmBroadcastBySwitch();

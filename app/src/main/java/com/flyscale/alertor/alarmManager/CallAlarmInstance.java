@@ -6,6 +6,8 @@ import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.TimerTaskHelper;
+import com.flyscale.alertor.helper.UserActionHelper;
+import com.flyscale.alertor.led.LedInstance;
 
 import java.util.TimerTask;
 
@@ -14,7 +16,6 @@ import java.util.TimerTask;
  * @TIME 2020/7/8 13:11
  * @DESCRIPTION 暂无
  */
-@Deprecated
 public class CallAlarmInstance {
     private static final CallAlarmInstance ourInstance = new CallAlarmInstance();
     TimerTaskHelper mTimerTaskHelper;
@@ -46,6 +47,11 @@ public class CallAlarmInstance {
             AlarmManager.finishAlarmBlink();
             if(!mTimerTaskHelper.isStop()){
                 mTimerTaskHelper.stop();
+            }
+        }else if(mStatus == STATUS_ALARM_SUCCESS){
+            mTimerTaskHelper.stop();
+            if(UserActionHelper.isMute()){
+                LedInstance.getInstance().blinkChargeLed();
             }
         }
     }

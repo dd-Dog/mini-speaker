@@ -1,7 +1,6 @@
 package com.flyscale.alertor.led;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.flyscale.FlyscaleManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +8,7 @@ import android.os.Message;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.helper.TimerTaskHelper;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,6 +53,40 @@ public class LedInstance {
 
     public void offChargeLed(){
         mFlyscaleManager.setLightColor(Constant.CHARGE_LED,Constant.LED_COLOR_LEVEL_MIN);
+    }
+
+    public String getChargeLed(){
+        String result = mFlyscaleManager.getLightColor(Constant.CHARGE_LED);
+        Log.i(TAG, "getChargeLed: status --- " + result);
+        return result;
+    }
+
+
+    long mBlinkChargeTime = 0;
+    TimerTaskHelper mBlinkChargeTimerHelper;
+
+    public void blinkChargeLed(){
+        mBlinkChargeTimerHelper = new TimerTaskHelper(new TimerTask() {
+            @Override
+            public void run() {
+                if(getChargeLed().equals("0")){
+                    showChargeLed();
+                }else {
+                    offChargeLed();
+                }
+                mBlinkChargeTime += 300;
+                if(mBlinkChargeTime >= 900){
+                    mBlinkChargeTimerHelper.stop();
+                    mBlinkChargeTime = 0;
+                    if(BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
+                        showChargeLed();
+                    }else {
+                        offChargeLed();
+                    }
+                }
+            }
+        },300);
+        mBlinkChargeTimerHelper.start(50);
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.flyscale.alertor.helper;
 
+import com.flyscale.alertor.base.BaseApplication;
+
 /**
  * @author 高鹤泉
  * @TIME 2020/6/19 14:12
@@ -10,6 +12,15 @@ public class UserActionHelper {
     private static long sLastClickTime = 0;
     private static long sLastConnectTime = 0;
 
+
+    /**
+     * 是否静默
+     * @return
+     */
+    public static boolean isMute(){
+        boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
+        return isMute;
+    }
 
     /**
      * 再次连接速度是否过快

@@ -24,7 +24,11 @@ public class TimerTaskHelper  {
     }
 
     public void start(int delay){
-        mTimer.schedule(mTimerTask,delay,mPeriodTime);
+        if(mPeriodTime <= 0){
+            mTimer.schedule(mTimerTask,delay);
+        }else {
+            mTimer.schedule(mTimerTask,delay,mPeriodTime);
+        }
         isStop = false;
     }
 

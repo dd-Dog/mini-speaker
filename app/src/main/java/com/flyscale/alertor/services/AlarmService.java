@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.flyscale.alertor.alarmManager.CallPhoneReceiver2;
 import com.flyscale.alertor.base.BaseService;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
@@ -14,7 +15,6 @@ import com.flyscale.alertor.netty.NettyHelper;
 import com.flyscale.alertor.receivers.AlarmLedReceiver;
 import com.flyscale.alertor.receivers.BatteryReceiver;
 import com.flyscale.alertor.receivers.CallPhoneReceiver;
-import com.flyscale.alertor.receivers.KeyReceiver;
 import com.flyscale.alertor.receivers.StateManagerReceiver;
 import com.flyscale.alertor.receivers.TelephonyStateReceiver;
 
@@ -36,9 +36,8 @@ public class AlarmService extends BaseService {
     StateManagerReceiver mStateManagerReceiver;
     BatteryReceiver mBatteryReceiver;
     TelephonyStateReceiver mTelephonyStateReceiver;
-//    KeyReceiver mKeyReceiver;
-    CallPhoneReceiver mCallPhoneReceiver;
-    FotaHelper mFotaHelper;
+//    CallPhoneReceiver mCallPhoneReceiver;
+    CallPhoneReceiver2 mCallPhoneReceiver2;
 
     public AlarmService() {
 
@@ -76,8 +75,10 @@ public class AlarmService extends BaseService {
 //        mKeyReceiver = new KeyReceiver();
 //        mKeyReceiver.register();
         //拨打电话广播
-        mCallPhoneReceiver = new CallPhoneReceiver();
-        mCallPhoneReceiver.register();
+        mCallPhoneReceiver2 = new CallPhoneReceiver2();
+        mCallPhoneReceiver2.register();
+//        mCallPhoneReceiver = new CallPhoneReceiver();
+//        mCallPhoneReceiver.register();
         //警报灯常亮广播
         AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmLedOffTime());
     }
@@ -104,7 +105,8 @@ public class AlarmService extends BaseService {
         mBatteryReceiver.unRegister();
 //        mKeyReceiver.unRegister();
         mTelephonyStateReceiver.destroy();
-        mCallPhoneReceiver.unRegister();
+//        mCallPhoneReceiver.unRegister();
+        mCallPhoneReceiver2.unRegister();
         if(mTimer != null){
             mTimer.cancel();
             mTimer = null;

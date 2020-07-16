@@ -3,22 +3,24 @@ package com.flyscale.alertor.alarmManager;
 import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Handler;
 import android.util.Log;
 
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.SoundPoolHelper;
+import com.flyscale.alertor.helper.TimerTaskHelper;
 import com.flyscale.alertor.led.Constant;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.TimerTask;
 
 /**
  * @author 高鹤泉
  * @TIME 2020/7/9 18:44
  * @DESCRIPTION 暂无
  */
-@Deprecated
 public class AlarmMediaPlayer {
     private static final AlarmMediaPlayer ourInstance = new AlarmMediaPlayer();
     MediaPlayer mMediaPlayer = new MediaPlayer();
@@ -27,10 +29,13 @@ public class AlarmMediaPlayer {
 
     //播放次数
     int mPlayCount = 3;
+    File mFile;
     boolean isPlayLoopAlarm = false;
     boolean isPlayAlarmSuccess = false;
     boolean isPlayReceive = false;
+    boolean isWaitPlayReceive = false;//等待去播放接警信息
     String TAG = "AlarmMediaPlayer";
+    TimerTaskHelper mTimerTaskHelper;
 
     public static AlarmMediaPlayer getInstance() {
         return ourInstance;
@@ -46,19 +51,41 @@ public class AlarmMediaPlayer {
      * @param file
      * @param playCount
      */
-    public void playReceive(File file,int playCount){
+    public void playReceive(final File file, final int playCount){
+        if(file.exists()){
+            mFile = file;
+            mPlayCount = playCount;
+            isWaitPlayReceive = true;
+            mTimerTaskHelper = new TimerTaskHelper(new TimerTask() {
+                @Override
+                public void run() {
+                    playReceiveNow();
+                }
+            },-1);
+            mTimerTaskHelper.start(9 * 1000);
+        }
+    }
+
+    /**
+     * 立即播放接警信息
+     */
+    public void playReceiveNow(){
+        mTimerTaskHelper.stop();
         stopAudio();
-        if(!file.exists()){
+        if(!mFile.exists()){
             Log.i(TAG, "playReceive: voiceFile no exist");
+            //接警结束
+            stopReceive();
+            AlarmManager.finishAlarmBlink();
             return;
         }
         //播放语音之前 关闭警报声
         stopLoopAlarm();
         isPlayReceive = true;
-        mPlayCount = playCount;
+        isWaitPlayReceive = false;
         mMediaPlayer = new MediaPlayer();
         try {
-            mMediaPlayer.setDataSource(file.getAbsolutePath());
+            mMediaPlayer.setDataSource(mFile.getAbsolutePath());
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             // 通过异步的方式装载媒体资源
             mMediaPlayer.prepareAsync();
@@ -75,16 +102,17 @@ public class AlarmMediaPlayer {
                     if(mPlayCount > 0){
                         mMediaPlayer.start();
                     }else {
-                        //语音报警结束打开声警报声
+                        //接警结束
                         stopReceive();
-                        playLoopAlarm();
+                        AlarmManager.finishAlarmBlink();
                     }
                 }
             });
         } catch (IOException e) {
             e.printStackTrace();
-            playLoopAlarm();
+            //接警结束
             stopReceive();
+            AlarmManager.finishAlarmBlink();
         }
     }
 
@@ -96,6 +124,7 @@ public class AlarmMediaPlayer {
             mMediaPlayer.stop();
         }
         isPlayReceive = false;
+        isWaitPlayReceive = false;
     }
 
 

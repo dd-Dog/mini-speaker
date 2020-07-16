@@ -27,17 +27,16 @@ public class MediaHelper {
     public final static int SERVER_CONNECT_SUCCESS = 12;//连接服务器成功
     public final static int SERVER_CONNECT_FAIL = 13;//连接服务器失败
     public final static int BATTERY_LOW_CHARGE = 14;//电量低请充电
-    int[] mRawIds = {R.raw.v1_platform_disconnected,R.raw.v2_welcome,R.raw.v3_platform_connect_success,R.raw.v4_xinjiang_telecom_welcome
-            ,R.raw.v5_working_state_wrong,R.raw.v6_battery_low,R.raw.v7_check_simcard_please,R.raw.v8_send_alarm_success
-            ,R.raw.v9_platform_connect_success};
+    public final static int PAIR_REMOTE_CONTROL = 15;//遥控器配对
+    public final static int PAIR_INFRARED = 16;//红外配对
+    public final static int PAIR_DOOR = 17;//门磁配对
+
 
     static List<Integer> sPlayTypeArray = new ArrayList<>();
 
     static String TAG = "MediaHelper";
     //是否正在播放数组里的音频
     private static boolean isPlayInArray = false;
-    //是否正在播放 您的报警信息已发出
-    public static boolean isPlayAlarmSuccessing = false;
 
     /**
      *
@@ -61,9 +60,9 @@ public class MediaHelper {
 //            case WORK_WRONG:
 //                play(BaseApplication.sContext,R.raw.v5_working_state_wrong);
 //                break;
-            case ALARM_SUCCESS:
-                play(BaseApplication.sContext,R.raw.v8_send_alarm_success);
-                break;
+//            case ALARM_SUCCESS:
+//                play(BaseApplication.sContext,R.raw.v8_send_alarm_success);
+//                break;
             case XINJIANG_WELCOME:
                 play(BaseApplication.sContext,R.raw.v4_xinjiang_telecom_welcome);
                 break;
@@ -91,6 +90,15 @@ public class MediaHelper {
             case SERVER_CONNECT_FAIL:
                 play(BaseApplication.sContext,R.raw.server_connect_fail);
                 break;
+            case PAIR_REMOTE_CONTROL:
+                play(BaseApplication.sContext,R.raw.p_control);
+                break;
+            case PAIR_INFRARED:
+                play(BaseApplication.sContext,R.raw.p_infrared);
+                break;
+            case PAIR_DOOR:
+                play(BaseApplication.sContext,R.raw.p_door);
+                break;
             default:
                 throw new IllegalStateException("Unexpected value: " + type);
         }
@@ -106,9 +114,6 @@ public class MediaHelper {
             isPlayInArray = true;
             mMediaPlayer = MediaPlayer.create(context, resId);
             Log.i(TAG, "play: mMediaPlayer");
-            if(resId == R.raw.v8_send_alarm_success){
-                isPlayAlarmSuccessing = true;
-            }
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
@@ -116,9 +121,6 @@ public class MediaHelper {
                         sPlayTypeArray.remove(0);
                     }
                     isPlayInArray = false;
-                    if(resId == R.raw.v8_send_alarm_success){
-                        isPlayAlarmSuccessing = false;
-                    }
                     if(ListHelper.isValidCollection(sPlayTypeArray)){
                         play(sPlayTypeArray.get(0),false);
                     }
@@ -145,22 +147,6 @@ public class MediaHelper {
             }
         });
         mMediaPlayer.start();
-    }
-
-
-    public static void stopAlarmSuccess(){
-        if(mMediaPlayer != null){
-            mMediaPlayer.pause();
-        }
-        isPlayAlarmSuccessing = false;
-        isPlayInArray = false;
-        Log.i(TAG, "stopAlarmSuccess: ");
-        if(ListHelper.isValidCollection(sPlayTypeArray)){
-            if(sPlayTypeArray.get(0) == ALARM_SUCCESS){
-                sPlayTypeArray.remove(0);
-                Log.i(TAG, "stopAlarmSuccess: remove");
-            }
-        }
     }
 
     public static void stop() {
