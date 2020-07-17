@@ -7,6 +7,7 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
@@ -66,7 +67,15 @@ public class AlarmManager {
         }
         //来电
         if(CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE){
-            PhoneUtil.answerCall(BaseApplication.sContext);
+            if(PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)){
+                if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+                    PhoneUtil.endCall(BaseApplication.sContext);
+                    Log.i(TAG, "pressAlarmKey: 接警中 主动挂断电话");
+                }else {
+                    PhoneUtil.answerCall(BaseApplication.sContext);
+                    Log.i(TAG, "pressAlarmKey: 接警成功");
+                }
+            }
         }else {//去电或者闲置
             int ipStatus = IpAlarmInstance.getInstance().getStatus();
             int callStatus = CallAlarmInstance.getInstance().getStatus();

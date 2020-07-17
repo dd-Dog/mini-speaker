@@ -68,6 +68,8 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
                     CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
                 }
                 sPhoneState = STATE_NONE;
+                mSendNum = "";
+                mReceiveNum = "";
             }else if(state == ACTIVE){
                 //接通
                 if(CallAlarmInstance.getInstance().getStatus() == CallAlarmInstance.STATUS_ALARMING){
