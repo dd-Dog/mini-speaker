@@ -53,6 +53,7 @@ public class CallAlarmInstance {
             }
         }else if(mStatus == STATUS_ALARM_SUCCESS){
             mTimerTaskHelper.stop();
+            AlarmManager.finishAlarmBlink();
         }
     }
 

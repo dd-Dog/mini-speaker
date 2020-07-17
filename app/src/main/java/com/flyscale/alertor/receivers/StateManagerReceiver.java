@@ -32,6 +32,8 @@ public class StateManagerReceiver {
     private int mSimState = -1;
     private int mNetState = -1;
     String TAG = "StateManagerReceiver";
+    static boolean isFirst = true;
+
 
     private final static String ACTION_SIM_STATE_CHANGED = "android.intent.action.SIM_STATE_CHANGED";
     private final static String ACTION_NET_STATE_CHANGED = "android.net.conn.CONNECTIVITY_CHANGE";
@@ -66,8 +68,9 @@ public class StateManagerReceiver {
                         break;
                 }
                 Log.i(TAG, "onReceive: mSimState = " + mSimState);
-                if(mSimState == SIM_VALID){
+                if(mSimState == SIM_VALID && isFirst){
                     MediaHelper.play(MediaHelper.XINJIANG_WELCOME,true);
+                    isFirst = false;
                 }
                 setState();
             }
