@@ -53,9 +53,6 @@ public class CallAlarmInstance {
             }
         }else if(mStatus == STATUS_ALARM_SUCCESS){
             mTimerTaskHelper.stop();
-            if(UserActionHelper.isMute()){
-                LedInstance.getInstance().blinkChargeLed();
-            }
         }
     }
 

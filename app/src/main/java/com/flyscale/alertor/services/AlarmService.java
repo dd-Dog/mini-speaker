@@ -1,6 +1,7 @@
 package com.flyscale.alertor.services;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -8,6 +9,8 @@ import com.flyscale.alertor.alarmManager.CallPhoneReceiver2;
 import com.flyscale.alertor.base.BaseService;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.eventBusManager.EventMessage;
+import com.flyscale.alertor.eventBusManager.EventType;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.helper.MediaHelper;
@@ -116,6 +119,22 @@ public class AlarmService extends BaseService {
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public void onEventBusMain(EventMessage message) {
+        super.onEventBusMain(message);
+        int type = message.getType();
+        if(type == EventType.SOCKET_CONNECTED){
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(mState == STATE_SIM_NET_SUCCESS){
+                        MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
+                    }
+                }
+            },2000);
+        }
     }
 
     public void setState(int state) {

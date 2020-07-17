@@ -50,6 +50,7 @@ public class IpAlarmInstance {
             if(!mTimerTaskHelper.isStop()){
                 mTimerTaskHelper.stop();
             }
+            //静默报警 挂断后 闪灯
             if(UserActionHelper.isMute()){
                 LedInstance.getInstance().blinkChargeLed();
             }
@@ -58,7 +59,8 @@ public class IpAlarmInstance {
                 mTimerTaskHelper.stop();
             }
             if(UserActionHelper.isMute()){
-                LedInstance.getInstance().blinkChargeLed();
+                //静默报警成功后 挂断
+                setStatus(STATUS_ALARM_FINISH);
             }else {
                 AlarmMediaPlayer.getInstance().stopLoopAlarm();
                 AlarmMediaPlayer.getInstance().playAlarmSuccess(new AlarmMediaPlayer.OnPlayFinishListener() {

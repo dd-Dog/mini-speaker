@@ -80,7 +80,8 @@ public class AlarmManager {
                 CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
             }else if(AlarmMediaPlayer.getInstance().isPlayReceive()){
                 Log.i(TAG, "pressAlarmKey: 正在播放接警信息");
-                AlarmMediaPlayer.getInstance().stopReceive();
+                AlarmMediaPlayer.getInstance().stopAll();
+                finishAlarmBlink();
             }else if(AlarmMediaPlayer.getInstance().isWaitPlayReceive){
                 Log.i(TAG, "pressAlarmKey: 正在等待播放 接警信息");
                 AlarmMediaPlayer.getInstance().playReceiveNow();
@@ -148,12 +149,10 @@ public class AlarmManager {
         }
         if(isMute){
             //静默
-            AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,0,AudioManager.FLAG_PLAY_SOUND);
+            setSilentMode();
             return;
         }
-        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
+        setVoiceMode();
         if(!isSoundAlarming()){
             AlarmMediaPlayer.getInstance().playLoopAlarm();
         }
@@ -166,8 +165,7 @@ public class AlarmManager {
      * 关闭声光警报
      */
     public static void finishAlarmBlink(){
-        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
+        setVoiceMode();
         AlarmMediaPlayer.getInstance().stopLoopAlarm();
         boolean alarmLedOn = LedInstance.getInstance().isAlarmOnStatus();
         Log.i(TAG, "finishAlarmBlink: 报警灯默认的开关状态 ---> " + alarmLedOn);
@@ -177,6 +175,34 @@ public class AlarmManager {
             LedInstance.getInstance().cancelBlinkOffAlarmLed();
         }
     }
+
+    //静音模式
+    public static void setSilentMode(){
+        Log.i(TAG, "setSilentMode: ");
+        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+//        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,0,AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamMute(AudioManager.STREAM_RING,true);
+//        audioManager.setStreamMute(AudioManager.STREAM_VOICE_CALL,true);
+//        audioManager.setStreamMute(AudioManager.STREAM_MUSIC,true);
+//        audioManager.setStreamMute(AudioManager.STREAM_NOTIFICATION,true);
+//        audioManager.setStreamMute(AudioManager.STREAM_ALARM,true);
+//        audioManager.setStreamMute(AudioManager.STREAM_DTMF,true);
+//        audioManager.setStreamMute(AudioManager.STREAM_SYSTEM,true);
+        audioManager.setSpeakerphoneOn(false);
+    }
+
+    /**
+     * 非静音模式
+     */
+    public static void setVoiceMode(){
+        Log.i(TAG, "setVoiceMode: ");
+        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+//        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
+        audioManager.setStreamMute(AudioManager.STREAM_RING,false);
+//        audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+        audioManager.setStreamMute(AudioManager.STREAM_VOICE_CALL,false);
+    }
+
     /**
      * 网络连接
      * @return

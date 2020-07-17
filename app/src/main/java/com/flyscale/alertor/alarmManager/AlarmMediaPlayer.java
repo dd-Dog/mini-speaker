@@ -10,6 +10,7 @@ import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.helper.TimerTaskHelper;
+import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.led.Constant;
 
 import java.io.File;
@@ -53,6 +54,8 @@ public class AlarmMediaPlayer {
      */
     public void playReceive(final File file, final int playCount){
         if(file.exists()){
+            //文件下载成功之后再去响铃
+            AlarmManager.startAlarmBlink(true);
             mFile = file;
             mPlayCount = playCount;
             isWaitPlayReceive = true;
@@ -138,7 +141,12 @@ public class AlarmMediaPlayer {
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
         isPlayLoopAlarm = true;
-        BaseApplication.sFlyscaleManager.setExternalAlarmStatus(1);
+        if(UserActionHelper.isMute()){
+            BaseApplication.sFlyscaleManager.setExternalAlarmStatus(0);
+        }else {
+            BaseApplication.sFlyscaleManager.setExternalAlarmStatus(1);
+        }
+
     }
 
     /**

@@ -37,6 +37,7 @@ public class LedInstance {
         return ourInstance;
     }
 
+    @SuppressLint("WrongConstant")
     private LedInstance() {
         mFlyscaleManager = (FlyscaleManager) BaseApplication.sContext.getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
     }
@@ -74,7 +75,7 @@ public class LedInstance {
                     offChargeLed();
                 }
                 mBlinkChargeCount ++;
-                if(mBlinkChargeCount >= 3){
+                if(mBlinkChargeCount >= 2){
                     mBlinkChargeTimerHelper.stop();
                     mBlinkChargeCount = 0;
                     if(BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
@@ -84,8 +85,8 @@ public class LedInstance {
                     }
                 }
             }
-        },300);
-        mBlinkChargeTimerHelper.start(50);
+        },1000);
+        mBlinkChargeTimerHelper.start(10);
     }
 
     /**

@@ -16,6 +16,8 @@ import com.flyscale.alertor.data.up.UHeart;
 import com.flyscale.alertor.data.up.URing;
 import com.flyscale.alertor.data.up.UUpdateVersion;
 import com.flyscale.alertor.data.up.UVoice;
+import com.flyscale.alertor.eventBusManager.EventBusUtils;
+import com.flyscale.alertor.eventBusManager.EventType;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -94,7 +96,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         //保存第一次登陆的时间 永久不变
         PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
         if(!UserActionHelper.isFastConnect(120 *1000)){
-            MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
+//            MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
+            EventBusUtils.postMessage(EventType.SOCKET_CONNECTED);
         }
         LedInstance.getInstance().showStateLed();
     }
@@ -172,8 +175,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                 public void run() {
                     Log.i(TAG, "run: 下载文件");
                     FileHelper.byteToFile(DataConvertHelper.hexToBytes(hex),FileHelper.S_ALARM_RESP_NAME);
-                    //文件下载成功之后再去响铃
-                    AlarmManager.startAlarmBlink(true);
                     AlarmMediaPlayer.getInstance().playReceive(FileHelper.S_ALARM_RESP_FILE,3);
 //                    ReceiveMediaInstance.getInstance().play(FileHelper.S_ALARM_RESP_FILE,3);
                 }
