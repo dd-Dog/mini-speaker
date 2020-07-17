@@ -178,29 +178,27 @@ public class AlarmManager {
 
     //静音模式
     public static void setSilentMode(){
-        Log.i(TAG, "setSilentMode: ");
-        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+//        Log.i(TAG, "setSilentMode: ");
+//        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
 //        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,0,AudioManager.FLAG_PLAY_SOUND);
-//        audioManager.setStreamMute(AudioManager.STREAM_RING,true);
-//        audioManager.setStreamMute(AudioManager.STREAM_VOICE_CALL,true);
-//        audioManager.setStreamMute(AudioManager.STREAM_MUSIC,true);
-//        audioManager.setStreamMute(AudioManager.STREAM_NOTIFICATION,true);
-//        audioManager.setStreamMute(AudioManager.STREAM_ALARM,true);
-//        audioManager.setStreamMute(AudioManager.STREAM_DTMF,true);
-//        audioManager.setStreamMute(AudioManager.STREAM_SYSTEM,true);
-        audioManager.setSpeakerphoneOn(false);
+//        audioManager.setStreamVolume(AudioManager.STREAM_RING,0,AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,0,AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION,0,AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamVolume(AudioManager.STREAM_ALARM,0,AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamVolume(AudioManager.STREAM_DTMF,0,AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM,0,AudioManager.FLAG_PLAY_SOUND);
     }
 
     /**
      * 非静音模式
      */
     public static void setVoiceMode(){
-        Log.i(TAG, "setVoiceMode: ");
-        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
-//        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
-        audioManager.setStreamMute(AudioManager.STREAM_RING,false);
-//        audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
-        audioManager.setStreamMute(AudioManager.STREAM_VOICE_CALL,false);
+//        Log.i(TAG, "setVoiceMode: ");
+//        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+////        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
+//        audioManager.setStreamMute(AudioManager.STREAM_RING,false);
+////        audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+//        audioManager.setStreamMute(AudioManager.STREAM_VOICE_CALL,false);
     }
 
     /**

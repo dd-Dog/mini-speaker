@@ -124,25 +124,10 @@ public class AlarmService extends BaseService {
     @Override
     public void onEventBusMain(EventMessage message) {
         super.onEventBusMain(message);
-        int type = message.getType();
-        if(type == EventType.SOCKET_CONNECTED){
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if(mState == STATE_SIM_NET_SUCCESS){
-                        MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
-                    }
-                }
-            },2000);
-        }
     }
 
     public void setState(int state) {
         mState = state;
-        if(mState == STATE_SIM_NET_SUCCESS && mState != mLastState){
-            MediaHelper.play(MediaHelper.XINJIANG_WELCOME,true);
-            mLastState = mState;
-        }
     }
 
     /**
@@ -154,9 +139,7 @@ public class AlarmService extends BaseService {
         }else if(mState == STATE_NO_NET){
             MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
         }else if(mState == STATE_SIM_NET_SUCCESS){
-            if(mState != mLastState){
-                MediaHelper.play(MediaHelper.XINJIANG_WELCOME,true);
-            }
+
         }
         mLastState = mState;
     }

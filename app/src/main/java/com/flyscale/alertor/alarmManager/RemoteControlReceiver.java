@@ -77,8 +77,7 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                             AlarmManager.pressAlarmKey();
                         }
                     }else if(status.equals("0010")){
-                        //todo
-//                        AlarmManager.press110Key();
+                        AlarmManager.press110Key();
                     }else if(status.equals("1001")){
                         if(PersistPair.findPair().isSmoke()){
                             //烟感

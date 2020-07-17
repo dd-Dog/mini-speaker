@@ -57,6 +57,9 @@ public class CallAlarmInstance {
     }
 
     public void polling(boolean is110){
+        if(UserActionHelper.isMute() && !is110){
+            return;
+        }
         int ipStatus = IpAlarmInstance.getInstance().getStatus();
         if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
             IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);

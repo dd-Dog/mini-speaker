@@ -11,6 +11,7 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.flyscale.alertor.helper.DateHelper;
+import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.services.AlarmService;
 
 /**
@@ -65,6 +66,9 @@ public class StateManagerReceiver {
                         break;
                 }
                 Log.i(TAG, "onReceive: mSimState = " + mSimState);
+                if(mSimState == SIM_VALID){
+                    MediaHelper.play(MediaHelper.XINJIANG_WELCOME,true);
+                }
                 setState();
             }
         }
