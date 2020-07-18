@@ -59,8 +59,10 @@ public class AlarmManager {
      */
     public static void pressAlarmKey(){
         if(UserActionHelper.isFastClick()){
+            Log.i(TAG, "pressAlarmKey: fast");
             return;
         }
+        Log.i(TAG, "pressAlarmKey: init");
         //来电
         if(CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE){
             if(PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)){
@@ -134,7 +136,7 @@ public class AlarmManager {
         if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
             CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
         }
-        if(AlarmMediaPlayer.getInstance().isPlaySomeone()){
+        if(AlarmMediaPlayer.getInstance().isPlaySomeone() || AlarmMediaPlayer.getInstance().isWaitPlayReceive){
             AlarmMediaPlayer.getInstance().stopAll();
         }
         if(PhoneUtil.isOffhook(BaseApplication.sContext)){

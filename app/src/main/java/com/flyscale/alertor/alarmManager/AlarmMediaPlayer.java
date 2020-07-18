@@ -158,6 +158,7 @@ public class AlarmMediaPlayer {
             BaseApplication.sFlyscaleManager.setExternalAlarmStatus(1);
         }
 
+        Log.i(TAG, "playLoopAlarm: " + BaseApplication.sFlyscaleManager.getExternalAlarmStatus());
     }
 
     /**
@@ -169,6 +170,8 @@ public class AlarmMediaPlayer {
             isPlayLoopAlarm = false;
         }
         BaseApplication.sFlyscaleManager.setExternalAlarmStatus(0);
+
+        Log.i(TAG, "stopLoopAlarm: " + BaseApplication.sFlyscaleManager.getExternalAlarmStatus());
     }
 
     /**

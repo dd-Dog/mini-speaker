@@ -45,7 +45,7 @@ public class CallAlarmInstance {
         if(mStatus == STATUS_ALARM_FINISH){
             PhoneUtil.endCall(BaseApplication.sContext);
             AlarmManager.finishAlarmBlink();
-            if(!mTimerTaskHelper.isStop()){
+            if(mTimerTaskHelper != null){
                 mTimerTaskHelper.stop();
             }
             if(UserActionHelper.isMute()){
@@ -61,8 +61,10 @@ public class CallAlarmInstance {
         if(UserActionHelper.isMute() && !is110){
             return;
         }
+        Log.i("AlarmManager", "polling: 语音报警");
         int ipStatus = IpAlarmInstance.getInstance().getStatus();
         if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
+            Log.i("AlarmManager", "polling: ip报警还没有结束");
             IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
         }
         AlarmManager.startAlarmBlink(false);
