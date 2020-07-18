@@ -132,14 +132,18 @@ public class AlarmManager {
         int callStatus = CallAlarmInstance.getInstance().getStatus();
         if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
             IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
+            Log.i(TAG, "finishLastAlarmOrReceive: ipStatus ");
         }
         if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
             CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
+            Log.i(TAG, "finishLastAlarmOrReceive: callStatus ");
         }
         if(AlarmMediaPlayer.getInstance().isPlaySomeone() || AlarmMediaPlayer.getInstance().isWaitPlayReceive){
+            Log.i(TAG, "finishLastAlarmOrReceive: AlarmMediaPlayer");
             AlarmMediaPlayer.getInstance().stopAll();
         }
         if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+            Log.i(TAG, "finishLastAlarmOrReceive: Offhook");
             PhoneUtil.endCall(BaseApplication.sContext);
         }
     }
