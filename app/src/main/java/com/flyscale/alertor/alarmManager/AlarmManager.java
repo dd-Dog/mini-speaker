@@ -116,10 +116,8 @@ public class AlarmManager {
         int callStatus = CallAlarmInstance.getInstance().getStatus();
         if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
             CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
-        }else if(AlarmMediaPlayer.getInstance().isPlaySomeone()){
-            AlarmMediaPlayer.getInstance().stopAll();
-            CallAlarmInstance.getInstance().polling(true);
         }else {
+            finishLastAlarmOrReceive();
             CallAlarmInstance.getInstance().polling(true);
         }
     }
@@ -145,6 +143,12 @@ public class AlarmManager {
         if(PhoneUtil.isOffhook(BaseApplication.sContext)){
             Log.i(TAG, "finishLastAlarmOrReceive: Offhook");
             PhoneUtil.endCall(BaseApplication.sContext);
+        }
+        if(CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE){
+            if(PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)){
+                Log.i(TAG, "finishLastAlarmOrReceive: 来电中 不一定接通了");
+                PhoneUtil.endCall(BaseApplication.sContext);
+            }
         }
     }
 

@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.helper.TimerTaskHelper;
 import com.flyscale.alertor.helper.UserActionHelper;
@@ -55,6 +56,8 @@ public class AlarmMediaPlayer {
     public void playReceive(final File file, final int playCount){
         if(file.exists()){
 
+            //接警的时候 要取消上一次报警和接警
+            AlarmManager.finishLastAlarmOrReceive();
             stopReceive();
             Log.i(TAG, "playReceive: 等10秒在播放");
 
