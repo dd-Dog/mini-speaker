@@ -31,6 +31,7 @@ public class FlyscaleReceiver extends BroadcastReceiver {
         }else if(TextUtils.equals(action,BRConstant.ACTION_STUDY_UP)){
             sStudyEnd = System.currentTimeMillis();
             long remain = sStudyEnd - sStudyStart;
+            Log.i(TAG, "onReceive: 本次按压时间为 ----- " + remain);
             if(remain > 4500){
                 MediaHelper.play(MediaHelper.PAIR_CLEAR,true);
                 PersistPair.clearAll(true);

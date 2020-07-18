@@ -86,6 +86,9 @@ public class AlarmMediaPlayer {
         stopLoopAlarm();
         isPlayReceive = true;
         isWaitPlayReceive = false;
+        if(mMediaPlayer != null){
+            mMediaPlayer.stop();
+        }
         mMediaPlayer = new MediaPlayer();
         try {
             mMediaPlayer.setDataSource(mFile.getAbsolutePath());
@@ -95,6 +98,7 @@ public class AlarmMediaPlayer {
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    Log.i(TAG, "onPrepared: 准备播放");
                     mMediaPlayer.start();
                 }
             });

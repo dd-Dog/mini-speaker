@@ -2,6 +2,7 @@ package com.flyscale.alertor.alarmManager;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Handler;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
@@ -37,20 +38,15 @@ public class AlarmManager {
             if(isNetConnect() && isServiceConnect()){
                 //网络和服务器连接正常
                 IpAlarmInstance.getInstance().polling(type);
-            }else if(!isNetConnect()){
-                //网络连接失败
-                MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
-            }else if(!isServiceConnect()){
-                //服务器连接失败
-                MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
-                mTimerTaskHelper = new TimerTaskHelper(new TimerTask() {
-                    @Override
-                    public void run() {
-                        mTimerTaskHelper.stop();
-                        CallAlarmInstance.getInstance().polling(is110);
-                    }
-                },-1);
-                mTimerTaskHelper.start(2500);
+            }else {
+                if(!isNetConnect()){
+                    //网络连接失败
+                    MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
+                }
+                if(!isServiceConnect()){
+                    //服务器连接失败
+                    MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
+                }
             }
         }else {
             //语音优先
@@ -165,9 +161,7 @@ public class AlarmManager {
         if(!isSoundAlarming()){
             AlarmMediaPlayer.getInstance().playLoopAlarm();
         }
-        if(!LedInstance.getInstance().isBlinkAlarmFlag()){
-            LedInstance.getInstance().blinkAlarmLed();
-        }
+        LedInstance.getInstance().blinkAlarmLed();
     }
 
     /**

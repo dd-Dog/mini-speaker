@@ -31,7 +31,8 @@ public class LedInstance {
     boolean isOnAlarm = true;
     boolean isAlarmOnStatus = true;
     FlyscaleManager mFlyscaleManager;
-    AlarmHandler mAlarmHandler = new AlarmHandler(Looper.myLooper());
+//    AlarmHandler mAlarmHandler = new AlarmHandler(Looper.myLooper());
+    TimerTaskHelper mBlinkAlarmTimer;
 
     public static LedInstance getInstance() {
         return ourInstance;
@@ -184,26 +185,43 @@ public class LedInstance {
 
 
     public void blinkAlarmLed(){
-        isBlinkAlarmFlag = true;
-        if(mAlarmTimer != null){
-            mAlarmTimer.cancel();
-            mAlarmTimer.purge();
-            mAlarmTimer = null;
+
+        if(mBlinkAlarmTimer != null){
+            mBlinkAlarmTimer.stop();
         }
-        mAlarmTimer = new Timer();
-        mAlarmTimer.schedule(new TimerTask() {
+        isBlinkAlarmFlag = true;
+        mBlinkAlarmTimer = new TimerTaskHelper(new TimerTask() {
             @Override
             public void run() {
-                if(isBlinkAlarmFlag){
-                    if(isOnAlarm){
-                        offAlarmLed();
-                    }else {
-                        showAlarmLed();
-                    }
-                    Log.i(TAG, "run:blinkAlarmLed isOnAlarm  = " + isOnAlarm);
+                if(isOnAlarm){
+                    offAlarmLed();
+                }else {
+                    showAlarmLed();
                 }
+                Log.i(TAG, "run: blinkAlarmLed isOnAlarm  --- " + isOnAlarm);
             }
-        },50,300);
+        },200);
+        mBlinkAlarmTimer.start(50);
+//        isBlinkAlarmFlag = true;
+//        if(mAlarmTimer != null){
+//            mAlarmTimer.cancel();
+//            mAlarmTimer.purge();
+//            mAlarmTimer = null;
+//        }
+//        mAlarmTimer = new Timer();
+//        mAlarmTimer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//                if(isBlinkAlarmFlag){
+//                    if(isOnAlarm){
+//                        offAlarmLed();
+//                    }else {
+//                        showAlarmLed();
+//                    }
+//                    Log.i(TAG, "run:blinkAlarmLed isOnAlarm  = " + isOnAlarm);
+//                }
+//            }
+//        },50,300);
     }
 
     private void showAlarmLed(){
@@ -220,11 +238,15 @@ public class LedInstance {
      */
     public void destroyAlarmTimer(){
         isBlinkAlarmFlag = false;
-        if(mAlarmTimer != null){
-            mAlarmTimer.cancel();
-            mAlarmTimer.purge();
-            mAlarmTimer = null;
+        if(mBlinkAlarmTimer != null){
+            mBlinkAlarmTimer.stop();
         }
+//        isBlinkAlarmFlag = false;
+//        if(mAlarmTimer != null){
+//            mAlarmTimer.cancel();
+//            mAlarmTimer.purge();
+//            mAlarmTimer = null;
+//        }
     }
 
     public boolean isBlinkAlarmFlag() {
@@ -234,14 +256,32 @@ public class LedInstance {
     public void cancelBlinkOffAlarmLed(){
         isAlarmOnStatus = false;
         destroyAlarmTimer();
-        mAlarmHandler.sendEmptyMessageDelayed(offWhat,305);
         Log.i(TAG, "cancelBlinkOffAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                offAlarmLed();
+                Log.i(TAG, "run: offAlarmLed");
+            }
+        },201);
+
+//        mAlarmHandler.sendEmptyMessageDelayed(offWhat,305);
+//        Log.i(TAG, "cancelBlinkOffAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
     public void cancelBlinkShowAlarmLed(){
         isAlarmOnStatus = true;
         destroyAlarmTimer();
-        mAlarmHandler.sendEmptyMessageDelayed(showWhat,305);
         Log.i(TAG, "cancelBlinkShowAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                showAlarmLed();
+                Log.i(TAG, "run: showAlarmLed");
+            }
+        },201);
+
+//        mAlarmHandler.sendEmptyMessageDelayed(showWhat,305);
+//        Log.i(TAG, "cancelBlinkShowAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
     }
 
 
@@ -253,26 +293,26 @@ public class LedInstance {
         return isAlarmOnStatus;
     }
 
-    int showWhat = 1;
-    int offWhat = 2;
-    @SuppressLint("HandlerLeak")
-    public class AlarmHandler extends Handler{
-
-        public AlarmHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            int what = msg.what;
-            if(what == showWhat){
-                showAlarmLed();
-                Log.i(TAG, "handleMessage: showAlarmLed()" );
-            }else if(what == offWhat){
-                offAlarmLed();
-                Log.i(TAG, "handleMessage: offAlarmLed()");
-            }
-        }
-    }
+//    int showWhat = 1;
+//    int offWhat = 2;
+//    @SuppressLint("HandlerLeak")
+//    public class AlarmHandler extends Handler{
+//
+//        public AlarmHandler(Looper looper) {
+//            super(looper);
+//        }
+//
+//        @Override
+//        public void handleMessage(Message msg) {
+//            super.handleMessage(msg);
+//            int what = msg.what;
+//            if(what == showWhat){
+//                showAlarmLed();
+//                Log.i(TAG, "handleMessage: showAlarmLed()" );
+//            }else if(what == offWhat){
+//                offAlarmLed();
+//                Log.i(TAG, "handleMessage: offAlarmLed()");
+//            }
+//        }
+//    }
 }
