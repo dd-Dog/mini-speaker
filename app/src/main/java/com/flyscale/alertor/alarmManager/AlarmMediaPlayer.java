@@ -54,9 +54,10 @@ public class AlarmMediaPlayer {
      */
     public void playReceive(final File file, final int playCount){
         if(file.exists()){
-            if(isPlayReceive()){
-                stopReceive();
-            }
+
+            stopReceive();
+            Log.i(TAG, "playReceive: 等10秒在播放");
+
             //文件下载成功之后再去响铃
             AlarmManager.startAlarmBlink(true);
             mFile = file;
@@ -144,14 +145,14 @@ public class AlarmMediaPlayer {
     /**
      * 循环播放报警声
      */
-    public void playLoopAlarm(){
+    public void playLoopAlarm(boolean isReceive){
         stopAudio();
         stopAlarmSuccess();
         mMediaPlayer = MediaPlayer.create(mContext, R.raw.alarm_ringing);
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
         isPlayLoopAlarm = true;
-        if(UserActionHelper.isMute()){
+        if(UserActionHelper.isMute() && !isReceive){
             BaseApplication.sFlyscaleManager.setExternalAlarmStatus(0);
         }else {
             BaseApplication.sFlyscaleManager.setExternalAlarmStatus(1);

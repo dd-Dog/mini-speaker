@@ -158,9 +158,7 @@ public class AlarmManager {
             return;
         }
         setVoiceMode();
-        if(!isSoundAlarming()){
-            AlarmMediaPlayer.getInstance().playLoopAlarm();
-        }
+        AlarmMediaPlayer.getInstance().playLoopAlarm(isReceive);
         LedInstance.getInstance().blinkAlarmLed();
     }
 

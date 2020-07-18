@@ -76,6 +76,7 @@ public class LedInstance {
                     offChargeLed();
                 }
                 mBlinkChargeCount ++;
+                Log.i(TAG, "run: mBlinkChargeCount --- " + mBlinkChargeCount);
                 if(mBlinkChargeCount >= 2){
                     mBlinkChargeTimerHelper.stop();
                     mBlinkChargeCount = 0;

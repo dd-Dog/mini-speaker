@@ -66,7 +66,7 @@ public class IpAlarmInstance {
                 AlarmMediaPlayer.getInstance().playAlarmSuccess(new AlarmMediaPlayer.OnPlayFinishListener() {
                     @Override
                     public void onPlayFinish() {
-                        AlarmMediaPlayer.getInstance().playLoopAlarm();
+                        AlarmMediaPlayer.getInstance().playLoopAlarm(false);
                     }
                 });
             }
