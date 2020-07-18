@@ -1,8 +1,6 @@
 package com.flyscale.alertor.data.persist;
 
 import android.text.TextUtils;
-
-import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.helper.DateHelper;
 
 import org.litepal.LitePal;
