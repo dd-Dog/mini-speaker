@@ -257,7 +257,7 @@ public class LedInstance {
         isAlarmOnStatus = false;
         destroyAlarmTimer();
         Log.i(TAG, "cancelBlinkOffAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
-        new Handler().postDelayed(new Runnable() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
                 offAlarmLed();
@@ -272,7 +272,7 @@ public class LedInstance {
         isAlarmOnStatus = true;
         destroyAlarmTimer();
         Log.i(TAG, "cancelBlinkShowAlarmLed: " + mFlyscaleManager.getLightColor(Constant.ALARM_LED));
-        new Handler().postDelayed(new Runnable() {
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
                 showAlarmLed();
