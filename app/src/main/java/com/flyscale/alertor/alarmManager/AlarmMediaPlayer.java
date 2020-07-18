@@ -54,6 +54,9 @@ public class AlarmMediaPlayer {
      */
     public void playReceive(final File file, final int playCount){
         if(file.exists()){
+            if(isPlayReceive()){
+                stopReceive();
+            }
             //文件下载成功之后再去响铃
             AlarmManager.startAlarmBlink(true);
             mFile = file;
@@ -129,6 +132,9 @@ public class AlarmMediaPlayer {
     public void stopReceive(){
         if(mMediaPlayer != null){
             mMediaPlayer.stop();
+        }
+        if(mTimerTaskHelper != null){
+            mTimerTaskHelper.stop();
         }
         isPlayReceive = false;
         isWaitPlayReceive = false;
