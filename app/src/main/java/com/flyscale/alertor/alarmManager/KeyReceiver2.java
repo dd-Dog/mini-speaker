@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.receivers.AlarmLedReceiver;
 import com.flyscale.alertor.receivers.BRConstant;
 
@@ -30,6 +31,7 @@ public class KeyReceiver2 extends BroadcastReceiver {
             AlarmManager.press110Key();
         }else if(TextUtils.equals(action,BRConstant.ACTION_ALARM_LED_STATUS)){
             //报警灯常亮常闭
+            PersistConfig.saveAlarmOn(!PersistConfig.findConfig().isAlarmOn());
             AlarmLedReceiver.sendRepeatAlarmBroadcastBySwitch();
         }
     }

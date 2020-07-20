@@ -28,7 +28,29 @@ public class PersistConfig extends LitePalSupport {
     String firstLogin = "";
     //是否布防 布防状态门磁和红外
     boolean isArming = true;
+    //报警灯常亮
+    boolean isAlarmOn = true;
+    boolean isDefaultAlarmOn = true;
 
+    public boolean isDefaultAlarmOn() {
+        return isDefaultAlarmOn;
+    }
+
+    public void setDefaultAlarmOn(boolean defaultAlarmOn) {
+        isDefaultAlarmOn = defaultAlarmOn;
+    }
+
+    public boolean isAlarmOn() {
+        if(isDefaultAlarmOn){
+            return isAlarmOn;
+        }else {
+            return !isAlarmOn;
+        }
+    }
+
+    public void setAlarmOn(boolean alarmOn) {
+        isAlarmOn = alarmOn;
+    }
 
     public boolean isArming() {
         return isArming;
@@ -213,6 +235,18 @@ public class PersistConfig extends LitePalSupport {
         persistConfig.setIpAlarmFirst(ip);
         persistConfig.save();
         return persistConfig;
+    }
+
+    public static void saveAlarmOn(boolean on){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setAlarmOn(on);
+        persistConfig.save();
+    }
+
+    public static void saveDefaultAlarmOn(boolean on){
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setDefaultAlarmOn(on);
+        persistConfig.save();
     }
 
 

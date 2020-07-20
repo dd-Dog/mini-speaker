@@ -70,9 +70,8 @@ public class AlarmLedReceiver extends BroadcastReceiver {
      */
     public static void sendRepeatAlarmBroadcast(String onTime,String offTime){
         cancelAlarmBroadcast();
-        if(BaseApplication.sFlyscaleManager.getAlarmLedState().equals("0")){
-            LedInstance.getInstance().cancelBlinkOffAlarmLed();
-        }else {
+
+        if(PersistConfig.findConfig().isAlarmOn()){
             if(onTime.equals("00:00") && offTime.equals("00:00")){
                 LedInstance.getInstance().cancelBlinkShowAlarmLed();
             }else {
@@ -86,7 +85,26 @@ public class AlarmLedReceiver extends BroadcastReceiver {
                 getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,on,getOnPending());
                 getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,off,getOffPending());
             }
+        }else {
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
         }
+//        if(BaseApplication.sFlyscaleManager.getAlarmLedState().equals("0")){
+//            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+//        }else {
+//            if(onTime.equals("00:00") && offTime.equals("00:00")){
+//                LedInstance.getInstance().cancelBlinkShowAlarmLed();
+//            }else {
+//                String currentTime = DateHelper.longToString(DateHelper.yyyyMMdd);
+//                String tempOn = currentTime + onTime;
+//                String tempOff = currentTime + offTime;
+//                long on = DateHelper.stringToLong(tempOn,DateHelper.yyyyMMddHH_mm);
+//                long off = DateHelper.stringToLong(tempOff,DateHelper.yyyyMMddHH_mm);
+//                Log.i(TAG, "sendRepeatAlarmBroadcast: on = " + on);
+//                Log.i(TAG, "sendRepeatAlarmBroadcast: off = " + off);
+//                getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,on,getOnPending());
+//                getAlarmManager().setExact(AlarmManager.RTC_WAKEUP,off,getOffPending());
+//            }
+//        }
     }
 
     public static void sendRepeatAlarmBroadcast(){
@@ -97,10 +115,15 @@ public class AlarmLedReceiver extends BroadcastReceiver {
      * 通过外置开关 开闭报警灯
      */
     public static void sendRepeatAlarmBroadcastBySwitch(){
-        if(BaseApplication.sFlyscaleManager.getAlarmLedState().equals("0")){
-            LedInstance.getInstance().cancelBlinkOffAlarmLed();
-        }else {
+//        if(BaseApplication.sFlyscaleManager.getAlarmLedState().equals("0")){
+//            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+//        }else {
+//            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+//        }
+        if(PersistConfig.findConfig().isAlarmOn()){
             LedInstance.getInstance().cancelBlinkShowAlarmLed();
+        }else {
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
         }
     }
 

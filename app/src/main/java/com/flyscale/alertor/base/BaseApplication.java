@@ -40,12 +40,19 @@ public class BaseApplication extends Application {
         }else {
             LedInstance.getInstance().offChargeLed();
         }
-        if(sFlyscaleManager.getAlarmLedState().equals("0")){
-            LedInstance.getInstance().cancelBlinkOffAlarmLed();
-        }else {
-            LedInstance.getInstance().cancelBlinkShowAlarmLed();
-        }
 
+        //每次升级取反
+        PersistConfig.saveDefaultAlarmOn(true);
+        if(PersistConfig.findConfig().isAlarmOn()){
+            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+        }else {
+            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+        }
+//        if(sFlyscaleManager.getAlarmLedState().equals("0")){
+//            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+//        }else {
+//            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+//        }
         //初始化白名单
         PersistWhite.findList();
     }
