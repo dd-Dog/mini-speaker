@@ -22,13 +22,25 @@ public class RemoteControlReceiver extends BroadcastReceiver {
     final String ACTION = "flyscale.privkey.REMOTE_CONTROL";
     String TAG = "RemoteControlReceiver";
 
-    static long sGasTime = 0;
+    static long sGasTime = 0;//5
+    static long sSmokeTime = 0;//3
+    static long sDoorTime = 0;//1
+    static long sInfrared = 0 ;//1
 
     @Override
     public void onReceive(Context context, final Intent intent) {
         if(TextUtils.equals(intent.getAction(),ACTION)){
             long tempTime = System.currentTimeMillis();
             if(tempTime - sGasTime < 5000){
+                return;
+            }
+            if(tempTime - sSmokeTime < 3000){
+                return;
+            }
+            if(tempTime - sDoorTime < 1000){
+                return;
+            }
+            if(tempTime - sInfrared < 1000){
                 return;
             }
             String status = intent.getStringExtra("status");
@@ -58,6 +70,7 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                         PersistPair.saveDoor(true);
                         return;
                     }
+                    sDoorTime = System.currentTimeMillis();
                 }
                 if(TextUtils.equals(status,"0101")){//红外
                     if(!PersistPair.findPair().isInfrared()){
@@ -65,6 +78,7 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                         PersistPair.saveInfrared(true);
                         return;
                     }
+                    sInfrared = System.currentTimeMillis();
                 }
                 //如果是门磁和红外 孟工说 红外的按照门磁的报警
                 if(PersistConfig.findConfig().isArming()){
@@ -84,6 +98,7 @@ public class RemoteControlReceiver extends BroadcastReceiver {
             }else if(status.equals("1001")){
                 if(PersistPair.findPair().isSmoke()){
                     //烟感
+                    sSmokeTime = System.currentTimeMillis();
                     AlarmManager.finishLastAlarmOrReceive();
                     AlarmManager.pollingAlarm(BaseData.TYPE_SMOKE_ALARM_U,false);
                 }else {

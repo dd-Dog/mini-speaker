@@ -59,7 +59,7 @@ public class LedInstance {
 
     public String getChargeLed(){
         String result = mFlyscaleManager.getLightColor(Constant.CHARGE_LED);
-        Log.i(TAG, "getChargeLed: status --- " + result);
+//        Log.i(TAG, "getChargeLed: status --- " + result);
         return result;
     }
 
@@ -67,6 +67,10 @@ public class LedInstance {
     TimerTaskHelper mBlinkChargeTimerHelper;
 
     public void blinkChargeLed(){
+        if(mBlinkChargeTimerHelper != null){
+            mBlinkChargeTimerHelper.stop();
+        }
+        mBlinkChargeCount = 0;
         mBlinkChargeTimerHelper = new TimerTaskHelper(new TimerTask() {
             @Override
             public void run() {
