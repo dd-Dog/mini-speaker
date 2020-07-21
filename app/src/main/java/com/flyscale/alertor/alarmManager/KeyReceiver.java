@@ -18,7 +18,7 @@ import com.flyscale.alertor.receivers.BRConstant;
  * @TIME 2020/7/10 17:44
  * @DESCRIPTION 暂无
  */
-public class KeyReceiver2 extends BroadcastReceiver {
+public class KeyReceiver extends BroadcastReceiver {
     String TAG = "KeyReceiver2";
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -37,31 +37,31 @@ public class KeyReceiver2 extends BroadcastReceiver {
     }
 
 
-
-    public void register(){
-        IntentFilter filter = new IntentFilter();
-        //报警键
-        filter.addAction("flyscale.privkey.ALARM.down");
-        filter.addAction("flyscale.privkey.ALARM.long");
-        filter.addAction("flyscale.privkey.ALARM.up");
-        //110报警键
-        filter.addAction("flyscale.privkey.EMERGENCY.down");
-        filter.addAction("flyscale.privkey.EMERGENCY.long");
-        filter.addAction("flyscale.privkey.EMERGENCY.up");
-        //外接警号键
-        filter.addAction("flyscale.privkey.EXTRA_SPEAKER.down");
-        filter.addAction("flyscale.privkey.EXTRA_SPEAKER.long");
-        filter.addAction("flyscale.privkey.EXTRA_SPEAKER.up");
-        //静默报警开关键
-        filter.addAction("flyscale.privkey.MUTE.down");
-        filter.addAction("flyscale.privkey.MUTE.long");
-        filter.addAction("flyscale.privkey.MUTE.up");
-        //报警灯开关
-        filter.addAction(BRConstant.ACTION_ALARM_LED_STATUS);
-        BaseApplication.sContext.registerReceiver(this,filter);
-    }
-
-    public void unRegister(){
-        BaseApplication.sContext.unregisterReceiver(this);
-    }
+//
+//    public void register(){
+//        IntentFilter filter = new IntentFilter();
+//        //报警键
+//        filter.addAction("flyscale.privkey.ALARM.down");
+//        filter.addAction("flyscale.privkey.ALARM.long");
+//        filter.addAction("flyscale.privkey.ALARM.up");
+//        //110报警键
+//        filter.addAction("flyscale.privkey.EMERGENCY.down");
+//        filter.addAction("flyscale.privkey.EMERGENCY.long");
+//        filter.addAction("flyscale.privkey.EMERGENCY.up");
+//        //外接警号键
+//        filter.addAction("flyscale.privkey.EXTRA_SPEAKER.down");
+//        filter.addAction("flyscale.privkey.EXTRA_SPEAKER.long");
+//        filter.addAction("flyscale.privkey.EXTRA_SPEAKER.up");
+//        //静默报警开关键
+//        filter.addAction("flyscale.privkey.MUTE.down");
+//        filter.addAction("flyscale.privkey.MUTE.long");
+//        filter.addAction("flyscale.privkey.MUTE.up");
+//        //报警灯开关
+//        filter.addAction(BRConstant.ACTION_ALARM_LED_STATUS);
+//        BaseApplication.sContext.registerReceiver(this,filter);
+//    }
+//
+//    public void unRegister(){
+//        BaseApplication.sContext.unregisterReceiver(this);
+//    }
 }

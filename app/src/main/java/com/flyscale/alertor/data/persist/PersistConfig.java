@@ -30,6 +30,7 @@ public class PersistConfig extends LitePalSupport {
     boolean isArming = true;
     //报警灯常亮
     boolean isAlarmOn = true;
+    //报警灯常亮是否取反的标志  true 维持现状 false 取反
     boolean isDefaultAlarmOn = true;
 
     public boolean isDefaultAlarmOn() {

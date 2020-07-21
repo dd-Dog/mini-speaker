@@ -82,7 +82,7 @@
             </intent-filter>
         </receiver>
         <!--   按键广播     -->
-        <receiver android:name=".alarmManager.KeyReceiver2">
+        <receiver android:name=".alarmManager.KeyReceiver">
             <intent-filter android:priority="1000">
                 <action android:name="flyscale.privkey.ALARM.down"/>
                 <action android:name="flyscale.privkey.ALARM.long"/>
