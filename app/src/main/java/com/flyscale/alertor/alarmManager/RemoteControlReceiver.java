@@ -63,7 +63,8 @@ public class RemoteControlReceiver extends BroadcastReceiver {
                 PersistConfig.saveIsArming(false);
                 MediaHelper.play(MediaHelper.PAIR_DISARMING,true);
             }
-            if(TextUtils.equals(status,"0011") || TextUtils.equals(status,"0101")){
+            //这里为了避免同时出现 修改if 为else if
+            else if(TextUtils.equals(status,"0011") || TextUtils.equals(status,"0101")){
                 if(TextUtils.equals(status,"0011")){//门磁
                     if(!PersistPair.findPair().isDoor()){
                         MediaHelper.play(MediaHelper.PAIR_DOOR,true);

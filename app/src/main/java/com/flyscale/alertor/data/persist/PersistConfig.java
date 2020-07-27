@@ -266,6 +266,8 @@ public class PersistConfig extends LitePalSupport {
                 ", alarmLedOffTime='" + alarmLedOffTime + '\'' +
                 ", firstLogin='" + firstLogin + '\'' +
                 ", isArming=" + isArming +
+                ", isAlarmOn=" + isAlarmOn +
+                ", isDefaultAlarmOn=" + isDefaultAlarmOn +
                 '}';
     }
 }

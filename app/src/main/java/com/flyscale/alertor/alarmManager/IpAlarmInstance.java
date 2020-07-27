@@ -102,6 +102,7 @@ public class IpAlarmInstance {
                     if(mSendCount > 3){
                         //如果报警次数大于3次 则放弃ip报警 ip报警失败
                         //转语音报警
+                        Log.i(TAG, "run: mSendCount = " + mSendCount);
                         setStatus(STATUS_ALARM_FINISH);
                         CallAlarmInstance.getInstance().polling(false);
                     }else {
@@ -113,6 +114,6 @@ public class IpAlarmInstance {
                 }
             }
         },DEFAULT_PERIOD);
-        mTimerTaskHelper.start(50);
+        mTimerTaskHelper.start(0);
     }
 }

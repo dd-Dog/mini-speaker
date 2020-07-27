@@ -27,6 +27,7 @@ public class CallAlarmInstance {
     int mStatus = STATUS_NONE;
     //是否摘机
     boolean isOffhook = false;
+    String TAG = "CallAlarmInstance";
 
     public static CallAlarmInstance getInstance() {
         return ourInstance;
@@ -61,10 +62,10 @@ public class CallAlarmInstance {
         if(UserActionHelper.isMute() && !is110){
             return;
         }
-        Log.i("AlarmManager", "polling: 语音报警");
+        Log.i(TAG, "polling: 语音报警 -- 是否110 -- " + is110);
         int ipStatus = IpAlarmInstance.getInstance().getStatus();
         if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
-            Log.i("AlarmManager", "polling: ip报警还没有结束");
+            Log.i(TAG, "polling: ip报警还没有结束");
             IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
         }
         AlarmManager.startAlarmBlink(false);
@@ -94,6 +95,6 @@ public class CallAlarmInstance {
                 }
             }
         },DEFAULT_PERIOD);
-        mTimerTaskHelper.start(50);
+        mTimerTaskHelper.start(0);
     }
 }

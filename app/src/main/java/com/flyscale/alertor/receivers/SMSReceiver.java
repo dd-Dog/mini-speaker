@@ -61,6 +61,7 @@ public class SMSReceiver extends BroadcastReceiver {
      *    修改白名单开关：        IPALARMWLS=0;                      --  0是关，1是开Re
      *
      *    flyscale  fota开关   FLYSCALEFOTA=1;
+     *    本地存储的数据         FLYSCALEPERSISTDATA=1;
      *
      *    注意：短信必须以分号结尾，所有字符需在英文输入法下编辑
      *
@@ -126,6 +127,10 @@ public class SMSReceiver extends BroadcastReceiver {
                     else if(key.equals("FLYSCALEFOTA")){
                         if(BuildConfig.DEBUG && value.equals("1")){
                             NettyHelper.getInstance().modifyFota("1","1","20200708");
+                        }
+                    }else if(key.equals("FLYSCALEPERSISTDATA")){
+                        if(value.equals("1")){
+                            SmsManager.getDefault().sendTextMessage(sender,null,PersistConfig.findConfig().toString(),null,null);
                         }
                     }
                 }
