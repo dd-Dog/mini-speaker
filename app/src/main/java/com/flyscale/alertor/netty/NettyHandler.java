@@ -219,6 +219,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             NettyHelper.getInstance().send(new UUpdateVersion(message,tradeNum));
         }else if(type == BaseData.TYPE_CHANGE_CLIENT_CA_D){
             //终端更换证书
+            Log.i(TAG,
+                    "channelRead0: 更换证书以前的ip及端口号......." + PersistConfig.findConfig().getIp() + PersistConfig.findConfig().getPort());
             String clientCa = baseData.getClientCaMessage();
             String clientKey = baseData.getClientPwdMessage();
             String rootCa = baseData.getRootCaMessage();
@@ -234,6 +236,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                     FileHelper.byteToFile(clientKeyB, FileHelper.S_CLIENT_KEY_NAME);
                     FileHelper.byteToFile(rootCaB,FileHelper.S_ROOT_CRT_NAME);
                     //修改ca的同时  要修改ip  逻辑要包含修改ip
+                    Log.i(TAG, "run: 要更换的ip及端口号 \n" + ip + Integer.parseInt(port));
                     PersistConfig.saveNewIp(ip, Integer.parseInt(port));
                     NettyHelper.getInstance().modifySslHandler(tradeNum);
 

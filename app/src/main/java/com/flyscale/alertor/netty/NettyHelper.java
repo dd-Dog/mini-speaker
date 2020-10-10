@@ -104,6 +104,7 @@ public class NettyHelper {
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
         if(mConnectCount >= MAX_CONNECT_COUNT){
             PersistConfig.saveNewIp("",-1);
+            Log.i(TAG, "connect: 回滚之后的ip及端口号........." + PersistConfig.findConfig().getNewIp());
             //这是修改ca，ip的情况 修改失败 要一起回滚
             if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
                 clearCaFile();
@@ -115,19 +116,22 @@ public class NettyHelper {
             }
         }
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
-        Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + PersistConfig.findConfig().getPort());
+        Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + "...." + PersistConfig.findConfig().getPort());
         future.addListener(mChannelFutureListener);
     }
 
     public class MyChannelFutureListener implements ChannelFutureListener{
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
-            if(future.isSuccess()){
-                mChannelFuture = future;
-                mChannel = mChannelFuture.channel();
+            mChannelFuture = future;
+            mChannel = mChannelFuture.channel();
+            Log.i(TAG, "operationComplete: \n" + mChannel.isActive());
+            if(future.isSuccess() && mChannel.isActive()){
                 mConnectCount = 0;
+                Log.i(TAG, "operationComplete: okkkkkkkk");
                 if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
                     //新ip连接成功
+                    Log.i(TAG, "operationComplete: 新ip连接成功");
                     PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
                     PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
                     PersistConfig.saveNewIp("",-1);
@@ -142,13 +146,17 @@ public class NettyHelper {
                 }else if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
                     //修改ca和ip 失败
                     NettyHelper.getInstance().send(new UChangeClientCa("0",mChangeCaTradeNumResp));
+                    Log.i(TAG, "operationComplete: 修改ca和ip失败..........");
                 }else if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
                     //修改ip连接失败
                     NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
+                    Log.i(TAG, "operationComplete: 修改ip连接失败..........");
                 }
                 mChangeCaTradeNumResp = "";
                 mChangeIpTradeNumResp = "";
+                Log.i(TAG, "155 \n " + mChangeCaTradeNumResp + "\n" + mChangeIpTradeNumResp);
             }else {
+                Log.i(TAG, "operationComplete:  errrrrrrrrr");
                 future.channel().eventLoop().schedule(new Runnable() {
                     @Override
                     public void run() {
@@ -207,6 +215,7 @@ public class NettyHelper {
         if(fileRootCrt.exists()){
             fileRootCrt.delete();
         }
+        Log.i(TAG, "clearCaFile: 清空ca证书 \n");
     }
 
     /**
@@ -272,9 +281,10 @@ public class NettyHelper {
             if(mChannel != null && mChannel.pipeline().get(sSslHandler) != mSslContext.newHandler(mChannel.alloc())){
                 Log.i(TAG, "modifySslHandler: 5");
                 if(changeCa){
+                    Log.i(TAG, "modifySslHandler: changeCa为 true， 开始替换ca证书");
                     mChannel.pipeline().replace(SslHandler.class,sSslHandler
                             ,mSslContext.newHandler(mChannel.alloc()));
-                }
+                } else Log.i(TAG, "modifySslHandler: changeCa为 false, 不进行替换ca证书");
             }
             Log.i(TAG, "modifySslHandler: 6");
         }
