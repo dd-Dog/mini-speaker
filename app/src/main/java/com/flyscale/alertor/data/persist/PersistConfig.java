@@ -43,28 +43,32 @@ public class PersistConfig extends LitePalSupport {
     String ftpPasswordFly = "fly123";
 
     /******************客户测试服务器*******************/
-    String ftpHostNameDebug = "ftp3.xjxlb.com";
-    String ftpHostIPDebug = "222.82.238.168";
-    int ftpHostPortDebug = 13001;
-    String ftpUsernameDebug = "";
-    String ftpPasswordDebug = "";
-
-    String tcpHostNameDebug1 = "xlb1.xjxlb.com";//两个域名使用同一IP，默认使用1
-    String tcpHostNameDebug2 = "xlb1.xj-ict.com";
-    String tcpHostIPDebug = "202.100.190.107";
+    String tcpHostNameDebug1 = "xlb3.xjxlb.com";//两个域名使用同一IP，默认使用1
+    String tcpHostNameDebug2 = "xlb3.xj-ict.com";
+    String tcpHostIPDebug = "";
     int tcpPortDebug = 58005;
 
     /******************客户正式服务器*******************/
-    String ftpHostNameRelease = "ftp1.xjxlb.com";
+    String ftpHostNameRelease = "ftp3.xjxlb.com";
     String ftpHostIPRelease = "202.100.190.107";
     int ftpHostPortRelease = 58000;
     String ftpUsernameRelease = "";
     String ftpPasswordRelease = "";
 
-    String tcpHostNameRelease1 = "xlb3.xjxlb.com";//两个域名使用同一IP，默认使用1
-    String tcpHostNameRelease2 = "xlb3.xj-ict.com";
-    String tcpHostIPRelease = "47.104.3.240";
+    //文件下载地址，优先HTTP，
+    String httpDownloadUrl = "http://http1.xjxlb.com:58003";
+
+    String tcpHostNameRelease1 = "xlb1.xjxlb.com";//两个域名使用同一IP，默认使用1
+    String tcpHostNameRelease2 = "xlb1.xj-ict.com";
+    String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
+
+    public static PersistConfig saveHttpDownloadUrl(String httpDownloadUrl) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setHttpDownloadUrl(httpDownloadUrl);
+        persistConfig.save();
+        return persistConfig;
+    }
 
     public static PersistConfig saveFtpHostNameRelease(String hostName) {
         PersistConfig persistConfig = findConfig();
@@ -144,6 +148,15 @@ public class PersistConfig extends LitePalSupport {
         } else {
             return !isAlarmOn;
         }
+    }
+
+    public String getHttpDownloadUrl() {
+        return httpDownloadUrl;
+    }
+
+    public PersistConfig setHttpDownloadUrl(String httpDownloadUrl) {
+        this.httpDownloadUrl = httpDownloadUrl;
+        return this;
     }
 
     public String getTcpHostNameDebug1() {
@@ -260,51 +273,6 @@ public class PersistConfig extends LitePalSupport {
 
     public PersistConfig setFtpPasswordFly(String ftpPasswordFly) {
         this.ftpPasswordFly = ftpPasswordFly;
-        return this;
-    }
-
-    public String getFtpHostNameDebug() {
-        return ftpHostNameDebug;
-    }
-
-    public PersistConfig setFtpHostNameDebug(String ftpHostNameDebug) {
-        this.ftpHostNameDebug = ftpHostNameDebug;
-        return this;
-    }
-
-    public String getFtpHostIPDebug() {
-        return ftpHostIPDebug;
-    }
-
-    public PersistConfig setFtpHostIPDebug(String ftpHostIPDebug) {
-        this.ftpHostIPDebug = ftpHostIPDebug;
-        return this;
-    }
-
-    public int getFtpHostPortDebug() {
-        return ftpHostPortDebug;
-    }
-
-    public PersistConfig setFtpHostPortDebug(int ftpHostPortDebug) {
-        this.ftpHostPortDebug = ftpHostPortDebug;
-        return this;
-    }
-
-    public String getFtpUsernameDebug() {
-        return ftpUsernameDebug;
-    }
-
-    public PersistConfig setFtpUsernameDebug(String ftpUsernameDebug) {
-        this.ftpUsernameDebug = ftpUsernameDebug;
-        return this;
-    }
-
-    public String getFtpPasswordDebug() {
-        return ftpPasswordDebug;
-    }
-
-    public PersistConfig setFtpPasswordDebug(String ftpPasswordDebug) {
-        this.ftpPasswordDebug = ftpPasswordDebug;
         return this;
     }
 
@@ -576,11 +544,6 @@ public class PersistConfig extends LitePalSupport {
                 ", ftpHostPortDebugFly=" + ftpHostPortDebugFly +
                 ", ftpUsernameFly='" + ftpUsernameFly + '\'' +
                 ", ftpPasswordFly='" + ftpPasswordFly + '\'' +
-                ", ftpHostNameDebug='" + ftpHostNameDebug + '\'' +
-                ", ftpHostIPDebug='" + ftpHostIPDebug + '\'' +
-                ", ftpHostPortDebug=" + ftpHostPortDebug +
-                ", ftpUsernameDebug='" + ftpUsernameDebug + '\'' +
-                ", ftpPasswordDebug='" + ftpPasswordDebug + '\'' +
                 ", tcpHostNameDebug1='" + tcpHostNameDebug1 + '\'' +
                 ", tcpHostNameDebug2='" + tcpHostNameDebug2 + '\'' +
                 ", tcpHostIPDebug='" + tcpHostIPDebug + '\'' +
