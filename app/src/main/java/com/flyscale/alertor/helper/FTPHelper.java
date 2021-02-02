@@ -1,11 +1,5 @@
 package com.flyscale.alertor.helper;
 
-import com.flyscale.alertor.data.persist.PersistConfig;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,17 +11,17 @@ import java.util.Vector;
 
 public class FTPHelper {
 
-    private static Session session = null;
+   /* private static Session session = null;
     private static ChannelSftp channel = null;
 
-    /**
+    *//**
      * 下载文件
      *
      * @param remoteFile FTP服务器文件相对路径
      * @param remotePath FTP服务器文件名称
      * @param localFile  本地文件全路径
      * @throws Exception
-     */
+     *//*
     public static void downloadFile(String remoteFile, String remotePath, String localFile) throws Exception {
         DDLog.i("sftp download File remotePath :" + remotePath + File.separator + remoteFile + " to localPath : " + localFile + " !");
         OutputStream output = null;
@@ -120,14 +114,14 @@ public class FTPHelper {
     }
 
 
-    /**
+    *//**
      * 上传文件
      *
      * @param localFile
      * @param newName
      * @param remoteFoldPath
      * @throws Exception
-     */
+     *//*
     public static void uploadFile(String localFile, String newName, String remoteFoldPath) throws Exception {
         InputStream input = null;
         try {
@@ -167,5 +161,5 @@ public class FTPHelper {
         File file = new File(filePath);
         return file.exists();
     }
-
+*/
 }
