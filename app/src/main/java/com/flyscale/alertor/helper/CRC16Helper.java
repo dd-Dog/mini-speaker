@@ -1,4 +1,6 @@
-public class CRC16Util {
+package com.flyscale.alertor.helper;
+
+public class CRC16Helper {
 
     static byte[] crc16_tab_h = {(byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x01, (byte) 0xC0,
             (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1, (byte) 0x81, (byte) 0x40, (byte) 0x01, (byte) 0xC0, (byte) 0x80, (byte) 0x41, (byte) 0x00, (byte) 0xC1,
@@ -17,7 +19,7 @@ public class CRC16Util {
      * 计算CRC16校验  对外的接口
      *
      * @param data 需要计算的数组
-     * @return CRC16校验值
+     * @return CRC16校验值 十六进制字符串
      */
     public static String calcCrc16ToString(byte[] data) {
         return Integer.toHexString(calcCrc16(data, 0, data.length));
@@ -27,7 +29,7 @@ public class CRC16Util {
      * 计算CRC16校验  对外的接口
      *
      * @param data 需要计算的数组
-     * @return CRC16校验值
+     * @return CRC16校验值 整数
      */
     public static int calcCrc16(byte[] data) {
         return calcCrc16(data, 0, data.length);
@@ -41,7 +43,7 @@ public class CRC16Util {
      * @param len    长度
      * @return CRC16校验值
      */
-    public static int calcCrc16(byte[] data, int offset, int len) {
+    private static int calcCrc16(byte[] data, int offset, int len) {
         return calcCrc16(data, offset, len, 0xffff);
     }
 
@@ -54,7 +56,7 @@ public class CRC16Util {
      * @param preval 之前的校验值
      * @return CRC16校验值
      */
-    public static int calcCrc16(byte[] data, int offset, int len, int preval) {
+    private static int calcCrc16(byte[] data, int offset, int len, int preval) {
         int ucCRCHi = (preval & 0xff00) >> 8;
         int ucCRCLo = preval & 0x00ff;
         int iIndex;
