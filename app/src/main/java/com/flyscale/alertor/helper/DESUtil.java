@@ -89,11 +89,23 @@ public class DESUtil {
      * @return 解密后的字节数组
      */
     public static String decode(String key, String data) {
-        return decode(key, Base64.decode(data, Base64.DEFAULT));
+        return decodeToString(key, Base64.decode(data, Base64.DEFAULT));
     }
 
 
-    public static String decode(String key, byte[] data) {
+    public static byte[] decode(String key, byte[] data) {
+        try {
+            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            IvParameterSpec iv = new IvParameterSpec(IVPARAMETERSPEC.getBytes());
+            cipher.init(Cipher.DECRYPT_MODE, getRawKey(key), iv);
+            byte[] original = cipher.doFinal(data);
+            return original;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public static String decodeToString(String key, byte[] data) {
         try {
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             IvParameterSpec iv = new IvParameterSpec(IVPARAMETERSPEC.getBytes());
