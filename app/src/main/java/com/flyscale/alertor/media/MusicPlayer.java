@@ -2,6 +2,7 @@ package com.flyscale.alertor.media;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.text.TextUtils;
 
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.ThreadPool;
@@ -12,13 +13,13 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MusicPlayer {
-    private MediaPlayer mMediaPlayer;
+    private final MediaPlayer mMediaPlayer;
     private static MusicPlayer mInstance;
     private static final String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
     private static final String EMR_MEDIA_PATH = "/mnt/sdcard/flyscale/media/emr/";
 
-    private ArrayList<String> mNormalList;
-    private ArrayList<String> mEmrList;
+    private final ArrayList<String> mNormalList;
+    private final ArrayList<String> mEmrList;
 
     private ArrayList<String> mCurrentList;//当前正在播放的列表
 
@@ -35,9 +36,15 @@ public class MusicPlayer {
 
     private MusicPlayer() {
         mMediaPlayer = new MediaPlayer();
-        //获取曲目列表
         mNormalList = new ArrayList<>();
         mEmrList = new ArrayList<>();
+        //获取曲目列表
+        loadFiles();
+    }
+
+    private void loadFiles() {
+        mNormalList.clear();
+        mEmrList.clear();
         ThreadPool.getInstance().execute(new Runnable() {
             @Override
             public void run() {
@@ -108,7 +115,7 @@ public class MusicPlayer {
                 //如果当前正在播放其它东西，立即停止播放紧急音频
                 if (mMediaPlayer.isPlaying()) {
                     pause(true);
-                    play();
+                    playLocal();
                 }
                 break;
             default:
@@ -127,7 +134,48 @@ public class MusicPlayer {
         return this;
     }
 
-    public void play() {
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
+    }
+
+    public boolean isLooping() {
+        return mMediaPlayer.isLooping();
+    }
+
+    /**
+     * 播放一条音频消息
+     *
+     * @param path
+     * @param enforce 如果当前正在播放，是否强制停止当前
+     */
+    public void playTip(String path, boolean enforce) {
+        if (TextUtils.isEmpty(path)) {
+            DDLog.i("文件路径为空");
+            return;
+        }
+        if (mMediaPlayer.isPlaying() && enforce) {
+            pause(true);
+        } else if (mMediaPlayer.isPlaying()) {
+            DDLog.i("播放器正忙");
+            return;
+        }
+        try {
+            mMediaPlayer.setDataSource(path);
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+            // 通过异步的方式装载媒体资源
+            mMediaPlayer.prepareAsync();
+            mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
+            mMediaPlayer.setOnCompletionListener(null);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 播放本地文件
+     */
+    public void playLocal() {
         DDLog.i("play");
         if (mCurrentList.size() <= 0) {
             DDLog.w("没有曲目可以播放！");
@@ -138,11 +186,7 @@ public class MusicPlayer {
             mMediaPlayer.setDataSource(mCurrentList.get(mCurrentNormalIndex));
 
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            if (mPlayMode == PLAY_MODE.SINGLE_LOOP) {
-                mMediaPlayer.setLooping(true);
-            } else {
-                mMediaPlayer.setLooping(false);
-            }
+            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
             // 通过异步的方式装载媒体资源
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
@@ -235,7 +279,7 @@ public class MusicPlayer {
 
     }
 
-    private MediaPlayer.OnCompletionListener mMediaPlayerCompleteListener = new MediaPlayer.OnCompletionListener() {
+    private final MediaPlayer.OnCompletionListener mMediaPlayerCompleteListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mp) {
             playNext();
@@ -258,18 +302,14 @@ public class MusicPlayer {
                 filePath = mCurrentList.get(mCurrentEmrIndex);
             }
             mMediaPlayer.setDataSource(filePath);
-            if (mPlayMode == PLAY_MODE.SINGLE_LOOP) {
-                mMediaPlayer.setLooping(true);
-            } else {
-                mMediaPlayer.setLooping(false);
-            }
+            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private MediaPlayer.OnPreparedListener mMediaPlayerPreparedListener = new MediaPlayer.OnPreparedListener() {
+    private final MediaPlayer.OnPreparedListener mMediaPlayerPreparedListener = new MediaPlayer.OnPreparedListener() {
         @Override
         public void onPrepared(MediaPlayer mp) {
             // 装载完毕回调
@@ -277,11 +317,32 @@ public class MusicPlayer {
             if (mPlayType == PLAY_TYPE.NORMAL && mCurrentNormalPausePoint > 0) {
                 mMediaPlayer.seekTo(mCurrentNormalPausePoint);
                 mCurrentNormalPausePoint = 0;
-            } else if(mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0){
+            } else if (mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0) {
                 mMediaPlayer.seekTo(mCurrentEmrPausePoint);
                 mCurrentEmrPausePoint = 0;
             }
             mMediaPlayer.start();
         }
     };
+
+
+    /**
+     * 重置所有参数
+     * @param enforce 即使存在播放也要重置
+     */
+    public void reset(boolean enforce) {
+        if (!enforce && mMediaPlayer.isPlaying()){
+            return;
+        }
+        mLastNormalIndex = 0;   //记录上一首次播放的文件
+        mLastEmrIndex = 0;
+        mCurrentNormalPausePoint = 0;   //记录当前播放的停止位置，用于恢复播放
+        mCurrentNormalIndex = 0;
+        mCurrentEmrIndex = 0;
+        mCurrentEmrPausePoint = 0;
+
+        loadFiles();
+        mMediaPlayer.reset();
+    }
+
 }
