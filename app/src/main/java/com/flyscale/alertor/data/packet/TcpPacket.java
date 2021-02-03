@@ -48,7 +48,7 @@ public class TcpPacket {
         setTcpBytes(data);
     }
 
-    public TcpPacket() {
+    private TcpPacket() {
     }
 
     private void parse() {
