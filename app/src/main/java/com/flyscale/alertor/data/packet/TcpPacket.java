@@ -1,9 +1,9 @@
 package com.flyscale.alertor.data.packet;
 
+import com.flyscale.alertor.helper.BytesUtil;
 import com.flyscale.alertor.helper.CRC16Helper;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DESUtil;
-
-import java.nio.ByteBuffer;
 
 public class TcpPacket {
     /**
@@ -14,16 +14,29 @@ public class TcpPacket {
      * 报文第五部分	结尾标志：0x0d 0x0a，2字节结尾标志，报文其余地方不允许出现这两个字节
      * 每个报文长度固定为48+2=50字节，报文在传输时前48字节需做DES加密处理。
      */
-    public static final int PACKET_LENGTH = 50;
+    public static final int PACKET_LENGTH = 50;//数据包总长度
+    public static final int CMD_LENGTH = 2;//命令长度
+    public static final int ADDRESS_LENGTH = 8;//地址长度
+    public static final int DATA_LENGTH = 32;//有效数据长度
+    public static final int CRC_LENGTH = 4;//crc校验码长度
+    public static final int END_FLAG_LENGTH = 2;//结束符长度
 
-    private byte[] bytes = new byte[PACKET_LENGTH];//TCP报文数据
-    private byte[] decodedBytes = new byte[48];//解密后的数据，去掉结尾符
+    public static final int CRC_TEXT_LENGTH = PACKET_LENGTH - END_FLAG_LENGTH - CRC_LENGTH;//CRC校验的数据长度
+    public static final int ENCODE_LENGTH = PACKET_LENGTH - END_FLAG_LENGTH;//DES加密数据长度
 
-    private byte[] cmdBytes = new byte[2];//命令字节
-    private byte[] addressBytes = new byte[8];//地址字节
-    private byte[] dataBytes = new byte[32];//有效数据字节
-    private byte[] crc = new byte[4];   //CRC16校验码字节
-    private byte[] endFlag = {0x0d, 0x0a};
+
+    public static final byte[] SEPARATOR = {','};
+
+
+    private byte[] tcpBytes;//TCP报文数据
+    private byte[] encodedBytes;//加密数据
+    private byte[] decodedBytes = new byte[ENCODE_LENGTH];//解密后的数据
+
+    private byte[] cmdBytes = new byte[CMD_LENGTH];//命令字节
+    private byte[] addressBytes = new byte[ADDRESS_LENGTH];//地址字节
+    private byte[] dataBytes = new byte[DATA_LENGTH];//有效数据字节
+    private byte[] crcBytes = new byte[CRC_LENGTH];   //CRC16校验码字节
+    private final byte[] endFlagBytes = {0x0d, 0x0a};
 
     /*解析后的有效数据*/
     private CMD cmd;    //命令
@@ -32,81 +45,171 @@ public class TcpPacket {
 
 
     private TcpPacket(byte[] data) {
-        setBytes(data);
+        setTcpBytes(data);
+    }
+
+    public TcpPacket() {
     }
 
     private void parse() {
-        if (this.dataBytes[48] != endFlag[0] || this.dataBytes[49] != endFlag[1]){
+        if (tcpBytes == null || tcpBytes.length < 2) {
+            System.out.println("数据解析失败，无效的数据！");
+            return;
+        }
+        if (this.tcpBytes[tcpBytes.length - 2] != endFlagBytes[0] || this.tcpBytes[tcpBytes.length - 1] != endFlagBytes[1]) {
             System.out.println("未找到结束标识符！");
             return;
         }
+
         //DES解密
-        byte[] encodedBytes = new byte[48];
-        System.arraycopy(bytes, 0, encodedBytes, 0, 48);
-        decodedBytes = DESUtil.decode("1234", encodedBytes);
+        encodedBytes = new byte[tcpBytes.length - END_FLAG_LENGTH];
+        System.arraycopy(tcpBytes, 0, encodedBytes, 0, encodedBytes.length);
+        System.out.println("待解密数据：");
+        System.out.println(DDLog.printArray(encodedBytes));
+
+        decodedBytes = DESUtil.decode(encodedBytes);
+        System.out.println("解密明文数据：");
+        System.out.println(DDLog.printArray(decodedBytes));
+
         assert decodedBytes != null;
-        if (decodedBytes.length != 48) {
+        if (decodedBytes.length != ENCODE_LENGTH) {
             //解密失败
             System.out.println("解密失败！");
             return;
         }
         //CRC校验
+        //计算出校验码long类型
         int crc16 = CRC16Helper.calcCrc16(decodedBytes);
         if (crc16 != 0) {
             System.out.println("校验失败！");
             return;
         }
-
         //解析字段
         int index = 0;
-        System.arraycopy(decodedBytes, index, cmdBytes, 0, 2);
-        index += 2;
-        System.arraycopy(decodedBytes, index, addressBytes, 0, 8);
-        index += 8;
-        System.arraycopy(decodedBytes, index, dataBytes, 0, 32);
-        index += 32;
-        System.arraycopy(decodedBytes, index, crc, 0, 4);
+        System.arraycopy(decodedBytes, index, cmdBytes, 0, cmdBytes.length);
+        index += cmdBytes.length;
+        index += SEPARATOR.length;//跳过分隔符
+        System.arraycopy(decodedBytes, index, addressBytes, 0, addressBytes.length);
+        index += addressBytes.length;
+        index += SEPARATOR.length;//跳过分隔符
+        System.arraycopy(decodedBytes, index, dataBytes, 0, dataBytes.length);
+        index += dataBytes.length;
+        System.arraycopy(decodedBytes, index, crcBytes, 0, cmdBytes.length);
 
         //解析命令
-        String cmdStr = "";
-        cmdStr += (char)cmdBytes[0];
-        cmdStr += (char)cmdBytes[1];
+        String cmdStr = new String(cmdBytes);
         cmd = CMD.getCMD(cmdStr);
         //解析地址
-        address = byteArrayToLong(addressBytes);
+        address = BytesUtil.bytesToLong(addressBytes);
         //解析有效数据
         data = new String(dataBytes);
 
     }
 
-    private static long byteArrayToLong(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
-        buffer.put(bytes, 0, bytes.length);
-        buffer.flip();
-        return buffer.getLong();
+    /**
+     * 加密数据，并生成TcpPacket对象，用于向服务器发送
+     *
+     * @param cmd     命令
+     * @param address 地址
+     * @param data    有效数据
+     * @return
+     */
+    public TcpPacket encode(CMD cmd, long address, String data) {
+        this.cmd = cmd;
+        this.address = address;
+        this.data = data;
+
+        //拼接明文字节数据
+        cmdBytes = cmd.getValue().getBytes();
+        addressBytes = BytesUtil.longToBytes(address);
+        dataBytes = data.getBytes();
+        System.out.println(DDLog.printArray(cmdBytes));
+        System.out.println(DDLog.printArray(addressBytes));
+        System.out.println(DDLog.printArray(dataBytes));
+
+        int index = 0;
+        //拼接命令
+        System.arraycopy(cmdBytes, 0, decodedBytes, index, cmdBytes.length);
+        index += cmdBytes.length;
+        //拼接分隔符
+        System.arraycopy(SEPARATOR, 0, decodedBytes, index, SEPARATOR.length);
+        index += SEPARATOR.length;
+        //拼接地址
+        System.arraycopy(addressBytes, 0, decodedBytes, index, addressBytes.length);
+        index += addressBytes.length;
+        //拼接分隔符
+        System.arraycopy(SEPARATOR, 0, decodedBytes, index, SEPARATOR.length);
+        index += SEPARATOR.length;
+        //拼接有效数据
+        System.arraycopy(dataBytes, 0, decodedBytes, index, dataBytes.length);
+        index += dataBytes.length;
+
+        System.out.println("CRC校验前：");
+        System.out.println(DDLog.printArray(decodedBytes));
+
+        //CRC校验，准备待校验数据
+        byte[] readyBytes = new byte[CRC_TEXT_LENGTH];
+        System.arraycopy(decodedBytes, 0, readyBytes, 0, readyBytes.length);
+        System.out.println("待校验数据：");
+        System.out.println(DDLog.printArray(readyBytes));
+        //生成校验数据
+        crcBytes = BytesUtil.intToHexBytesRevert(CRC16Helper.calcCrc16(readyBytes));
+        //拼接校验数据
+        System.arraycopy(crcBytes, 0, decodedBytes, index, crcBytes.length);
+        index += crcBytes.length;
+
+        System.out.println("待加密数据：");
+        System.out.println(DDLog.printArray(decodedBytes));
+        //对明文DES加密
+        encodedBytes = DESUtil.encode(decodedBytes);
+
+        System.out.println("加密数据：");
+        System.out.println(DDLog.printArray(encodedBytes));
+        //将密文数据放入等发送的数据包
+        if (encodedBytes != null) {
+            tcpBytes = new byte[encodedBytes.length + END_FLAG_LENGTH];
+            System.arraycopy(encodedBytes, 0, tcpBytes, 0, encodedBytes.length);
+        } else {
+            System.out.println("加密失败！");
+            return null;
+        }
+        //最后拼接结束符
+        System.arraycopy(endFlagBytes, 0, tcpBytes, encodedBytes.length, endFlagBytes.length);
+        System.out.println("TCP数据：");
+        System.out.println(DDLog.printArray(tcpBytes));
+        return this;
     }
 
     /**
-     * 构造一个TcpPacket
+     * 从密文数据中解码出一个TcpPacket对象，用于接收服务器消息
      *
      * @param data
      * @return
      */
-    public static TcpPacket getInstance(byte[] data) {
+    public static TcpPacket decode(byte[] data) {
         return new TcpPacket(data);
     }
 
-    public byte[] getBytes() {
-        return bytes;
+    public static TcpPacket getInstance() {
+        return new TcpPacket();
     }
 
-    private void setBytes(byte[] bytes) {
-        if (bytes == null) {
+    public byte[] getTcpBytes() {
+        return tcpBytes;
+    }
+
+    /**
+     * 接收数据
+     *
+     * @param tcpBytes
+     */
+    private void setTcpBytes(byte[] tcpBytes) {
+        if (tcpBytes == null) {
             return;
         }
         //拷贝长度不超过50个字节
-        int copyLen = Math.min(bytes.length, 50);
-        System.arraycopy(bytes, 0, this.bytes, 0, copyLen);
+        this.tcpBytes = tcpBytes;
+        parse();//解析数据
     }
 
     public CMD getCmd() {
@@ -120,6 +223,7 @@ public class TcpPacket {
     public String getData() {
         return data;
     }
+
 
     @Override
     public String toString() {

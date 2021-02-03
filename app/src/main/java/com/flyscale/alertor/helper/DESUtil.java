@@ -20,7 +20,9 @@ public class DESUtil {
     private final static String IVPARAMETERSPEC = "01020304";////初始化向量参数，AES 为16bytes. DES 为8bytes.
     private final static String ALGORITHM = "DES";//DES是加密方式
     private static final String SHA1PRNG = "SHA1PRNG";//// SHA1PRNG 强随机种子算法
-    
+
+    private static final String DEFAULT_KEY = "ABCDEFGH";//默认KEY
+
     //生成随机数，可以当做动态的密钥 加密和解密的密钥必须一致，不然将不能解密
     public static String generateKey() {
         try {
@@ -68,6 +70,17 @@ public class DESUtil {
         return encode(key, data.getBytes());
     }
 
+    public static byte[] encode(byte[] data) {
+        try {
+            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            IvParameterSpec iv = new IvParameterSpec(IVPARAMETERSPEC.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, getRawKey(DEFAULT_KEY), iv);
+            return  cipher.doFinal(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public static String encode(String key, byte[] data) {
         try {
@@ -92,6 +105,17 @@ public class DESUtil {
         return decodeToString(key, Base64.decode(data, Base64.DEFAULT));
     }
 
+    public static byte[] decode(byte[] data) {
+        try {
+            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+            IvParameterSpec iv = new IvParameterSpec(IVPARAMETERSPEC.getBytes());
+            cipher.init(Cipher.DECRYPT_MODE, getRawKey(DEFAULT_KEY), iv);
+            return cipher.doFinal(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public static byte[] decode(String key, byte[] data) {
         try {
