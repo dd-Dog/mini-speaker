@@ -22,10 +22,13 @@ public class MusicPlayer {
 
     private ArrayList<String> mCurrentList;//当前正在播放的列表
 
-    private Integer mLastNormalIndex = 0;
+    private Integer mLastNormalIndex = 0;   //记录上一首次播放的文件
     private Integer mLastEmrIndex = 0;
+
+    private Integer mCurrentNormalPausePoint = 0;   //记录当前播放的停止位置，用于恢复播放
     private Integer mCurrentNormalIndex = 0;
     private Integer mCurrentEmrIndex = 0;
+    private Integer mCurrentEmrPausePoint = 0;
 
     private PLAY_MODE mPlayMode = PLAY_MODE.LIST_LOOP;//默认列表循环播放
     private PLAY_TYPE mPlayType = PLAY_TYPE.NORMAL;//默认播放常规音频
@@ -96,21 +99,22 @@ public class MusicPlayer {
     }
 
     public MusicPlayer setPlayType(PLAY_TYPE playType) {
-        this.mPlayType = playType;
-        switch (mPlayType) {
+        switch (playType) {
             case NORMAL:
                 this.mCurrentList = mNormalList;
                 break;
             case EMERGENCY:
                 this.mCurrentList = mEmrList;
                 //如果当前正在播放其它东西，立即停止播放紧急音频
-                if (mMediaPlayer.isPlaying()){
-                    mMediaPlayer.stop();
-                    mMediaPlayer.reset();
+                if (mMediaPlayer.isPlaying()) {
+                    pause(true);
                     play();
                 }
                 break;
+            default:
+                return this;
         }
+        this.mPlayType = playType;
         return this;
     }
 
@@ -149,11 +153,29 @@ public class MusicPlayer {
 
     }
 
-    public void pause() {
-        if (mMediaPlayer.isPlaying()) {
+    /**
+     * 暂停播放
+     *
+     * @param reload 表示此次暂停将要重新加载文件
+     */
+    public void pause(boolean reload) {
+        DDLog.i("pause,reload=" + reload);
+        if (reload) {
+            //分类型记录当前播放位置，因为两者都可以被中断
+            if (mPlayType == PLAY_TYPE.NORMAL) {
+                mCurrentNormalPausePoint = mMediaPlayer.getCurrentPosition();
+                DDLog.i("mCurrentNormalPausePoint=" + mCurrentNormalPausePoint);
+            } else {
+                mCurrentEmrPausePoint = mMediaPlayer.getCurrentPosition();
+            }
             mMediaPlayer.pause();
+            mMediaPlayer.reset();
         } else {
-            DDLog.w("当前没有播放，无法暂停！");
+            if (mMediaPlayer.isPlaying()) {
+                mMediaPlayer.pause();
+            } else {
+                DDLog.w("当前没有播放，无法暂停！");
+            }
         }
     }
 
@@ -161,26 +183,56 @@ public class MusicPlayer {
      * 播放前设置曲目下标
      */
     private void setIndexBeforePlay() {
-        mCurrentNormalIndex = mLastNormalIndex;
+        if (mPlayType == PLAY_TYPE.NORMAL) {
+            mCurrentNormalIndex = mLastNormalIndex;
+        } else {
+            mCurrentEmrIndex = mLastEmrIndex;
+        }
     }
 
     /**
      * 播放完成后设置曲目下标
      */
     private void setIndexAfterPlay() {
-        mLastNormalIndex = mCurrentNormalIndex;
-        switch (mPlayMode) {
-            case RANDOM:
-                mCurrentNormalIndex = new Random().nextInt(mCurrentList.size() - 1);
-                break;
-            case LIST_LOOP:
-                mCurrentNormalIndex = (mCurrentNormalIndex + 1) % mCurrentList.size();
-                break;
-            case SINGLE_LOOP:
-                //TODO 不做处理
-                break;
+        DDLog.i("setIndexAfterPlay,mPlayType=" + mPlayType);
+        if (mPlayType == PLAY_TYPE.NORMAL) {
+            if (mCurrentNormalPausePoint > 0) {
+                //说明之前被中断而暂停，现在要恢复,所以不再更改当前曲目
+                return;
+            }
+            mLastNormalIndex = mCurrentNormalIndex;
+            switch (mPlayMode) {
+                case RANDOM:
+                    mCurrentNormalIndex = new Random().nextInt(mCurrentList.size() - 1);
+                    break;
+                case LIST_LOOP:
+                    mCurrentNormalIndex = (mCurrentNormalIndex + 1) % mCurrentList.size();
+                    break;
+                case SINGLE_LOOP:
+                    //TODO 不做处理
+                    break;
+            }
+            DDLog.i("setIndexAfterPlay,mode=" + mPlayMode + ",mCurrentNormalIndex=" + mCurrentNormalIndex);
+        } else {
+            if (mCurrentEmrPausePoint > 0) {
+                //说明之前被中断而暂停，现在要恢复,所以不再更改当前曲目
+                return;
+            }
+            mLastEmrIndex = mCurrentEmrIndex;
+            switch (mPlayMode) {
+                case RANDOM:
+                    mCurrentEmrIndex = new Random().nextInt(mCurrentList.size() - 1);
+                    break;
+                case LIST_LOOP:
+                    mCurrentEmrIndex = (mCurrentEmrIndex + 1) % mCurrentList.size();
+                    break;
+                case SINGLE_LOOP:
+                    //TODO 不做处理
+                    break;
+            }
+            DDLog.i("setIndexAfterPlay,mode=" + mPlayMode + ",mCurrentEmrIndex=" + mCurrentEmrIndex);
         }
-        DDLog.i("setIndexAfterPlay,mode=" + mPlayMode + ",mCurrentNormalIndex=" + mCurrentNormalIndex);
+
     }
 
     private MediaPlayer.OnCompletionListener mMediaPlayerCompleteListener = new MediaPlayer.OnCompletionListener() {
@@ -197,10 +249,15 @@ public class MusicPlayer {
         DDLog.i("playNext");
         mMediaPlayer.reset();
         setIndexAfterPlay();//确定下一首播放啥
-
         try {
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.setDataSource(mCurrentList.get(mCurrentNormalIndex));
+            String filePath = "";
+            if (mPlayType == PLAY_TYPE.NORMAL) {
+                filePath = mCurrentList.get(mCurrentNormalIndex);
+            } else {
+                filePath = mCurrentList.get(mCurrentEmrIndex);
+            }
+            mMediaPlayer.setDataSource(filePath);
             if (mPlayMode == PLAY_MODE.SINGLE_LOOP) {
                 mMediaPlayer.setLooping(true);
             } else {
@@ -216,6 +273,14 @@ public class MusicPlayer {
         @Override
         public void onPrepared(MediaPlayer mp) {
             // 装载完毕回调
+            DDLog.i("mCurrentNormalPausePoint=" + mCurrentNormalPausePoint + ",mCurrentEmrPausePoint=" + mCurrentEmrPausePoint);
+            if (mPlayType == PLAY_TYPE.NORMAL && mCurrentNormalPausePoint > 0) {
+                mMediaPlayer.seekTo(mCurrentNormalPausePoint);
+                mCurrentNormalPausePoint = 0;
+            } else if(mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0){
+                mMediaPlayer.seekTo(mCurrentEmrPausePoint);
+                mCurrentEmrPausePoint = 0;
+            }
             mMediaPlayer.start();
         }
     };
