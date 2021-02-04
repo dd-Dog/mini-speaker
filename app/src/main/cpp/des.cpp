@@ -124,8 +124,6 @@ void initial_p(short plaint_text[64]) {
 	short tmp[64];
 	for (i = 0; i < 64; i++){
     	tmp[i] = plaint_text[IP[i] - 1];
-    	LOGD("ip[%d]-1=%d ",i, IP[i] - 1);
-    	LOGD("tmp[%d]=%d", i, tmp[i]);
     }
 	memcpy(plaint_text, tmp, sizeof(tmp));
 }

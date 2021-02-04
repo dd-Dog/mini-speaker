@@ -1,7 +1,7 @@
 //
 // Created by bian on 2021/2/3.
 //
-
+#include "stdlib.h"
 #ifndef ALERTOR_DES_H
 #define ALERTOR_DES_H
 

@@ -11,6 +11,11 @@
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,TAG ,__VA_ARGS__) // 定义LOGI类型
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN,TAG ,__VA_ARGS__) // 定义LOGW类型
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,TAG ,__VA_ARGS__) // 定义LOGE类型
+
+//预定义密钥
+unsigned char DES_KEY[] = {0x63, 0x68, 0x69, 0x6e, 0x61, 0x5f, 0x74, 0x65, 0x6c, 0x63, 0x6f, 0x6d,
+                           0x63, 0x68, 0x69, 0x6e, 0x61, 0x5f, 0x74, 0x65, 0x6c, 0x63, 0x6f, 0x6d};
+
 /*
  * Class:     com_flyscale_alertor_jni_NativeHelper
  * Method:    stringFromJNI
@@ -50,10 +55,6 @@ unsigned char *ConvertJByteArrayToChars(JNIEnv *env, jbyteArray bytearray) {
       LOGD("%x", bytes[i]);
     }
     LOGD("打印jbyte数据结束");*/
-    LOGD("长度为：%d", chars_len);
-    for (int i = 0; i < chars_len; i++) {
-        LOGD("%x", chars[i]);
-    }
     env->ReleaseByteArrayElements(bytearray, bytes, 0);
     return chars;
 }
@@ -64,7 +65,8 @@ unsigned char *ConvertJByteArrayToChars(JNIEnv *env, jbyteArray bytearray) {
  * Signature: ([B[B)[B
  */
 
-extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelper_desEncrypt
+extern "C" JNIEXPORT jbyteArray JNICALL
+Java_com_flyscale_alertor_jni_NativeHelper_desEncrypt___3B_3B
         (JNIEnv *env, jclass jclazz, jbyteArray key_, jbyteArray data_) {
     LOGD("desEncrypt");
     int length = 56;
@@ -74,9 +76,9 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelp
     memset((void *) out, 0x00, length);
     test_Enc48(data, key, out);
 //    LOGD("加密结果：");
- /*   for (int i = 0; i < length; i++) {
-        LOGD("%x ", out[i]);
-    }*/
+    /*   for (int i = 0; i < length; i++) {
+           LOGD("%x ", out[i]);
+       }*/
     jbyteArray result = ConvertCharsToJByteArray(env, out, length);
     return result;
 }
@@ -86,7 +88,8 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelp
  * Method:    desDecrypt
  * Signature: ([B[B)[B
  */
-extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelper_desDecrypt
+extern "C" JNIEXPORT jbyteArray JNICALL
+Java_com_flyscale_alertor_jni_NativeHelper_desDecrypt___3B_3B
         (JNIEnv *env, jclass jclazz, jbyteArray key_, jbyteArray data_) {
     LOGD("desEncrypt");
     int length = 56;
@@ -99,6 +102,34 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelp
     for (int i = 0; i < length; i++) {
         LOGD("%x ", out[i]);
     }*/
+    jbyteArray result = ConvertCharsToJByteArray(env, out, 48);
+    return result;
+}
+
+extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelper_desEncrypt___3B
+        (JNIEnv *env, jclass jclazz, jbyteArray data_) {
+    int length = 56;
+    unsigned char *data = ConvertJByteArrayToChars(env, data_);
+    auto *out = new unsigned char[length];
+    memset((void *) out, 0x00, length);
+    test_Enc48(data, DES_KEY, out);
+    jbyteArray result = ConvertCharsToJByteArray(env, out, length);
+    return result;
+}
+
+/*
+ * Class:     com_flyscale_alertor_jni_NativeHelper
+ * Method:    desDecrypt
+ * Signature: ([B)[B
+ */
+extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelper_desDecrypt___3B
+        (JNIEnv *env, jclass jclazz, jbyteArray data_) {
+    LOGD("desEncrypt");
+    int length = 56;
+    unsigned char *data = ConvertJByteArrayToChars(env, data_);
+    auto *out = new unsigned char[length];
+    memset((void *) out, 0x00, length);
+    test_Dec48(data, DES_KEY, out);
     jbyteArray result = ConvertCharsToJByteArray(env, out, 48);
     return result;
 }
