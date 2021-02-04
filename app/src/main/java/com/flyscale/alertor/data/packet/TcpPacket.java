@@ -3,7 +3,6 @@ package com.flyscale.alertor.data.packet;
 import com.flyscale.alertor.helper.BytesUtil;
 import com.flyscale.alertor.helper.CRC16Helper;
 import com.flyscale.alertor.helper.DDLog;
-import com.flyscale.alertor.helper.DESUtil;
 import com.flyscale.alertor.jni.NativeHelper;
 
 public class TcpPacket {
@@ -66,11 +65,11 @@ public class TcpPacket {
         encodedBytes = new byte[tcpBytes.length - END_FLAG_LENGTH];
         System.arraycopy(tcpBytes, 0, encodedBytes, 0, encodedBytes.length);
         System.out.println("待解密数据：");
-        System.out.println(DDLog.printArray(encodedBytes));
+        System.out.println(DDLog.printArrayHex(encodedBytes));
 
         decodedBytes = NativeHelper.desDecrypt(encodedBytes);
         System.out.println("解密明文数据：");
-        System.out.println(DDLog.printArray(decodedBytes));
+        System.out.println(DDLog.printArrayHex(decodedBytes));
 
         assert decodedBytes != null;
         if (decodedBytes.length != ENCODE_LENGTH) {
@@ -80,7 +79,18 @@ public class TcpPacket {
         }
         //CRC校验
         //计算出校验码long类型
-        int crc16 = CRC16Helper.calcCrc16(decodedBytes);
+        byte[] crcReadyBytes = new byte[PACKET_LENGTH - 4];
+        char c1 = (char) decodedBytes[44];
+        char c2 = (char) decodedBytes[45];
+        char c3 = (char) decodedBytes[46];
+        char c4 = (char) decodedBytes[47];
+        int high = Integer.parseInt("" + c1 + c2, 16);
+        int low = Integer.parseInt("" + c3 + c4, 16);
+        DDLog.i("high=" + high + ",low=" + low);
+        crcReadyBytes[44] = (byte) low;
+        crcReadyBytes[45] = (byte) high;
+        System.arraycopy(decodedBytes, 0, crcReadyBytes, 0, 44);
+        int crc16 = CRC16Helper.calcCrc16IBM(crcReadyBytes);
         if (crc16 != 0) {
             System.out.println("校验失败！");
             return;
@@ -93,6 +103,7 @@ public class TcpPacket {
         System.arraycopy(decodedBytes, index, addressBytes, 0, addressBytes.length);
         index += addressBytes.length;
         index += SEPARATOR.length;//跳过分隔符
+        DDLog.i(DDLog.printArrayHex(addressBytes));
         System.arraycopy(decodedBytes, index, dataBytes, 0, dataBytes.length);
         index += dataBytes.length;
         System.arraycopy(decodedBytes, index, crcBytes, 0, cmdBytes.length);
@@ -101,7 +112,7 @@ public class TcpPacket {
         String cmdStr = new String(cmdBytes);
         cmd = CMD.getCMD(cmdStr);
         //解析地址
-        address = BytesUtil.bytesToLong(addressBytes);
+        address = Long.parseLong(new String(addressBytes));
         //解析有效数据
         data = new String(dataBytes);
 
@@ -122,11 +133,20 @@ public class TcpPacket {
 
         //拼接明文字节数据
         cmdBytes = cmd.getValue().getBytes();
-        addressBytes = BytesUtil.longToBytes(address);
+        //生成地址，十六进制用ASCII表示，长度为8字节
+        String addressStr = Long.toHexString(address);
+        if (addressStr.length() < 8) {
+            for (int i = addressStr.length(); i < 8; i++) {
+                addressStr = "0" + addressStr;
+            }
+        }
+        addressBytes = addressStr.getBytes();
+        DDLog.i("address=" + addressStr + ",bytes=" + DDLog.printArrayHex(addressBytes));
+
         dataBytes = data.getBytes();
-        System.out.println(DDLog.printArray(cmdBytes));
-        System.out.println(DDLog.printArray(addressBytes));
-        System.out.println(DDLog.printArray(dataBytes));
+        System.out.println(DDLog.printArrayHex(cmdBytes));
+        System.out.println(DDLog.printArrayHex(addressBytes));
+        System.out.println(DDLog.printArrayHex(dataBytes));
 
         int index = 0;
         //拼接命令
@@ -145,26 +165,34 @@ public class TcpPacket {
         System.arraycopy(dataBytes, 0, decodedBytes, index, dataBytes.length);
         index += dataBytes.length;
 
-        System.out.println("CRC校验前：");
-        System.out.println(DDLog.printArray(decodedBytes));
+        DDLog.i("拼接字数据完成：");
+        DDLog.i(DDLog.printArrayHex(decodedBytes));
 
         //CRC校验，准备待校验数据
         byte[] readyBytes = new byte[CRC_TEXT_LENGTH];
         System.arraycopy(decodedBytes, 0, readyBytes, 0, readyBytes.length);
-        System.out.println("待校验数据：");
-        System.out.println(DDLog.printArray(readyBytes));
+        DDLog.i("待校验数据：");
+        DDLog.i(DDLog.printArrayHex(readyBytes));
         //生成校验数据
-        crcBytes = BytesUtil.intToHexBytesRevert(CRC16Helper.calcCrc16(readyBytes));
+        int crcCode = CRC16Helper.calcCrc16IBM(readyBytes);
+        String crcHexStr = Integer.toHexString(crcCode);
+        if (crcHexStr.length() < 4) {
+            for (int i = crcHexStr.length(); i < 4; i++) {
+                crcHexStr = "0" + crcHexStr;
+            }
+        }
+        crcBytes = crcHexStr.getBytes();
+        DDLog.i("crcHexStr=" + crcHexStr + ",bytes=" + DDLog.printArrayHex(crcBytes));
         //拼接校验数据
         System.arraycopy(crcBytes, 0, decodedBytes, index, crcBytes.length);
         index += crcBytes.length;
 
         System.out.println("待加密数据：");
-        System.out.println(DDLog.printArray(decodedBytes));
+        System.out.println(DDLog.printArrayHex(decodedBytes));
         //对明文DES加密
         encodedBytes = NativeHelper.desEncrypt(decodedBytes);
         System.out.println("加密数据：");
-        System.out.println(DDLog.printArray(encodedBytes));
+        System.out.println(DDLog.printArrayHex(encodedBytes));
         //将密文数据放入等发送的数据包
         if (encodedBytes != null) {
             tcpBytes = new byte[encodedBytes.length + END_FLAG_LENGTH];
@@ -176,7 +204,7 @@ public class TcpPacket {
         //最后拼接结束符
         System.arraycopy(endFlagBytes, 0, tcpBytes, encodedBytes.length, endFlagBytes.length);
         System.out.println("TCP数据：");
-        System.out.println(DDLog.printArray(tcpBytes));
+        System.out.println(DDLog.printArrayHex(tcpBytes));
         return this;
     }
 
