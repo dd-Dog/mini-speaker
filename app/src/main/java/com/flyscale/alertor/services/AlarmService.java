@@ -9,6 +9,14 @@ import com.flyscale.alertor.alarmManager.CallPhoneReceiver2;
 import com.flyscale.alertor.base.BaseService;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.devicestate.AlarmState;
+import com.flyscale.alertor.devicestate.EmergencyAudioState;
+import com.flyscale.alertor.devicestate.IdleState;
+import com.flyscale.alertor.devicestate.LocalPlayState;
+import com.flyscale.alertor.devicestate.RemoteBreakFMState;
+import com.flyscale.alertor.devicestate.RemotePlayFMState;
+import com.flyscale.alertor.devicestate.RemotePlayMP3State;
+import com.flyscale.alertor.devicestate.StateManager;
 import com.flyscale.alertor.eventBusManager.EventMessage;
 import com.flyscale.alertor.eventBusManager.EventType;
 import com.flyscale.alertor.helper.FileHelper;
@@ -39,8 +47,9 @@ public class AlarmService extends BaseService {
     StateManagerReceiver mStateManagerReceiver;
     BatteryReceiver mBatteryReceiver;
     TelephonyStateReceiver mTelephonyStateReceiver;
-//    CallPhoneReceiver mCallPhoneReceiver;
+    //    CallPhoneReceiver mCallPhoneReceiver;
     CallPhoneReceiver2 mCallPhoneReceiver2;
+    StateManager mStateManager;
 
     public AlarmService() {
 
@@ -63,7 +72,7 @@ public class AlarmService extends BaseService {
 
         //初始化程序默认文件夹
         File file = new File(FileHelper.getBasePath());
-        if(!file.exists()){
+        if (!file.exists()) {
             file.mkdirs();
         }
         //sim卡 网络状态广播
@@ -83,18 +92,57 @@ public class AlarmService extends BaseService {
 //        mCallPhoneReceiver = new CallPhoneReceiver();
 //        mCallPhoneReceiver.register();
         //警报灯常亮广播
-        AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(),PersistConfig.findConfig().getAlarmLedOffTime());
+        AlarmLedReceiver.sendRepeatAlarmBroadcast(PersistConfig.findConfig().getAlarmLedOnTime(), PersistConfig.findConfig().getAlarmLedOffTime());
+
+        //小喇叭状态管理器
+        mStateManager = new StateManager();
     }
+
+    //报警
+    public void alarm() {
+        mStateManager.setStateByPriority(AlarmState.PRIORITY, true);
+    }
+
+    //紧急语音广播
+    public void emergencyAudio() {
+        mStateManager.setStateByPriority(EmergencyAudioState.PRIORITY, true);
+    }
+
+    //平台控制播放MP3
+    public void remotePlayMP3() {
+        mStateManager.setStateByPriority(RemotePlayMP3State.PRIORITY, true);
+    }
+
+    //平台插播FM
+    public void remoteBreakFM() {
+        mStateManager.setStateByPriority(RemoteBreakFMState.PRIORITY, true);
+    }
+
+    //平台播放FM
+    public void remotePlayFM() {
+        mStateManager.setStateByPriority(RemotePlayFMState.PRIORITY, true);
+    }
+
+    //本地播放MP3或者FM
+    public void localPlay() {
+        mStateManager.setStateByPriority(LocalPlayState.PRIORITY, true);
+    }
+
+    //待机
+    public void idle() {
+        mStateManager.setStateByPriority(IdleState.PRIORITY, true);
+    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand: ");
-        if(mTimer != null){
+        if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
         }
         mTimer = new Timer();
-        mTimer.schedule(new CheckStateTask(),2000,CHECK_STATE_PERIOD);
+        mTimer.schedule(new CheckStateTask(), 2000, CHECK_STATE_PERIOD);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -110,7 +158,7 @@ public class AlarmService extends BaseService {
         mTelephonyStateReceiver.destroy();
 //        mCallPhoneReceiver.unRegister();
         mCallPhoneReceiver2.unRegister();
-        if(mTimer != null){
+        if (mTimer != null) {
             mTimer.cancel();
             mTimer = null;
         }
@@ -133,12 +181,12 @@ public class AlarmService extends BaseService {
     /**
      * 根据不同的state操作
      */
-    public void actionByState(){
-        if(mState == STATE_NO_SIM){
-            MediaHelper.play(MediaHelper.CHECKOUT_SIM,true);
-        }else if(mState == STATE_NO_NET){
-            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
-        }else if(mState == STATE_SIM_NET_SUCCESS){
+    public void actionByState() {
+        if (mState == STATE_NO_SIM) {
+            MediaHelper.play(MediaHelper.CHECKOUT_SIM, true);
+        } else if (mState == STATE_NO_NET) {
+            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL, true);
+        } else if (mState == STATE_SIM_NET_SUCCESS) {
 
         }
         mLastState = mState;
@@ -147,10 +195,10 @@ public class AlarmService extends BaseService {
     /**
      * 定时检查工作状态
      */
-    private class CheckStateTask extends TimerTask{
+    private class CheckStateTask extends TimerTask {
         @Override
         public void run() {
-            if(mState != -1){
+            if (mState != -1) {
                 actionByState();
             }
         }
