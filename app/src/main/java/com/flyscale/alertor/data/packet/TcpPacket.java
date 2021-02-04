@@ -4,6 +4,7 @@ import com.flyscale.alertor.helper.BytesUtil;
 import com.flyscale.alertor.helper.CRC16Helper;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DESUtil;
+import com.flyscale.alertor.jni.NativeHelper;
 
 public class TcpPacket {
     /**
@@ -67,7 +68,7 @@ public class TcpPacket {
         System.out.println("待解密数据：");
         System.out.println(DDLog.printArray(encodedBytes));
 
-        decodedBytes = DESUtil.decode(encodedBytes);
+        decodedBytes = NativeHelper.desDecrypt(encodedBytes);
         System.out.println("解密明文数据：");
         System.out.println(DDLog.printArray(decodedBytes));
 
@@ -161,8 +162,7 @@ public class TcpPacket {
         System.out.println("待加密数据：");
         System.out.println(DDLog.printArray(decodedBytes));
         //对明文DES加密
-        encodedBytes = DESUtil.encode(decodedBytes);
-
+        encodedBytes = NativeHelper.desEncrypt(decodedBytes);
         System.out.println("加密数据：");
         System.out.println(DDLog.printArray(encodedBytes));
         //将密文数据放入等发送的数据包
