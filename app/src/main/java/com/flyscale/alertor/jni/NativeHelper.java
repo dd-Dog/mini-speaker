@@ -11,5 +11,8 @@ public class NativeHelper {
 
     public static native byte[] desDecrypt(byte[] key, byte[] encryptedData);
 
+    public static native byte[] desEncrypt( byte[] plainText);
+
+    public static native byte[] desDecrypt( byte[] encryptedData);
 
 }
