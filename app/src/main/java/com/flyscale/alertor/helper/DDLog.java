@@ -380,7 +380,7 @@ public class DDLog {
     }
 
 
-    public static String printArray(long[] array) {
+    public static String printArrayHex(long[] array) {
         if (array == null) return null;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -391,7 +391,7 @@ public class DDLog {
         return sb.toString();
     }
 
-    public static String printArray(int[] array) {
+    public static String printArrayHex(int[] array) {
         if (array == null) return null;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -402,7 +402,7 @@ public class DDLog {
         return sb.toString();
     }
 
-    public static String printArray(String[] array) {
+    public static String printArrayHex(String[] array) {
         if (array == null) return null;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -424,7 +424,22 @@ public class DDLog {
         return sb.toString();
     }
 
-    public static String printArray(char[] array) {
+    public static String printArrayHex(byte[] array) {
+        if (array == null) return null;
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = 0; i < array.length; i++) {
+            sb.append(Integer.toHexString(byteToInteger(array[i]))).append(" ");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    public static Integer byteToInteger(Byte b) {
+        return 0xff & b;
+    }
+
+    public static String printArrayHex(char[] array) {
         if (array == null) return null;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -435,7 +450,7 @@ public class DDLog {
         return sb.toString();
     }
 
-    public static String printArray(Object[] array) {
+    public static String printArrayHex(Object[] array) {
         if (array == null) return null;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
@@ -446,7 +461,7 @@ public class DDLog {
         return sb.toString();
     }
 
-    public static <T> String printArray(List<T> array) {
+    public static <T> String printArrayHex(List<T> array) {
         if (array == null) return null;
         StringBuilder sb = new StringBuilder();
         sb.append("[");
