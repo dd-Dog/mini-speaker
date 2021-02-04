@@ -120,7 +120,6 @@ PF[32] = {
 
 //short g_sK[16][56];
 void initial_p(short plaint_text[64]) {
-    LOGD("initial_p");
 	int i;
 	short tmp[64];
 	for (i = 0; i < 64; i++){
@@ -132,7 +131,6 @@ void initial_p(short plaint_text[64]) {
 }
 
 void final_p(short cipher_text[64]) {
-    LOGD("final_p");
 	int i;
 	short tmp[64];
 	for (i = 0; i < 64; i++)
@@ -141,13 +139,11 @@ void final_p(short cipher_text[64]) {
 }
 
 void extend_p(short text[32], short output[48]) {
-    LOGD("extend_p");
 	int i;
 	for (i = 0; i < 48; i++)
 		output[i] = text[E[i] - 1];
 }
 void permutation1(short key[64], short o[56]) {
-    LOGD("permutation1");
 	//short tmp[56];
 	int i;
 	for (i = 0; i < 56; i++)
@@ -157,7 +153,6 @@ void permutation1(short key[64], short o[56]) {
 
 
 void permutationP(short text[32]) {
-    LOGD("permutationP");
 	short tmp[32];
 	int i;
 	for (i = 0; i < 32; i++) {
@@ -166,7 +161,6 @@ void permutationP(short text[32]) {
 	memcpy(text, tmp, sizeof(tmp));
 }
 void F(short R[32], short key[48]) {
-    LOGD("F");
 	int i, j;
 	short R_48[48];
 	short S_in[48];
@@ -195,7 +189,6 @@ void F(short R[32], short key[48]) {
 }
 
 void Round(short L[32], short R[32], short key[48]) {
-    LOGD("Round");
 	int i;
 	short R_1[32];
 	for (i = 0; i < 32; i++) {
@@ -217,7 +210,6 @@ void Round(short L[32], short R[32], short key[48]) {
 
 }
 void setK(char keyC[8], short * pi_psK) {
-    LOGD("setK");
 	//����key
 	short keyP[64];
 	short key[56];
@@ -255,12 +247,6 @@ void setK(char keyC[8], short * pi_psK) {
 }
 
 void Enc(char txt[8], char enc[8], short * pi_psK) {
-    LOGD("Enc");
-    LOGD("打印初始值：");
-    for (int i = 0; i < 8; i ++ ) {
-    	LOGD("enc[%d]=%d ", i, enc[i]);
-    }
-    LOGD("打印初始值结束");
 	int i, j;
 	//
 	short plain[64];
@@ -270,13 +256,7 @@ void Enc(char txt[8], char enc[8], short * pi_psK) {
 			plain[i * 8 + j] = (txt[i] >> (7 - j)) & 1;
 		}
 	}
-    LOGD("初始化p盒");
 	initial_p(plain);
-
-    for (int i = 0; i < 64; i++) {
-		LOGD("%X ", plain[i]);
-	}
-	LOGD("初始化p盒完成");
 	//����
 	for (i = 0; i < 32; i++) {
 		L[i] = plain[i];
@@ -297,24 +277,16 @@ void Enc(char txt[8], char enc[8], short * pi_psK) {
 	}
 
 	final_p(plain);
-	LOGD("最后一次");
-    for (int i = 0; i < 64; i++) {
-    	LOGD("%x ", plain[i]);
-    }
-    LOGD("最后一次打印完成");
-	LOGD("最终的明文赋值");
 	//for (int i = 0;i < 64;i++) {		cout << plain[i];	}	cout << endl;
 	for (i = 0; i < 8; i++){
 		for (j = 7; j >= 0; j--) {
-            LOGD("plain[%d]=%d,enc[%d]=%d,移位后=%d, ",(i * 8 + (7 - j)), plain[i * 8 + (7 - j)], i, enc[i], plain[i * 8 + (7 - j)] << j);
+//            LOGD("plain[%d]=%d,enc[%d]=%d,移位后=%d, ",(i * 8 + (7 - j)), plain[i * 8 + (7 - j)], i, enc[i], plain[i * 8 + (7 - j)] << j);
 			enc[i] |= plain[i * 8 + (7 - j)] << j;//+还是|？
-			LOGD("enc[%d]=%d", i,enc[i]);
+//			LOGD("enc[%d]=%d", i,enc[i]);
 		}
 	}
-    LOGD("最终的明文赋值完成");
 }
 void Dec(char txt[8], char dec[8], short * pi_psK) {
-    LOGD("Dec");
 	int i, j;
 	//�������Ķ�����(�ó���64���������)
 	short plain[64];
@@ -325,12 +297,6 @@ void Dec(char txt[8], char dec[8], short * pi_psK) {
 		}
 	}
 	initial_p(plain);
-
-    printf("初始化p盒\n");
-    for (int i = 0; i < 64; i++) {
-		printf("%d ", plain[i]);
-	}
-	printf("\n初始化p盒完成\n");
 	short * psK;
 	//psK= &(g_sK[0][0]);
 	psK = pi_psK;
@@ -360,16 +326,6 @@ void Dec(char txt[8], char dec[8], short * pi_psK) {
 
 int test_Enc48(unsigned char * pi_ucTxt, unsigned char * pi_ucKey1, unsigned char * pi_ucOut)
 {
-    LOGD("test_Enc48");
-    LOGD("打印明文：");
-    for(int i=0; i<48; i++){
-        LOGD("%x ", pi_ucTxt[i]);
-    }
-    LOGD("打印密钥：");
-    for(int i=0; i<24; i++){
-        LOGD("%x ", pi_ucKey1[i]);
-    }
-    LOGD("####################");
 	int i;
 	//char txt[9] = "12345678";//��������
 	//char keyC[9] = "09876543";//��������
@@ -387,10 +343,6 @@ int test_Enc48(unsigned char * pi_ucTxt, unsigned char * pi_ucKey1, unsigned cha
 
 	setK((char*)pi_ucKey1, &(l_sK[0][0]));
 	Enc((char*)(pi_ucTxt + 0), (char*)(pi_ucOut + 0), &(l_sK[0][0]));
-	LOGD("打印第一段加密后的数据：");
-	for(int j=0; j<8;j++){
-	    LOGD("%x", pi_ucOut[j]);
-	}
 	Enc((char*)(pi_ucTxt + 8), (char*)(pi_ucOut + 8), &(l_sK[0][0]));
 	Enc((char*)(pi_ucTxt + 16), (char*)(pi_ucOut + 16), &(l_sK[0][0]));
 	Enc((char*)(pi_ucTxt + 24), (char*)(pi_ucOut + 24), &(l_sK[0][0]));
