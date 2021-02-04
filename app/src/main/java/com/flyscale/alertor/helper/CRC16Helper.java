@@ -2,7 +2,7 @@ package com.flyscale.alertor.helper;
 
 /**
  * CRC算法名称	    多项式公式	        宽度	多项式	初始值	结果异或值	输入反转	输出反转
- * CRC-16/MODBUS	x16 + x15 + x2 + 1	16	    8005	FFFF	0000	    true	    true
+ * CRC-16/IBM	x16 + x15 + x2 + 1	16	        8005	    0000	0000	 true	  true
  * 2字节校验码HEX
  */
 public class CRC16Helper {
@@ -19,7 +19,6 @@ public class CRC16Helper {
             (byte) 0x75, (byte) 0xB5, (byte) 0x77, (byte) 0xB7, (byte) 0xB6, (byte) 0x76, (byte) 0x72, (byte) 0xB2, (byte) 0xB3, (byte) 0x73, (byte) 0xB1, (byte) 0x71, (byte) 0x70, (byte) 0xB0, (byte) 0x50, (byte) 0x90, (byte) 0x91, (byte) 0x51, (byte) 0x93, (byte) 0x53, (byte) 0x52, (byte) 0x92, (byte) 0x96, (byte) 0x56, (byte) 0x57, (byte) 0x97, (byte) 0x55, (byte) 0x95, (byte) 0x94, (byte) 0x54, (byte) 0x9C, (byte) 0x5C, (byte) 0x5D, (byte) 0x9D, (byte) 0x5F, (byte) 0x9F, (byte) 0x9E, (byte) 0x5E, (byte) 0x5A, (byte) 0x9A, (byte) 0x9B, (byte) 0x5B, (byte) 0x99, (byte) 0x59, (byte) 0x58, (byte) 0x98, (byte) 0x88, (byte) 0x48, (byte) 0x49, (byte) 0x89, (byte) 0x4B, (byte) 0x8B, (byte) 0x8A, (byte) 0x4A, (byte) 0x4E, (byte) 0x8E, (byte) 0x8F, (byte) 0x4F, (byte) 0x8D, (byte) 0x4D,
             (byte) 0x4C, (byte) 0x8C, (byte) 0x44, (byte) 0x84, (byte) 0x85, (byte) 0x45, (byte) 0x87, (byte) 0x47, (byte) 0x46, (byte) 0x86, (byte) 0x82, (byte) 0x42, (byte) 0x43, (byte) 0x83, (byte) 0x41, (byte) 0x81, (byte) 0x80, (byte) 0x40};
 
-
     /**
      * 计算CRC16校验  对外的接口
      *
@@ -27,7 +26,7 @@ public class CRC16Helper {
      * @return CRC16校验值 十六进制字符串
      */
     public static String calcCrc16ToString(byte[] data) {
-        return Integer.toHexString(calcCrc16(data, 0, data.length));
+        return Integer.toHexString(calcCrc16IBM(data, 0, data.length));
     }
 
     /**
@@ -37,7 +36,7 @@ public class CRC16Helper {
      * @return CRC16校验值 十六进制字符串数组，4字节长度
      */
     public static byte[] calcCrc16ToBytes(byte[] data) {
-        return BytesUtil.longToHexBytes(calcCrc16(data, 0, data.length));
+        return BytesUtil.longToHexBytes(calcCrc16IBM(data, 0, data.length));
     }
 
     /**
@@ -46,8 +45,8 @@ public class CRC16Helper {
      * @param data 需要计算的数组
      * @return CRC16校验值 整数
      */
-    public static int calcCrc16(byte[] data) {
-        return calcCrc16(data, 0, data.length);
+    public static int calcCrc16IBM(byte[] data) {
+        return calcCrc16IBM(data, 0, data.length);
     }
 
     /**
@@ -58,8 +57,8 @@ public class CRC16Helper {
      * @param len    长度
      * @return CRC16校验值
      */
-    private static int calcCrc16(byte[] data, int offset, int len) {
-        return calcCrc16(data, offset, len, 0xffff);
+    private static int calcCrc16IBM(byte[] data, int offset, int len) {
+        return calcCrc16IBM(data, offset, len, 0x0);
     }
 
     /**
@@ -71,7 +70,7 @@ public class CRC16Helper {
      * @param preval 之前的校验值
      * @return CRC16校验值
      */
-    private static int calcCrc16(byte[] data, int offset, int len, int preval) {
+    private static int calcCrc16IBM(byte[] data, int offset, int len, int preval) {
         int ucCRCHi = (preval & 0xff00) >> 8;
         int ucCRCLo = preval & 0x00ff;
         int iIndex;
