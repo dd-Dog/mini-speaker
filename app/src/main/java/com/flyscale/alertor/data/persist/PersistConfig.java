@@ -13,8 +13,10 @@ import org.litepal.crud.LitePalSupport;
  * @DESCRIPTION 暂无
  */
 public class PersistConfig extends LitePalSupport {
-    String ip = "xlb3.xjxlb.com";
-    int port = 58005;
+    @Deprecated
+    String ip = "bltst2.xjxlb.com";
+    @Deprecated
+    int port = 50074;
     String alarmNum = "099116886119";
     String specialNum = "110";
     //是否接受其他号码呼入
@@ -43,10 +45,10 @@ public class PersistConfig extends LitePalSupport {
     String ftpPasswordFly = "fly123";
 
     /******************客户测试服务器*******************/
-    String tcpHostNameDebug1 = "xlb3.xjxlb.com";//两个域名使用同一IP，默认使用1
-    String tcpHostNameDebug2 = "xlb3.xj-ict.com";
+    String tcpHostNameDebug1 = "bltst2.xjxlb.com";//两个域名使用同一IP，默认使用1
+    String tcpHostNameDebug2 = "bltst2.xjxlb.com";
     String tcpHostIPDebug = "";
-    int tcpPortDebug = 58005;
+    int tcpPortDebug = 50074;
 
     /******************客户正式服务器*******************/
     String ftpHostNameRelease = "ftp3.xjxlb.com";
