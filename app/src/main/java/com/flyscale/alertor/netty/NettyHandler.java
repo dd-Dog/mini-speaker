@@ -1,4 +1,5 @@
 package com.flyscale.alertor.netty;
+
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -21,6 +22,7 @@ import com.flyscale.alertor.data.up.UVoice;
 import com.flyscale.alertor.eventBusManager.EventBusUtils;
 import com.flyscale.alertor.eventBusManager.EventType;
 import com.flyscale.alertor.helper.DDLog;
+import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -31,6 +33,8 @@ import com.flyscale.alertor.media.AlarmMediaInstance;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -65,19 +69,27 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     /**
      * channel没有连接到远程节点
+     *
      * @param ctx
      * @throws Exception
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
-        Log.i(TAG, "channelInactive:  --- 重连 ---  ");
+        Log.i(TAG, "channelInactive:  --- 准备重连 ---  ");
         LedInstance.getInstance().offStateLed();
-        NettyHelper.getInstance().connect();
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                NettyHelper.getInstance().connect();
+            }
+        }, 65 * 1000);
     }
 
     /**
      * channel被创建但没有注册到eventLoop
+     *
      * @param ctx
      * @throws Exception
      */
@@ -90,6 +102,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     /**
      * channel处于活动状态 连接到了远程节点 可以接收和发送
+     *
      * @param ctx
      * @throws Exception
      */
@@ -99,17 +112,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         Log.i(TAG, "channelActive:  ---  链接成功 ---");
         //保存第一次登陆的时间 永久不变
         PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
-        if(!UserActionHelper.isFastConnect(120 *1000)){
-            MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
+        if (!UserActionHelper.isFastConnect(120 * 1000)) {
+            MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS, true);
         }
         LedInstance.getInstance().showStateLed();
 
         //开始鉴权
-        NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN, "460001234567890/0A9464026708209/"));
+        NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN, "460031234567890/0A9464026708209/"));
     }
 
     /**
-     *    //利用写空闲发送心跳检测消息
+     * //利用写空闲发送心跳检测消息
+     *
      * @param ctx
      * @param evt
      * @throws Exception
@@ -117,8 +131,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
-        if(evt instanceof IdleStateEvent){
-            if(((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE){
+        if (evt instanceof IdleStateEvent) {
+            if (((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE) {
 //                NettyHelper.getInstance().send(new UHeart());
             }
         }
@@ -133,6 +147,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     /**
      * channel已经注册到eventLoop
+     *
      * @param ctx
      * @throws Exception
      */
@@ -146,15 +161,16 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     @Override
     protected void channelRead0(final ChannelHandlerContext ctx, TcpPacket tcpPacket) throws Exception {
         DDLog.i("channelRead0 tcpPacket=" + tcpPacket);
-//        ByteBuf buf = (ByteBuf) msg;
-//        byte[] bytes = new byte[buf.readableBytes()];
-//        // 复制内容到字节数组bytes
-//        buf.readBytes(bytes);
-
-//        byte[] bytes = msg.getBytes();
-//        DDLog.i(DDLog.printArrayHex(bytes));
-//        TcpPacket tcpPacket = TcpPacketFactory.from(bytes);
-//        DDLog.i("接收到服务器消息tcpPacket=" + tcpPacket);
+        if (tcpPacket != null) {
+            long address = tcpPacket.getAddress();
+            if (address == TcpPacketFactory.LOGIN_CONFIRM) {
+                //登录鉴权
+                String md5 = MD5Util.md5(tcpPacket.getData(), MD5Util.getKI());
+                DDLog.i("鉴权MD5=" + md5);
+                TcpPacket packetSend = TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN_CONFIRM, md5);
+                NettyHelper.getInstance().send(packetSend);
+            }
+        }
         /*BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
         int type = BaseDataFactory.parseType(msg);
         final String tradeNum = baseData.getTradeNum();
