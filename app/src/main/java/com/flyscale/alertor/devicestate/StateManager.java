@@ -33,20 +33,21 @@ public class StateManager {
 
     /**
      * 根据优先级切换状态
-     * @param priority 优先级
+     *
+     * @param priority  优先级
      * @param saveState 是否要保存原有的状态用于恢复
      *                  一般被中断的状态需要保存，状态结束后返回不需要保存
      */
     public void setStateByPriority(int priority, boolean saveState) {
-        if (mState.getPriority() == priority){
+        if (mState != null && mState.getPriority() == priority) {
             DDLog.i("setStateByPriority，已经在这个状态了呢。priority=" + priority);
             return;
         }
         IState state = stateList.get(priority);
-        if (state == null){
+        if (state == null) {
             DDLog.e("状态转换异常，未知的优先级");
-        }else{
-            if (saveState){
+        } else {
+            if (saveState) {
                 this.mState.pause();
             }
             this.mState = state;
@@ -54,15 +55,15 @@ public class StateManager {
         }
     }
 
-    public void start(){
+    public void start() {
         this.mState.start();
     }
 
-    public void pause(){
+    public void pause() {
         this.mState.pause();
     }
 
-    public void stop(){
+    public void stop() {
         this.mState.stop();
     }
 }
