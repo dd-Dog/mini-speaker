@@ -111,7 +111,7 @@ public class TcpPacketFactory {
 
     public static TcpPacket createPacketSend(long address, String data) {
         CMD cmd = null;
-        if (address == HEARTBEAT_DATA) {
+        if (address == HEARTBEAT_DATA || address == LOGIN) {
             cmd = CMD.WRITE;
         } else if (address == EMR_BROADCAST_MP3 ||
                 address == EMR_BROADCAST_AMR ||
