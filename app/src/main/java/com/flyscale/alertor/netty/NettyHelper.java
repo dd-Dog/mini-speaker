@@ -122,8 +122,9 @@ public class NettyHelper {
                 modifySslHandler(null, false);
             }
         }
-        ChannelFuture future = mBootstrap.connect("192.168.1.130", 60000);
-        Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + "...." + PersistConfig.findConfig().getPort());
+        ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getTcpHostNameDebug1(), PersistConfig.findConfig().getTcpPortDebug());
+//        ChannelFuture future = mBootstrap.connect("192.168.1.130", 60000);
+        Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getTcpHostNameDebug1() + "...." + PersistConfig.findConfig().getTcpPortDebug());
         future.addListener(mChannelFutureListener);
     }
 
@@ -215,9 +216,10 @@ public class NettyHelper {
                 pipeline.addLast(new MessageToByteEncoder<TcpPacket>() {
                     @Override
                     protected void encode(ChannelHandlerContext ctx, TcpPacket msg, ByteBuf out) throws Exception {
-                        DDLog.i("encode " + out);
+                        DDLog.i("encode " + msg);
                         byte[] tcpBytes = msg.getTcpBytes();
                         out.writeBytes(tcpBytes);
+                        DDLog.i("发送成功：" + DDLog.printArrayHex(tcpBytes));
                     }
                 });
                 //这里要注意，ChannelInboundHandler要在配置解码器后再配置。否则还不会报错，坑
