@@ -73,7 +73,7 @@ public class AlarmLedReceiver extends BroadcastReceiver {
 
         if(PersistConfig.findConfig().isAlarmOn()){
             if(onTime.equals("00:00") && offTime.equals("00:00")){
-                LedInstance.getInstance().cancelBlinkShowAlarmLed();
+//                LedInstance.getInstance().cancelBlinkShowAlarmLed();
             }else {
                 String currentTime = DateHelper.longToString(DateHelper.yyyyMMdd);
                 String tempOn = currentTime + onTime;

@@ -32,22 +32,23 @@ public class BaseApplication extends Application {
 
         SoundPoolHelper.getInstance().init(this);
         LitePal.initialize(this);
+        PersistConfig.saveLogin(false);
 
-        sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
-        sFlyscaleManager.setExternalAlarmStatus(0);
-        if(sFlyscaleManager.getAdapterState().equals("1")){
-            LedInstance.getInstance().showChargeLed();
-        }else {
-            LedInstance.getInstance().offChargeLed();
-        }
-
-        //每次升级取反
-        PersistConfig.saveDefaultAlarmOn(true);
-        if(PersistConfig.findConfig().isAlarmOn()){
-            LedInstance.getInstance().cancelBlinkShowAlarmLed();
-        }else {
-            LedInstance.getInstance().cancelBlinkOffAlarmLed();
-        }
+//        sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
+//        sFlyscaleManager.setExternalAlarmStatus(0);
+//        if(sFlyscaleManager.getAdapterState().equals("1")){
+//            LedInstance.getInstance().showChargeLed();
+//        }else {
+//            LedInstance.getInstance().offChargeLed();
+//        }
+//
+//        //每次升级取反
+//        PersistConfig.saveDefaultAlarmOn(true);
+//        if(PersistConfig.findConfig().isAlarmOn()){
+//            LedInstance.getInstance().cancelBlinkShowAlarmLed();
+//        }else {
+//            LedInstance.getInstance().cancelBlinkOffAlarmLed();
+//        }
 //        if(sFlyscaleManager.getAlarmLedState().equals("0")){
 //            LedInstance.getInstance().cancelBlinkOffAlarmLed();
 //        }else {

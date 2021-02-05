@@ -67,7 +67,7 @@ public class TcpPacket {
         System.out.println("待解密数据：");
         System.out.println(DDLog.printArrayHex(encodedBytes));
 
-        decodedBytes = NativeHelper.desDecrypt(encodedBytes);
+        decodedBytes = NativeHelper.decrypt(encodedBytes);
         System.out.println("解密明文数据：");
         System.out.println(DDLog.printArrayHex(decodedBytes));
 
@@ -196,7 +196,7 @@ public class TcpPacket {
         System.out.println("待加密数据：");
         System.out.println(DDLog.printArrayHex(decodedBytes));
         //对明文DES加密
-        encodedBytes = NativeHelper.desEncrypt(decodedBytes);
+        encodedBytes = NativeHelper.encrypt(decodedBytes);
         System.out.println("加密数据：");
         System.out.println(DDLog.printArrayHex(encodedBytes));
         //将密文数据放入等发送的数据包

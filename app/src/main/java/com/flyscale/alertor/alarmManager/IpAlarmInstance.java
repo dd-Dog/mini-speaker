@@ -87,7 +87,7 @@ public class IpAlarmInstance {
             public void run() {
                 if(mStatus != STATUS_ALARM_SUCCESS && mSendCount <= 3){
                     //ip报警未成功并且报警次数小于3次 则继续ip报警
-                    if(type == BaseData.TYPE_ALARM_U){
+                  /*  if(type == BaseData.TYPE_ALARM_U){
                         NettyHelper.getInstance().send(new UAlarm(mSendCount));
                     }else if(type == BaseData.TYPE_DOOR_ALARM_U){
                         NettyHelper.getInstance().send(new UDoorAlarm(mSendCount));
@@ -95,7 +95,7 @@ public class IpAlarmInstance {
                         NettyHelper.getInstance().send(new USmokeAlarm(mSendCount));
                     }else if(type == BaseData.TYPE_GAS_ALARM_U){
                         NettyHelper.getInstance().send(new UGasAlarm(mSendCount));
-                    }
+                    }*/
                     mSendCount++;
                 }else {
                     mTimerTaskHelper.stop();
