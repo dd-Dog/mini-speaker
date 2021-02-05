@@ -16,6 +16,14 @@ import java.security.NoSuchAlgorithmException;
 public class MD5Util {
 
     /**
+     * 实际上该KI值是预设在机器中，每台不一样
+     * A9464026708209 串号用这个ki认证码    99988000000000000000000000199988
+     * @return
+     */
+    private String getKI(){
+        return "99988000000000000000000000199988";
+    }
+    /**
      * 计算字符串MD5值
      *
      * @param string
