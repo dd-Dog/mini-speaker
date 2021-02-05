@@ -7,6 +7,8 @@ import com.flyscale.alertor.alarmManager.AlarmMediaPlayer;
 import com.flyscale.alertor.alarmManager.IpAlarmInstance;
 import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.factory.BaseDataFactory;
+import com.flyscale.alertor.data.packet.TcpPacket;
+import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.data.up.UAddDeleteWhiteList;
@@ -18,6 +20,7 @@ import com.flyscale.alertor.data.up.UUpdateVersion;
 import com.flyscale.alertor.data.up.UVoice;
 import com.flyscale.alertor.eventBusManager.EventBusUtils;
 import com.flyscale.alertor.eventBusManager.EventType;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.FileHelper;
@@ -29,6 +32,7 @@ import com.flyscale.alertor.media.ReceiveMediaInstance;
 
 import java.io.File;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
@@ -39,7 +43,7 @@ import io.netty.handler.timeout.IdleStateEvent;
  * @TIME 2020/6/11 9:51
  * @DESCRIPTION 暂无
  */
-public class NettyHandler extends SimpleChannelInboundHandler<String> {
+public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     String TAG = "NettyHandler";
 
@@ -99,6 +103,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS,true);
         }
         LedInstance.getInstance().showStateLed();
+
+        //开始鉴权
+        NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN, "460001234567890/0A9464026708209/"));
     }
 
     /**
@@ -112,7 +119,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
         super.userEventTriggered(ctx, evt);
         if(evt instanceof IdleStateEvent){
             if(((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE){
-                NettyHelper.getInstance().send(new UHeart());
+//                NettyHelper.getInstance().send(new UHeart());
             }
         }
     }
@@ -137,8 +144,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
 
 
     @Override
-    protected void channelRead0(final ChannelHandlerContext ctx, String msg) throws Exception {
-        BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
+    protected void channelRead0(final ChannelHandlerContext ctx, TcpPacket tcpPacket) throws Exception {
+        DDLog.i("channelRead0 tcpPacket=" + tcpPacket);
+//        ByteBuf buf = (ByteBuf) msg;
+//        byte[] bytes = new byte[buf.readableBytes()];
+//        // 复制内容到字节数组bytes
+//        buf.readBytes(bytes);
+
+//        byte[] bytes = msg.getBytes();
+//        DDLog.i(DDLog.printArrayHex(bytes));
+//        TcpPacket tcpPacket = TcpPacketFactory.from(bytes);
+//        DDLog.i("接收到服务器消息tcpPacket=" + tcpPacket);
+        /*BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
         int type = BaseDataFactory.parseType(msg);
         final String tradeNum = baseData.getTradeNum();
         Log.i(TAG, "下行报文：channelRead0: 开始 ---------------------");
@@ -158,7 +175,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             }
         }else if(type == BaseData.TYPE_RING_D){
             //响铃
-            NettyHelper.getInstance().send(new URing(baseData.getSendCount(),tradeNum));
+//            NettyHelper.getInstance().send(new URing(baseData.getSendCount(),tradeNum));
         }else if(type == BaseData.TYPE_VOICE_D){
             //下载报警语音包
             final String hex = baseData.getMessageBodyResp();
@@ -168,7 +185,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             //包序号:包序号,比如是第几个包
             //终端录音存储状态：0表示空间满，1表示空间不满，可以继续接受录音
             String message = baseData.getTotalPacket() + "@" + baseData.getPacketNum() + "@0@1";
-            NettyHelper.getInstance().send(new UVoice(baseData.getSendCount(),message,tradeNum));
+//            NettyHelper.getInstance().send(new UVoice(baseData.getSendCount(),message,tradeNum));
             ThreadPool.getSyncInstance().execute(new Runnable() {
                 @Override
                 public void run() {
@@ -182,7 +199,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             //修改报警号码
             String number = baseData.getAlarmNum();
             PersistConfig.saveAlarmNum(number);
-            NettyHelper.getInstance().send(new UChangeAlarmNumber("1@",tradeNum));
+//            NettyHelper.getInstance().send(new UChangeAlarmNumber("1@",tradeNum));
         }else if(type == BaseData.TYPE_CHANGE_IP_D){
             //修改ip
             String newIp = baseData.getIpAddress();
@@ -197,12 +214,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
                 PersistWhite.saveList(whiteList);
             else if(TextUtils.equals("1",flag))
                 PersistWhite.deleteList(whiteList);
-            NettyHelper.getInstance().send(new UAddDeleteWhiteList("1@",tradeNum));
+//            NettyHelper.getInstance().send(new UAddDeleteWhiteList("1@",tradeNum));
         }else if(type == BaseData.TYPE_CHANGE_HEART_D){
             //修改心跳频率
             int heartHZ = baseData.getHeartHZ();
             NettyHelper.getInstance().modifyIdleStateHandler(heartHZ);
-            NettyHelper.getInstance().send(new UChangeHeart("1@",tradeNum));
+//            NettyHelper.getInstance().send(new UChangeHeart("1@",tradeNum));
         }else if(type == BaseData.TYPE_UPDATE_VERSION_D){
             //终端版本升级
             //总包数@包序号@接收状态@失败原因
@@ -215,8 +232,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
             //接收状态:0接收成功，1接收失败
             //失败原因：成功不填写（长度为0），失败填写原因
             //收到下行报文 直接回复升级成功的上行报文
-            String message = total + "@" + num + "@0@";
-            NettyHelper.getInstance().send(new UUpdateVersion(message,tradeNum));
+//            String message = total + "@" + num + "@0@";
+//            NettyHelper.getInstance().send(new UUpdateVersion(message,tradeNum));
         }else if(type == BaseData.TYPE_CHANGE_CLIENT_CA_D){
             //终端更换证书
             Log.i(TAG,
@@ -242,6 +259,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<String> {
 
                 }
             });
-        }
+        }*/
     }
 }

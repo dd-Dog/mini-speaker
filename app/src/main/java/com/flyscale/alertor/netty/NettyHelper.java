@@ -6,9 +6,12 @@ import android.util.Log;
 import com.flyscale.alertor.FotaAction;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.base.BaseData;
+import com.flyscale.alertor.data.packet.TcpPacket;
+import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.up.UChangeClientCa;
 import com.flyscale.alertor.data.up.UChangeIP;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FotaHelper;
 
@@ -16,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLException;
@@ -28,6 +32,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -35,7 +40,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.ssl.SslContext;
@@ -47,15 +54,15 @@ import io.netty.handler.timeout.IdleStateHandler;
  * @author 高鹤泉
  * @TIME 2020/6/11 9:24
  * @DESCRIPTION 单例
- *     //ca验证改为双向验证
- *     //注意对接文档中的修改ca证书协议，增加了根证书和客户端私钥
- *     //可以在202.100.171.173 4000测试业务，202.100.190.14 9988测试连接
+ * //ca验证改为双向验证
+ * //注意对接文档中的修改ca证书协议，增加了根证书和客户端私钥
+ * //可以在202.100.171.173 4000测试业务，202.100.190.14 9988测试连接
  */
 public class NettyHelper {
     private static final NettyHelper ourInstance = new NettyHelper();
 
     public static final String TAG = "NettyHelper";
-//    final String HOST = "202.100.190.14";
+    //    final String HOST = "202.100.190.14";
 //    final int PORT = 9988;
     boolean isRunning = true;
     public static final String sIdleStateHandler = "sIdleStateHandler";
@@ -81,8 +88,8 @@ public class NettyHelper {
         return ourInstance;
     }
 
-    private NettyHelper(){
-        mFotaHelper = new FotaHelper(BaseApplication.sContext,new FotaAction());
+    private NettyHelper() {
+        mFotaHelper = new FotaHelper(BaseApplication.sContext, new FotaAction());
     }
 
     public int getConnectCount() {
@@ -96,76 +103,76 @@ public class NettyHelper {
     /**
      * 耗时操作
      */
-    public void connect(){
-        if(isConnect()){
+    public void connect() {
+        if (isConnect()) {
             disconnectByChangeIp(null);
         }
         mConnectCount++;
         Log.i(TAG, "connect: mConnectCount = " + mConnectCount);
-        if(mConnectCount >= MAX_CONNECT_COUNT){
-            PersistConfig.saveNewIp("",-1);
+        if (mConnectCount >= MAX_CONNECT_COUNT) {
+            PersistConfig.saveNewIp("", -1);
             Log.i(TAG, "connect: 回滚之后的ip及端口号........." + PersistConfig.findConfig().getNewIp());
             //这是修改ca，ip的情况 修改失败 要一起回滚
-            if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+            if (!TextUtils.isEmpty(mChangeCaTradeNumResp)) {
                 clearCaFile();
                 //这里ca证书的回滚由于没有重新replace 有可能使用的新证书也有可能使用的老证书
                 //使用老证书通过
                 //使用新证书 但是新证书和老证书相同 通过
                 //todo 待测 使用新证书 和老证书不一样 这种情况的回滚
-                modifySslHandler(null,false);
+                modifySslHandler(null, false);
             }
         }
-        ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getIp(),PersistConfig.findConfig().getPort());
+        ChannelFuture future = mBootstrap.connect("192.168.1.130", 60000);
         Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getIp() + "...." + PersistConfig.findConfig().getPort());
         future.addListener(mChannelFutureListener);
     }
 
-    public class MyChannelFutureListener implements ChannelFutureListener{
+    public class MyChannelFutureListener implements ChannelFutureListener {
         @Override
         public void operationComplete(ChannelFuture future) throws Exception {
             mChannelFuture = future;
             mChannel = mChannelFuture.channel();
             Log.i(TAG, "operationComplete: \n" + mChannel.isActive());
-            if(future.isSuccess() && mChannel.isActive()){
+            if (future.isSuccess() && mChannel.isActive()) {
                 mConnectCount = 0;
                 Log.i(TAG, "operationComplete: okkkkkkkk");
-                if(!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())){
+                if (!TextUtils.isEmpty(PersistConfig.findConfig().getNewIp())) {
                     //新ip连接成功
                     Log.i(TAG, "operationComplete: 新ip连接成功");
                     PersistConfig.saveIp(PersistConfig.findConfig().getNewIp());
                     PersistConfig.savePort(PersistConfig.findConfig().getNewPort());
-                    PersistConfig.saveNewIp("",-1);
-                    if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                    PersistConfig.saveNewIp("", -1);
+                    if (!TextUtils.isEmpty(mChangeCaTradeNumResp)) {
                         //这里是修改ca和ip
                         //更换结果 	STRING[1]	0失败，1成功
-                        NettyHelper.getInstance().send(new UChangeClientCa("1",mChangeCaTradeNumResp));
-                    }else {
+//                        NettyHelper.getInstance().send(new UChangeClientCa("1",mChangeCaTradeNumResp));
+                    } else {
                         //这里是单纯的修改ip
-                        NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
+//                        NettyHelper.getInstance().send(new UChangeIP("1@",mChangeIpTradeNumResp));
                     }
-                }else if(!TextUtils.isEmpty(mChangeCaTradeNumResp)){
+                } else if (!TextUtils.isEmpty(mChangeCaTradeNumResp)) {
                     //修改ca和ip 失败
-                    NettyHelper.getInstance().send(new UChangeClientCa("0",mChangeCaTradeNumResp));
+//                    NettyHelper.getInstance().send(new UChangeClientCa("0",mChangeCaTradeNumResp));
                     Log.i(TAG, "operationComplete: 修改ca和ip失败..........");
-                }else if(!TextUtils.isEmpty(mChangeIpTradeNumResp)){
+                } else if (!TextUtils.isEmpty(mChangeIpTradeNumResp)) {
                     //修改ip连接失败
-                    NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
+//                    NettyHelper.getInstance().send(new UChangeIP("0@连接不上",mChangeIpTradeNumResp));
                     Log.i(TAG, "operationComplete: 修改ip连接失败..........");
                 }
                 mChangeCaTradeNumResp = "";
                 mChangeIpTradeNumResp = "";
                 Log.i(TAG, "155 \n " + mChangeCaTradeNumResp + "\n" + mChangeIpTradeNumResp);
-            }else {
+            } else {
                 Log.i(TAG, "operationComplete:  errrrrrrrrr");
                 future.channel().eventLoop().schedule(new Runnable() {
                     @Override
                     public void run() {
                         Log.i(TAG, "run: future.channel().eventLoop().schedule00");
-                        if(isRunning){
+                        if (isRunning) {
                             connect();
                         }
                     }
-                },3, TimeUnit.SECONDS);
+                }, 3, TimeUnit.SECONDS);
             }
         }
     }
@@ -174,25 +181,45 @@ public class NettyHelper {
     /**
      * 初始化的时候必须注册
      */
-    public void register(){
-        setSSLContext();
+    public void register() {
+//        setSSLContext();
         mBootstrap = new Bootstrap();
         mGroup = new NioEventLoopGroup();
         mBootstrap.group(mGroup);
         mBootstrap.channel(NioSocketChannel.class);
-        mBootstrap.option(ChannelOption.SO_KEEPALIVE,true);
+        mBootstrap.option(ChannelOption.SO_KEEPALIVE, true);
         mBootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
-                ByteBuf delimiter = Unpooled.copiedBuffer("]".getBytes());
+                ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{0x0d, 0x0a});
                 //5s未发送数据，回调userEventTriggered
-                pipeline.addLast(sIdleStateHandler,new IdleStateHandler(0,5,0,TimeUnit.SECONDS));
-                pipeline.addLast(mSslContext.newHandler(ch.alloc()));
+                pipeline.addLast(sIdleStateHandler, new IdleStateHandler(0, 5, 0, TimeUnit.SECONDS));
+//                pipeline.addLast(mSslContext.newHandler(ch.alloc()));
                 //缓冲区2M大小
-                pipeline.addLast(new DelimiterBasedFrameDecoder(2097152, false,delimiter));
-                pipeline.addLast(new StringDecoder());
-                pipeline.addLast(new StringEncoder());
+                pipeline.addLast(new DelimiterBasedFrameDecoder(2097152, false, delimiter));
+
+                pipeline.addLast(new ByteToMessageDecoder() {
+
+                    @Override
+                    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+                        byte[] bytes = new byte[in.readableBytes()];
+                        // 复制内容到字节数组bytes
+                        in.readBytes(bytes);
+                        DDLog.i("decode：" + DDLog.printArrayHex(bytes));
+                        TcpPacket tcpPacket = TcpPacketFactory.from(bytes);
+                        DDLog.i("解密完成：" + tcpPacket);
+                        out.add(tcpPacket);
+                    }
+                });
+                pipeline.addLast(new MessageToByteEncoder<TcpPacket>() {
+                    @Override
+                    protected void encode(ChannelHandlerContext ctx, TcpPacket msg, ByteBuf out) throws Exception {
+                        DDLog.i("encode " + out);
+                        byte[] tcpBytes = msg.getTcpBytes();
+                    }
+                });
+                //这里要注意，ChannelInboundHandler要在配置解码器后再配置。否则还不会报错，坑
                 pipeline.addLast(new NettyHandler());
             }
         });
@@ -202,17 +229,17 @@ public class NettyHelper {
     /**
      * 修改ca证书失败 要清空
      */
-    public void clearCaFile(){
+    public void clearCaFile() {
         File fileClientCrt = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_CRT_NAME);
         File fileClientKey = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_KEY_NAME);
         File fileRootCrt = new File(FileHelper.getBasePath() + FileHelper.S_ROOT_CRT_NAME);
-        if(fileClientCrt.exists()){
+        if (fileClientCrt.exists()) {
             fileClientCrt.delete();
         }
-        if(fileClientKey.exists()){
+        if (fileClientKey.exists()) {
             fileClientKey.delete();
         }
-        if(fileRootCrt.exists()){
+        if (fileRootCrt.exists()) {
             fileRootCrt.delete();
         }
         Log.i(TAG, "clearCaFile: 清空ca证书 \n");
@@ -221,29 +248,29 @@ public class NettyHelper {
     /**
      * 设置SSLContext
      */
-    public void setSSLContext(){
+    public void setSSLContext() {
         File fileClientCrt = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_CRT_NAME);
         File fileClientKey = new File(FileHelper.getBasePath() + FileHelper.S_CLIENT_KEY_NAME);
         File fileRootCrt = new File(FileHelper.getBasePath() + FileHelper.S_ROOT_CRT_NAME);
-        if(fileClientKey.exists() && fileClientCrt.exists() &&fileRootCrt.exists()){
+        if (fileClientKey.exists() && fileClientCrt.exists() && fileRootCrt.exists()) {
             try {
                 mSslContext = SslContextBuilder.forClient()
-                        .keyManager(fileClientCrt,fileClientKey)
+                        .keyManager(fileClientCrt, fileClientKey)
                         .trustManager(DEFAULT_TrustManager).build();
                 Log.i(TAG, "setSSLContext: file加载成功");
             } catch (Exception e) {
                 e.printStackTrace();
                 clearCaFile();
                 Log.i(TAG, "setSSLContext: file加载失败 删除file 并转为assets加载");
-                setSSLContext();
+//                setSSLContext();
                 return;
             }
             Log.i(TAG, "setSSLContext: 通过file加载");
-        }else {
+        } else {
             try {
                 mSslContext = SslContextBuilder.forClient()
                         .keyManager(BaseApplication.sContext.getAssets().open("client.crt")
-                                ,BaseApplication.sContext.getAssets().open("pkcs8_client.key"))
+                                , BaseApplication.sContext.getAssets().open("pkcs8_client.key"))
                         // 这里由于android的限制7.0以上无法信任用户添加的证书
                         // 所以信任所有证书
                         // 也许会有隐患，有时间可以优化一下
@@ -261,34 +288,36 @@ public class NettyHelper {
 
     /**
      * 设置心跳频率
+     *
      * @param heartHz
      */
-    public void modifyIdleStateHandler(int heartHz){
-        mChannel.pipeline().replace(IdleStateHandler.class,sIdleStateHandler
-                ,new IdleStateHandler(0,heartHz,0,TimeUnit.SECONDS));
+    public void modifyIdleStateHandler(int heartHz) {
+        mChannel.pipeline().replace(IdleStateHandler.class, sIdleStateHandler
+                , new IdleStateHandler(0, heartHz, 0, TimeUnit.SECONDS));
     }
+
     /**
      * 修改ca证书
      */
-    public void modifySslHandler(String tradeNum){
-        modifySslHandler(tradeNum,true);
+    public void modifySslHandler(String tradeNum) {
+        modifySslHandler(tradeNum, true);
     }
 
-    public void modifySslHandler(String tradeNum,boolean changeCa){
-        setSSLContext();
-        if(mSslContext != null){
+    public void modifySslHandler(String tradeNum, boolean changeCa) {
+//        setSSLContext();
+        if (mSslContext != null) {
             Log.i(TAG, "modifySslHandler: 4");
-            if(mChannel != null && mChannel.pipeline().get(sSslHandler) != mSslContext.newHandler(mChannel.alloc())){
+            if (mChannel != null && mChannel.pipeline().get(sSslHandler) != mSslContext.newHandler(mChannel.alloc())) {
                 Log.i(TAG, "modifySslHandler: 5");
-                if(changeCa){
+                if (changeCa) {
                     Log.i(TAG, "modifySslHandler: changeCa为 true， 开始替换ca证书");
-                    mChannel.pipeline().replace(SslHandler.class,sSslHandler
-                            ,mSslContext.newHandler(mChannel.alloc()));
+                    mChannel.pipeline().replace(SslHandler.class, sSslHandler
+                            , mSslContext.newHandler(mChannel.alloc()));
                 } else Log.i(TAG, "modifySslHandler: changeCa为 false, 不进行替换ca证书");
             }
             Log.i(TAG, "modifySslHandler: 6");
         }
-        if(!TextUtils.isEmpty(tradeNum)){
+        if (!TextUtils.isEmpty(tradeNum)) {
             mChangeCaTradeNumResp = tradeNum;
             disconnectByChangeIp(tradeNum);
         }
@@ -298,19 +327,19 @@ public class NettyHelper {
      * fota升级
      * 总包数@包序号@接收状态@失败原因
      */
-    public void modifyFota(String total,String num,String tradeNum){
-        mFotaHelper.checkVersion(total,num,tradeNum);
+    public void modifyFota(String total, String num, String tradeNum) {
+        mFotaHelper.checkVersion(total, num, tradeNum);
     }
 
 
-    public void unRegister(){
+    public void unRegister() {
         isRunning = false;
-        if(mChannel != null){
+        if (mChannel != null) {
             mChannel.close();
             mChannelFuture = null;
             mChannel = null;
         }
-        if(mGroup != null){
+        if (mGroup != null) {
             mGroup.shutdownGracefully();
             mGroup = null;
             mBootstrap = null;
@@ -319,39 +348,42 @@ public class NettyHelper {
 
     /**
      * 是否链接
+     *
      * @return
      */
-    public boolean isConnect(){
+    public boolean isConnect() {
         return mChannel != null && mChannel.isOpen() && mChannel.isActive();
     }
 
-    public void disconnectByChangeIp(String changeIpTradeNumResp){
-        if(isConnect()){
+    public void disconnectByChangeIp(String changeIpTradeNumResp) {
+        if (isConnect()) {
             mChannel.disconnect();
             mChannelFuture.cancel(true);
             mChannelFuture.removeListener(mChannelFutureListener);
         }
-        if(!TextUtils.isEmpty(changeIpTradeNumResp)){
+        if (!TextUtils.isEmpty(changeIpTradeNumResp)) {
             mChangeIpTradeNumResp = changeIpTradeNumResp;
         }
     }
 
     /**
      * 根据实体类 发送报文
-     * @param baseData
      */
-    public void send(BaseData baseData){
-        send(baseData.formatToString());
+    public void send(TcpPacket tcpPacket) {
+        if (tcpPacket != null)
+            send(new String(tcpPacket.getTcpBytes()));
+        else {
+            DDLog.e("send: 发送消息失败 消息为空！");
+        }
     }
 
     /**
      * 直接发送报文
-     * @param message
      */
-    public void send(String message){
-        if(isConnect()){
-            mChannel.writeAndFlush(message);
-        }else {
+    public void send(String bytes) {
+        if (isConnect()) {
+            mChannel.writeAndFlush(bytes);
+        } else {
             Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
         }
     }
@@ -360,12 +392,13 @@ public class NettyHelper {
     /**
      * 获取默认的TrustManager
      * 信任所有证书
+     *
      * @return
      */
-    private TrustManager getDefaultTrustManager(){
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+    private TrustManager getDefaultTrustManager() {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
             public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return new java.security.cert.X509Certificate[] {};
+                return new java.security.cert.X509Certificate[]{};
             }
 
             public void checkClientTrusted(X509Certificate[] chain,
@@ -375,7 +408,7 @@ public class NettyHelper {
             public void checkServerTrusted(X509Certificate[] chain,
                                            String authType) throws CertificateException {
             }
-        } };
+        }};
         return trustAllCerts[0];
     }
 }
