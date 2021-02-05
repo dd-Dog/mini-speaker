@@ -69,7 +69,7 @@ extern "C" JNIEXPORT jbyteArray JNICALL
 Java_com_flyscale_alertor_jni_NativeHelper_desEncrypt___3B_3B
         (JNIEnv *env, jclass jclazz, jbyteArray key_, jbyteArray data_) {
     LOGD("desEncrypt");
-    int length = 48;
+    int length = 56;
     unsigned char *key = ConvertJByteArrayToChars(env, key_);
     unsigned char *data = ConvertJByteArrayToChars(env, data_);
     auto *out = new unsigned char[length];
@@ -79,7 +79,7 @@ Java_com_flyscale_alertor_jni_NativeHelper_desEncrypt___3B_3B
     /*   for (int i = 0; i < length; i++) {
            LOGD("%x ", out[i]);
        }*/
-    jbyteArray result = ConvertCharsToJByteArray(env, out, length);
+    jbyteArray result = ConvertCharsToJByteArray(env, out, 48);
     return result;
 }
 
@@ -92,7 +92,7 @@ extern "C" JNIEXPORT jbyteArray JNICALL
 Java_com_flyscale_alertor_jni_NativeHelper_desDecrypt___3B_3B
         (JNIEnv *env, jclass jclazz, jbyteArray key_, jbyteArray data_) {
     LOGD("desEncrypt");
-    int length = 48;
+    int length = 56;
     unsigned char *key = ConvertJByteArrayToChars(env, key_);
     unsigned char *data = ConvertJByteArrayToChars(env, data_);
     auto *out = new unsigned char[length];
@@ -102,18 +102,18 @@ Java_com_flyscale_alertor_jni_NativeHelper_desDecrypt___3B_3B
     for (int i = 0; i < length; i++) {
         LOGD("%x ", out[i]);
     }*/
-    jbyteArray result = ConvertCharsToJByteArray(env, out, length);
+    jbyteArray result = ConvertCharsToJByteArray(env, out, 48);
     return result;
 }
 
 extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelper_desEncrypt___3B
         (JNIEnv *env, jclass jclazz, jbyteArray data_) {
-    int length = 48;
+    int length = 56;
     unsigned char *data = ConvertJByteArrayToChars(env, data_);
     auto *out = new unsigned char[length];
     memset((void *) out, 0x00, length);
     test_Enc48(data, DES_KEY, out);
-    jbyteArray result = ConvertCharsToJByteArray(env, out, length);
+    jbyteArray result = ConvertCharsToJByteArray(env, out, 48);
     return result;
 }
 
@@ -125,7 +125,7 @@ extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelp
 extern "C" JNIEXPORT jbyteArray JNICALL Java_com_flyscale_alertor_jni_NativeHelper_desDecrypt___3B
         (JNIEnv *env, jclass jclazz, jbyteArray data_) {
     LOGD("desEncrypt");
-    int length = 48;
+    int length = 56;
     unsigned char *data = ConvertJByteArrayToChars(env, data_);
     auto *out = new unsigned char[length];
     memset((void *) out, 0x00, length);
