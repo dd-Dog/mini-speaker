@@ -78,6 +78,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
         Log.i(TAG, "channelInactive:  --- 准备重连 ---  ");
+        PersistConfig.saveLogin(false);
         LedInstance.getInstance().offStateLed();
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -165,6 +166,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         if (tcpPacket != null) {
             long address = tcpPacket.getAddress();
             if (address == TcpPacketFactory.LOGIN_CONFIRM) {
+                PersistConfig.saveLogin(false);
                 //登录鉴权
                 String md5 = MD5Util.md5(tcpPacket.getData(), MD5Util.getKI());
                 PersistConfig.saveRandomKey(tcpPacket.getData());
@@ -178,10 +180,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 DDLog.i("登录返回：" + data);
                 if (!TextUtils.isEmpty(data)) {
                     if (data.split("/") != null) {
-                        if (TextUtils.equals(TcpPacketFactory.LOGIN_CODE.SUCCESS.getCode() + "", data.split("/")[0])){
+                        if (TextUtils.equals(TcpPacketFactory.LOGIN_CODE.SUCCESS.getCode() + "", data.split("/")[0])) {
                             DDLog.i("登录成功");
                             PersistConfig.saveLogin(true);
-                            //set default key
                             return;
                         }
                     }

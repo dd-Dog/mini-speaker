@@ -60,7 +60,7 @@ public class FotaHelper {
         //新版本（5.0后） 必须显式intent启动 绑定服务
         aidlIntent.setComponent(new ComponentName("com.abupdate.fota_demo_iot", "com.abupdate.fota_demo_iot.service.OtaAidlService"));
         //绑定的时候服务端自动创建
-        mContext.bindService(aidlIntent, mConnection, Context.BIND_AUTO_CREATE);
+//        mContext.bindService(aidlIntent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
     /**
