@@ -79,20 +79,26 @@ public class TcpPacket {
         }
         //CRC校验
         //计算出校验码long类型
-        byte[] crcReadyBytes = new byte[PACKET_LENGTH - 4];
-        char c1 = (char) decodedBytes[44];
-        char c2 = (char) decodedBytes[45];
-        char c3 = (char) decodedBytes[46];
-        char c4 = (char) decodedBytes[47];
-        int high = Integer.parseInt("" + c1 + c2, 16);
-        int low = Integer.parseInt("" + c3 + c4, 16);
-        DDLog.i("high=" + high + ",low=" + low);
-        crcReadyBytes[44] = (byte) low;
-        crcReadyBytes[45] = (byte) high;
-        System.arraycopy(decodedBytes, 0, crcReadyBytes, 0, 44);
-        int crc16 = CRC16Helper.calcCrc16IBM(crcReadyBytes);
-        if (crc16 != 0) {
-            System.out.println("校验失败！");
+        try {
+            byte[] crcReadyBytes = new byte[PACKET_LENGTH - 4];
+            char c1 = (char) decodedBytes[44];
+            char c2 = (char) decodedBytes[45];
+            char c3 = (char) decodedBytes[46];
+            char c4 = (char) decodedBytes[47];
+            int high = Integer.parseInt("" + c1 + c2, 16);
+            int low = Integer.parseInt("" + c3 + c4, 16);
+            DDLog.i("high=" + high + ",low=" + low);
+            crcReadyBytes[44] = (byte) low;
+            crcReadyBytes[45] = (byte) high;
+            System.arraycopy(decodedBytes, 0, crcReadyBytes, 0, 44);
+            int crc16 = CRC16Helper.calcCrc16IBM(crcReadyBytes);
+            if (crc16 != 0) {
+                System.out.println("校验失败！");
+                return;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            DDLog.e("CRC校验失败");
             return;
         }
         //解析字段

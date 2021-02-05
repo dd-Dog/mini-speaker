@@ -36,7 +36,8 @@ public abstract class BaseUpData extends BaseData {
     //市电 是否接入220V电源，0接入，1未接入
     @Override
     public int getAC() {
-        return ClientInfoHelper.getAC();
+//        return ClientInfoHelper.getAC();
+        return 1;
     }
 
     //电量百分比

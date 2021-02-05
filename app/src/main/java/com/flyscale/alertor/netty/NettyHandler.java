@@ -28,6 +28,7 @@ import com.flyscale.alertor.helper.DataConvertHelper;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.ThreadPool;
+import com.flyscale.alertor.jni.NativeHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.media.AlarmMediaInstance;
 import com.flyscale.alertor.media.ReceiveMediaInstance;
@@ -166,9 +167,27 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (address == TcpPacketFactory.LOGIN_CONFIRM) {
                 //登录鉴权
                 String md5 = MD5Util.md5(tcpPacket.getData(), MD5Util.getKI());
+                PersistConfig.saveRandomKey(tcpPacket.getData());
+                PersistConfig.saveLogin(false);
                 DDLog.i("鉴权MD5=" + md5);
                 TcpPacket packetSend = TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN_CONFIRM, md5);
                 NettyHelper.getInstance().send(packetSend);
+            } else if (address == TcpPacketFactory.LOGIN_RESULT) {
+                //判断登录成功
+                String data = tcpPacket.getData();
+                DDLog.i("登录返回：" + data);
+                if (!TextUtils.isEmpty(data)) {
+                    if (data.split("/") != null) {
+                        if (TextUtils.equals(TcpPacketFactory.LOGIN_CODE.SUCCESS.getCode() + "", data.split("/")[0])){
+                            DDLog.i("登录成功");
+                            PersistConfig.saveLogin(true);
+                            //set default key
+                            return;
+                        }
+                    }
+                }
+                DDLog.e("登录失败！");
+                PersistConfig.saveLogin(false);
             }
         }
         /*BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);

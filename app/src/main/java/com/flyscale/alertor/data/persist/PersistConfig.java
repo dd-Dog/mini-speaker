@@ -65,6 +65,41 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
 
+    //DES随机密钥，只有登录成功后才能使用
+    private String randomKey;
+    private boolean login = false;
+
+    public boolean isLogin() {
+        return login;
+    }
+
+    public PersistConfig setLogin(boolean login) {
+        this.login = login;
+        return this;
+    }
+
+    public String getRandomKey() {
+        return randomKey;
+    }
+
+    public PersistConfig setRandomKey(String randomKey) {
+        this.randomKey = randomKey;
+        return this;
+    }
+
+    public static PersistConfig saveLogin(boolean login) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLogin(login);
+        persistConfig.save();
+        return persistConfig;
+    }
+    public static PersistConfig saveRandomKey(String randomKey) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setRandomKey(randomKey);
+        persistConfig.save();
+        return persistConfig;
+    }
+
     public static PersistConfig saveHttpDownloadUrl(String httpDownloadUrl) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setHttpDownloadUrl(httpDownloadUrl);
