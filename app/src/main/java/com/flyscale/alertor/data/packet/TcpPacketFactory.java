@@ -109,27 +109,47 @@ public class TcpPacketFactory {
     /*登录结果*/
     public static final long LOGIN_RESULT = 0X00000003L;
 
+    public enum LOGIN_CODE {
+        SUCCESS(0),    //登录成功
+        IMEID_NOT_EXIST(-99),//MEID不存在
+        CODE_ERROR(-98),//认证码错误
+        IMSI_NOT_SIGNED(-97),//IMSI未开户
+        UKNOWN(-96);//其他
+
+        private int code;
+
+        public int getCode() {
+            return code;
+        }
+
+        LOGIN_CODE(int code) {
+
+        }
+    }
+
     public static TcpPacket createPacketSend(long address, String data) {
         CMD cmd = null;
         if (address == HEARTBEAT_DATA || address == LOGIN) {
             cmd = CMD.WRITE;
-        } else if (address == EMR_BROADCAST_MP3 ||
-                address == EMR_BROADCAST_AMR ||
-                address == EMR_AMR_FILE_OPERATION ||
-                MUSIC_SHOW_LIST.contains(address) ||
-                address == CLEAR_ALL_MUSIC_SHOW ||
-                address == DOWNLOAD_AMR ||
-                address == PLAY_AMR ||
-                address == DOWNLOAD_UPDATE_PATCH ||
-                address == UPDATE_SYSTEM ||
-                address == COMMON_FILE_OPERATION ||
-                address == BACKUP1 ||
-                address == BACKUP2 ||
-                FM_SHOW_LIST.contains(address) ||
-                address == CLEAR_ALL_FM_SHOW ||
-                BREAKING_FM_SHOW_LIST.contains(address) ||
-                address == PLAY_FM ||
-                address == CLEAR_ALL_BREAKING_FM_SHOW) {
+        } else if (
+                address == LOGIN_CONFIRM ||
+                        address == EMR_BROADCAST_MP3 ||
+                        address == EMR_BROADCAST_AMR ||
+                        address == EMR_AMR_FILE_OPERATION ||
+                        MUSIC_SHOW_LIST.contains(address) ||
+                        address == CLEAR_ALL_MUSIC_SHOW ||
+                        address == DOWNLOAD_AMR ||
+                        address == PLAY_AMR ||
+                        address == DOWNLOAD_UPDATE_PATCH ||
+                        address == UPDATE_SYSTEM ||
+                        address == COMMON_FILE_OPERATION ||
+                        address == BACKUP1 ||
+                        address == BACKUP2 ||
+                        FM_SHOW_LIST.contains(address) ||
+                        address == CLEAR_ALL_FM_SHOW ||
+                        BREAKING_FM_SHOW_LIST.contains(address) ||
+                        address == PLAY_FM ||
+                        address == CLEAR_ALL_BREAKING_FM_SHOW) {
             cmd = CMD.WRITE_ANSWER;
         } else if (address == GET_FILE_SIZE ||
                 address == GET_COMMON_FILE_INFO) {

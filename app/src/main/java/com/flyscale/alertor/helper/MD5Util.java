@@ -20,7 +20,7 @@ public class MD5Util {
      * A9464026708209 串号用这个ki认证码    99988000000000000000000000199988
      * @return
      */
-    private String getKI(){
+    public static String getKI(){
         return "99988000000000000000000000199988";
     }
     /**
