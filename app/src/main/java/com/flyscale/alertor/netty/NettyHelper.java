@@ -217,6 +217,7 @@ public class NettyHelper {
                     protected void encode(ChannelHandlerContext ctx, TcpPacket msg, ByteBuf out) throws Exception {
                         DDLog.i("encode " + out);
                         byte[] tcpBytes = msg.getTcpBytes();
+                        out.writeBytes(tcpBytes);
                     }
                 });
                 //这里要注意，ChannelInboundHandler要在配置解码器后再配置。否则还不会报错，坑
@@ -370,24 +371,16 @@ public class NettyHelper {
      * 根据实体类 发送报文
      */
     public void send(TcpPacket tcpPacket) {
-        if (tcpPacket != null)
-            send(new String(tcpPacket.getTcpBytes()));
-        else {
+        if (tcpPacket != null) {
+            if (isConnect()) {
+                mChannel.writeAndFlush(tcpPacket);
+            } else {
+                Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
+            }
+        } else {
             DDLog.e("send: 发送消息失败 消息为空！");
         }
     }
-
-    /**
-     * 直接发送报文
-     */
-    public void send(String bytes) {
-        if (isConnect()) {
-            mChannel.writeAndFlush(bytes);
-        } else {
-            Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
-        }
-    }
-
 
     /**
      * 获取默认的TrustManager
