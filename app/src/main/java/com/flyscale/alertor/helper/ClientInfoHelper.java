@@ -2,15 +2,19 @@ package com.flyscale.alertor.helper;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.flyscale.FlyscaleManager;
-import android.os.BatteryManager;
+import android.media.AudioManager;
 import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.receivers.BatteryReceiver;
+
+import java.io.File;
+
 
 /**
  * @author 高鹤泉
@@ -117,4 +121,35 @@ public class ClientInfoHelper {
     public static String getFirstLoginTime(){
         return PersistConfig.findConfig().getFirstLogin();
     }
+
+    /**
+     *获取媒体音量
+     * @return
+     */
+    public static String getVolume() {
+        @SuppressLint("ServiceCast") AudioManager audioManager =
+                (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        switch (current) {
+            case 10:
+                return "a";
+            case 11:
+                return "b";
+            default:
+                return String.valueOf(current);
+        }
+    }
+
+    /**
+     * 获取剩余内存大小
+     * @return
+     */
+    public static long getAvailableSize() {
+        File datapath = Environment.getDataDirectory();
+        StatFs dataFs = new StatFs(datapath.getPath());
+        long sizes = (long) dataFs.getFreeBlocks()*(long)dataFs.getBlockSize();
+        long available = sizes;
+        return available;
+    }
+
 }

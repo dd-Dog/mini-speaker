@@ -1,9 +1,7 @@
-package flyscale.monitor.util;
+package com.flyscale.alertor.helper;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
-
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -120,7 +118,6 @@ public class SPUtil {
      * [创建解决SharedPreferencesCompat.apply方法的一个兼容类]
      */
     private static class SharedPreferencesCompat {
-        @Nullable
         private static final Method sApplyMethod = findApplyMethod();
 
         /**

@@ -1,20 +1,36 @@
 package com.flyscale.alertor.helper;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.provider.CallLog.Calls;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
+import android.telephony.CellSignalStrengthCdma;
+import android.telephony.CellSignalStrengthGsm;
+import android.telephony.CellSignalStrengthLte;
+import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
 import com.android.internal.telephony.ITelephony;
+import com.flyscale.alertor.base.BaseApplication;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -218,7 +234,6 @@ public class PhoneUtil {
     }
 
 
-
     @SuppressLint({"MissingPermission", "HardwareIds"})
     private static String getSerialNumber(Context context) {
         TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
@@ -274,4 +289,43 @@ public class PhoneUtil {
         return simState + "";
     }
 
+    /**
+     * 获取信号强度
+     *
+     * @return
+     */
+    public static int getMobileDbm() {
+        Context context = BaseApplication.sContext;
+        int dbm = -1;
+        TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        List<CellInfo> cellInfoList;
+
+        if (ActivityCompat.checkSelfPermission(BaseApplication.sContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return dbm;
+        }
+
+        cellInfoList = tm.getAllCellInfo();
+        if (null != cellInfoList) {
+            for (CellInfo cellInfo : cellInfoList) {
+                if (cellInfo instanceof CellInfoGsm) {
+                    CellSignalStrengthGsm cellSignalStrengthGsm = ((CellInfoGsm) cellInfo).getCellSignalStrength();
+                    dbm = cellSignalStrengthGsm.getDbm();
+                } else if (cellInfo instanceof CellInfoCdma) {
+                    CellSignalStrengthCdma cellSignalStrengthCdma =
+                            ((CellInfoCdma) cellInfo).getCellSignalStrength();
+                    dbm = cellSignalStrengthCdma.getDbm();
+                } else if (cellInfo instanceof CellInfoLte) {
+                    CellSignalStrengthLte cellSignalStrengthLte = ((CellInfoLte) cellInfo).getCellSignalStrength();
+                    dbm = cellSignalStrengthLte.getDbm();
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                    if (cellInfo instanceof CellInfoWcdma) {
+                        CellSignalStrengthWcdma cellSignalStrengthWcdma =
+                                ((CellInfoWcdma) cellInfo).getCellSignalStrength();
+                        dbm = cellSignalStrengthWcdma.getDbm();
+                    }
+                }
+            }
+        }
+        return dbm;
+    }
 }
