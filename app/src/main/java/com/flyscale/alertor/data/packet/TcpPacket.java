@@ -1,6 +1,5 @@
 package com.flyscale.alertor.data.packet;
 
-import com.flyscale.alertor.helper.BytesUtil;
 import com.flyscale.alertor.helper.CRC16Helper;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.jni.NativeHelper;
@@ -118,7 +117,7 @@ public class TcpPacket {
         String cmdStr = new String(cmdBytes);
         cmd = CMD.getCMD(cmdStr);
         //解析地址
-        address = Long.parseLong(new String(addressBytes));
+        address = Long.parseLong(new String(addressBytes), 16);
         //解析有效数据
         data = new String(dataBytes);
 
