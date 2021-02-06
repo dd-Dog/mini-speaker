@@ -89,6 +89,116 @@ public class TcpPacketFactory {
     /*设置FM普通广播节目*/
     public static final ArrayList<Long> BREAKING_FM_SHOW_LIST = new ArrayList<Long>();
 
+    /*7.3.16 系统变量*/
+    /*7.3.16.1 设备出厂编号*/
+    public static final long DEVICE_ID = 0x00000009L;
+
+    /*7.3.16.2 短连接参数*/
+    public static final long SHORT_LINK_PARAM = 0x0000000AL;
+
+    /*7.3.16.3 文件下载模式参数1*/
+    public static final long FILE_DOWNLOAD_MODE_PARAM_1 = 0x0000000BL;
+
+    /*7.3.16.4 文件下载模式参数2*/
+    public static final long FILE_DOWNLOAD_MODE_PARAM_2 = 0x0000000CL;
+
+    /*7.3.16.5 硬件版本号*/
+    public static final long HARDWARE_VERSION = 0x00000021L;
+
+    /*7.3.16.6 软件版本号*/
+    public static final long SOFTWARE_VERSION = 0x00000022L;
+
+    /*7.3.16.7 EVDO网络ip地址*/
+    public static final long EVDO_IP_ADDRESS = 0x00000026L;
+
+    /*7.3.16.8 音量*/
+    public static final long VOLUME = 0x00000027L;
+
+    /*7.3.16.9 平台服务器ip地址1*/
+    public static final long PLATFORM_SERVER_IP_ADDRESS_1 = 0x00000028L;
+
+    /*7.3.16.10 平台服务器ip地址2*/
+    public static final long PLATFORM_SERVER_IP_ADDRESS_2 = 0x00000029L;
+
+    /*7.3.16.11 基站信息*/
+    public static final long BASE_STATION_INFORMATION = 0x0000002AL;
+
+    /*7.3.16.12 位置信息*/
+    public static final long LOCATION_INFORMATION = 0x0000002BL;
+
+    /*7.3.16.13 FTP服务器IP地址*/
+    public static final long FTP_SERVER_IP_ADDRESS = 0x0000002CL;
+
+    /*7.3.16.14 FTP服务器账户口令*/
+    public static final long FTP_SERVER_ACCOUNT_PASSWORD = 0x0000002DL;
+
+    /*7.3.16.15 升级文件FTP目录*/
+    public static final long FOTA_FILE_FTP_DIR = 0x0000002FL;
+
+    /*7.3.16.16 音频文件FTP目录*/
+    public static final long AUDIO_FILE_FTP_DIR = 0x00000031L;
+
+    /*7.3.16.17 长链接心跳间隔(秒)*/
+    public static final long LONG_LINK_HEARTBEAT_INTERVAL = 0x00000030L;
+
+    /*7.3.16.18 终端复位*/
+    public static final long DEVICE_RESET = 0x00000032L;
+
+    /*7.3.16.19 拨打电话指令参数*/
+    public static final long CALL_COMMAND_PARAM = 0x00000040L;
+
+    /*7.3.16.20 功能键1拨打电话号码*/
+    public static final long FUNCTION_1_CALL_PHONE_NUM = 0x00000041L;
+
+    /*7.3.16.21 功能键2拨打电话号码*/
+    public static final long FUNCTION_2_CALL_PHONE_NUM = 0x00000042L;
+
+    /*7.3.16.22 功能键3拨打电话号码*/
+    public static final long FUNCTION_3_CALL_PHONE_NUM = 0x00000043L;
+
+    /*7.3.16.23 功能键4拨打电话号码*/
+    public static final long FUNCTION_4_CALL_PHONE_NUM = 0x00000044L;
+
+    /*7.3.16.24 平台获取终端可用存储空间大小*/
+    public static final long DEVICE_AVAILABLE_SIZE = 0x00000045L;
+
+    /*7.3.16.25 终端向平台查询系统当前时间*/
+    public static final long QUERY_TIME_FORM_PLATFORM = 0x00000046L;
+
+    /*7.3.16.26 终端个性化功能*/
+    public static final long DEVICE_PERSON_FUNCTION = 0x00000047L;
+
+    /*7.3.16.27 一键报警平台电话号码*/
+    public static final long PLATFORM_PHONE_NUM = 0x00000048L;
+
+    /*7.3.16.28 接警音量*/
+    public static final long ALARM_VOLUME = 0x00000049L;
+
+    /*7.3.16.29 批量删除文件指令*/
+    public static final long BATCH_DEL_FILE = 0x0000004AL;
+
+    /*7.3.16.30 设备进入短链接休眠*/
+    public static final long DEVICE_SHORT_LINK_SLEEP = 0x0000004BL;
+
+    /*7.3.16.31 音频直播频道服务器地址和端口*/
+    public static final long AUDIO_LIVE_IP_ADDRESS_AND_PORT = 0x00000050L;
+
+    /*7.3.16.32 音频直播频道账户密码*/
+    public static final long AUDIO_LIVE_ACCOUNT_PASSWORD = 0x00000051L;
+
+    /*7.3.16.33 音频直播频道开始结束时间*/
+    public static final long AUDIO_LIVE_START_AND_END_TIME = 0x00000052L;
+
+    /*7.3.16.34 音频直播频道url*/
+    public static final long AUDIO_LIVE_CHANNEL_URL = 0x00000053L;
+
+    /*7.3.16.35 FM固定频道设置*/
+    public static final long FM_FIXED_CHANNEL_SETTINGS = 0x00000055L;
+
+    /*全0数据*/
+    public  static final String dataZero = "00000000000000000000000000000000";
+
+
     static {
         for (long i = 0x00000180L; i <= 0x0000019FL; i++) {
             BREAKING_FM_SHOW_LIST.add(i);

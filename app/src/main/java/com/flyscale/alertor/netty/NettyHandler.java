@@ -32,10 +32,9 @@ import com.liulishuo.okdownload.core.listener.DownloadListener3;
 import com.liulishuo.okdownload.core.listener.DownloadListener4;
 
 import java.io.File;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -53,6 +52,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     String TAG = "NettyHandler";
     String data;
+
 
     public NettyHandler() {
 
@@ -74,7 +74,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
      * channel没有连接到远程节点
      *
      * @param ctx
-     * @throws Exception
+     * @throws
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -95,7 +95,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
      * channel被创建但没有注册到eventLoop
      *
      * @param ctx
-     * @throws Exception
+     * @throws
      */
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
@@ -108,7 +108,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
      * channel处于活动状态 连接到了远程节点 可以接收和发送
      *
      * @param ctx
-     * @throws Exception
+     * @throws
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -130,7 +130,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
      *
      * @param ctx
      * @param evt
-     * @throws Exception
+     * @throws
      */
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -161,7 +161,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
      * channel已经注册到eventLoop
      *
      * @param ctx
-     * @throws Exception
+     * @throws
      */
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
@@ -472,7 +472,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 int program = Integer.parseInt(data.split("/")[1]);
                 int beforePlay = Integer.parseInt(data.split("/")[2]);
                 int result = Integer.parseInt(data.split("/")[3]);
+            } else {
+                //系统变量
+                SystemVariable(address ,tcpPacket);
             }
+
+
         }
         /*BaseData baseData = BaseDataFactory.getDataInstance(msg).formatToObject(msg);
         int type = BaseDataFactory.parseType(msg);
@@ -580,4 +585,337 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             });
         }*/
     }
+
+    //系统变量
+    private void SystemVariable(long address, TcpPacket tcpPacket) {
+        DDLog.d(getClass() ,"SystemVariable()... ");
+        String data = tcpPacket.getData();
+        if (TextUtils.isEmpty(data)) {
+            return;
+        }
+        DDLog.d(getClass(), "SystemVariable() , data ：" + data);
+        String[] split = data.split("/");
+        if (address == TcpPacketFactory.DEVICE_ID) {
+            //设备出厂编号
+            if (split.length > 1) {
+                //厂家名称
+                String companyName = split[0];
+                String MEID = split[1];
+
+            }
+        }else if (address == TcpPacketFactory.SHORT_LINK_PARAM) {
+            //短连接参数
+            if (split.length > 2) {
+                //链接类型 ：0短链接；1长链接
+                String linkType = split[0];
+                //短链接休眠时长（秒）
+                String shortLinkSleepTime = split[1];
+                //短链接工作等待延迟（秒）
+                String shortLinkDelay = split[2];
+
+            }
+        }else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_1) {
+            //文件下载模式参数1
+            if (split.length > 2) {
+                //下载模式：0 ftp模式；1 http下载模式
+                String mode = split[0];
+                //http下载账户
+                String httpAccount = split[1];
+                //http下载密码
+                String httpPwd = split[2];
+
+            }
+        }else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
+            //文件下载模式参数2
+            if (split.length > 0) {
+                //http下载域名端口
+                String httpDomianName = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
+            //硬件版本号
+            if (split.length > 0) {
+                String hardwareVersion = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.SOFTWARE_VERSION) {
+            //软件版本号
+            if (split.length > 0) {
+                String softwareVersion = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.EVDO_IP_ADDRESS) {
+            //EVDO网络ip地址
+            if (split.length > 0) {
+                String evdoIP = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.VOLUME) {
+            //音量
+            if (split.length > 2) {
+                //音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
+                String volume = split[0];
+                //FM普通广播使能标志：1 使能，0 禁止
+                String normalFM = split[1];
+                //FM插播广播使能标志：1 使能，0 禁止
+                String insertFM = split[2];
+
+            }
+        } else if (address == TcpPacketFactory.PLATFORM_SERVER_IP_ADDRESS_1) {
+            //平台服务器ip地址1
+            if (split.length > 0) {
+                //这两个域名如果一个无法访问，终端应该切换至第二个域名
+                String ip_1 = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.PLATFORM_SERVER_IP_ADDRESS_2) {
+            //平台服务器ip地址2
+            if (split.length > 0) {
+                //这两个域名如果一个无法访问，终端应该切换至第二个域名
+                String ip_2 = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.BASE_STATION_INFORMATION) {
+            //基站信息
+            if (split.length > 5) {
+                String sid = split[0];
+                String nid = split[1];
+                String s = split[2];
+                String bid = split[3];
+                String singleLevel = split[4];
+
+            }
+        } else if (address == TcpPacketFactory.LOCATION_INFORMATION) {
+            //位置信息
+            if (split.length > 1) {
+                //经度E119.327833
+                String lat = split[0];
+                //纬度N39.961949
+                String lon = split[1];
+
+            }
+        } else if (address == TcpPacketFactory.FTP_SERVER_IP_ADDRESS) {
+            //FTP服务器IP地址
+            if (split.length > 0) {
+                //ftp3.xjxlb.com:12345
+                String ftpAddress = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.FTP_SERVER_ACCOUNT_PASSWORD) {
+            //FTP服务器账户口令
+            if (split.length > 0) {
+                String[] userAndPwd = split[0].split("@");
+                if (userAndPwd == null || userAndPwd.length < 2) {
+                    return;
+                }
+                String account = userAndPwd[0];
+                String pwd = userAndPwd[1];
+
+            }
+        } else if (address == TcpPacketFactory.FOTA_FILE_FTP_DIR) {
+            //升级文件FTP目录
+            String[] fotaDir = data.split(",");
+            if (fotaDir.length > 0) {
+                String ftpFotafilePath = fotaDir[0];
+
+            }
+        } else if (address == TcpPacketFactory.AUDIO_FILE_FTP_DIR) {
+            //音频文件FTP目录
+            String[] audioDir = data.split(",");
+            if (audioDir.length > 0) {
+                String ftpAudioFilepath = audioDir[0];
+
+            }
+        } else if (address == TcpPacketFactory.LONG_LINK_HEARTBEAT_INTERVAL) {
+            //长链接心跳间隔(秒)
+            if (split.length > 3) {
+                //长连接心跳间隔(秒)
+                String longLinkHeartbeat = split[0];
+                //长连接登录延迟(秒)
+                String longLinkSignDelay = split[1];
+                //连接短连接选择 (固定为0:短连接 ;固定为1:长连接)
+                String linkType = split[2];
+                //平台短信号码
+                String platformSmsNum = split[3];
+
+            }
+        } else if (address == TcpPacketFactory.DEVICE_RESET) {
+            //终端复位
+            //写入全0数据，代表平台要求终端先复位重新启动（网络通讯模块也需要重新启动）
+            if (data.equals(TcpPacketFactory.dataZero)) {
+
+            }
+        } else if (address == TcpPacketFactory.CALL_COMMAND_PARAM) {
+            //拨打电话指令参数
+            if (split.length > 3) {
+                //拨打电话号码
+                String phoneNum = split[0];
+                //每次通话时长(秒)
+                String callTime = split[1];
+                //拨打时间(年月日时分)
+                String callDate = split[2];
+                //拨打失败后重试次数
+                String times = split[3];
+
+            }
+        } else if (address == TcpPacketFactory.FUNCTION_1_CALL_PHONE_NUM) {
+            //功能键 1 拨打电话号码
+            if (split.length > 0) {
+                //功能键1对应电话号码 0为取消
+                String funcOneNum = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.FUNCTION_2_CALL_PHONE_NUM) {
+            //功能键 2 拨打电话号码
+            if (split.length > 0) {
+                //功能键2对应电话号码 0为取消
+                String funcTwoNum = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.FUNCTION_3_CALL_PHONE_NUM) {
+            //功能键 3 拨打电话号码
+            if (split.length > 0) {
+                //功能键3对应电话号码 0为取消
+                String funcThreeNum = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.FUNCTION_4_CALL_PHONE_NUM) {
+            //功能键 4 拨打电话号码
+            if (split.length > 0) {
+                //功能键4对应电话号码 0为取消
+                String funcFourNum = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.DEVICE_AVAILABLE_SIZE) {
+            //平台获取终端可用存储空间大小
+            if (data.equals(TcpPacketFactory.dataZero)) {
+                //可用存储全部大小
+                String availSize = "";
+                //可用存储空闲大小
+                String freeSize = "";
+                //向服务器返回数据 ，ra,00000045,12345678901/12345678901/000000xxxx
+
+            }
+        } else if (address == TcpPacketFactory.QUERY_TIME_FORM_PLATFORM) {
+            //平台查询终端系统当前时间
+            if (data.equals(TcpPacketFactory.dataZero)) {
+                //时间格式为yyyymmddhhmiss
+                String systemTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(System.currentTimeMillis()));
+                //向服务器发送数据，ra,00000046,20180103201059/000000000000000xxxx
+
+            }
+        } else if (address == TcpPacketFactory.DEVICE_PERSON_FUNCTION) {
+            //终端个性化功能
+            //第1个字符: 0 APP紧急语音单次播放; 1：APP紧急语音循环播放
+            String playMode = data.substring(0, 1);
+            //第2个字符: 0防移开关启用; 1防移开关禁用
+            String moveSwitch = data.substring(1,2);
+            //第3个字符:
+            // 0一键报警普通模式（十户联防号码呼入：用户按键接听）;
+            // 1一键报警奎屯模式（十户联防号码呼入后：响3声报警音，再自动接听，播放完成报警信息后，用户挂断）
+            //2：一键报警沙湾模式（十户联防号码呼入后：不响报警音，自动接听，播放完成报警信息后，用户挂断；）
+            String alarmMode = data.substring(2,3);
+            //第4个字符: 1就是只能拨打报警与快捷键; 0可以拨打所有电话
+            String callEnable = data.substring(3,4);
+            //第5个字符,“频选”参数 ：0 默认; 1 4G-800M优选;  2:4G-1800M优选
+            String channelSelect = data.substring(4, 5);
+            //第6个字符,“WIFI开关”参数 ：0 开通; 1 关闭
+            String wifiSwitch = data.substring(5,6);
+
+
+
+        } else if (address == TcpPacketFactory.PLATFORM_PHONE_NUM) {
+            //一键报警平台电话号码
+            if (split.length > 0) {
+                //一键报警平台对应电话号码 ; 0为取消
+                String platformPhoneNum = split[0];
+
+            }
+        } else if (address == TcpPacketFactory.ALARM_VOLUME) {
+            //接警音量
+            if (split.length > 0) {
+                //接警音量: 1 1档; 2 2档; 3 3档; 4 4档
+                String alarmVolume = split[0];
+
+
+            }
+        } else if (address == TcpPacketFactory.BATCH_DEL_FILE) {
+            //批量删除文件指令
+            if (split.length > 0) {
+                //第一个参数为批量删除的文件名缩写，代表含义为：A=MP3A.amr; B=MP3B.amr... P=MP3P.amr
+                String files = split[0];
+
+            }
+
+        } else if (address == TcpPacketFactory.DEVICE_SHORT_LINK_SLEEP) {
+            //设备进入短链接休眠
+            if (data.equals(TcpPacketFactory.dataZero)) {
+                //平台发给设备wd，表示设备进入通讯休眠等待，平台收到设备的确认指令wa后，断开连接
+                //wa,0000004b,00000000000000000000000000000000xxxx
+
+            }
+        } else if (address == TcpPacketFactory.AUDIO_LIVE_IP_ADDRESS_AND_PORT) {
+            //音频直播频道服务器地址和端口
+            String[] audioLive = data.split(",");
+            if (audioLive.length > 1) {
+                //频道编号,0开始
+                String channelNum = audioLive[0];
+                //频道音频流的服务器ip和端口
+                String ipAndPort = audioLive[1];
+
+            }
+
+        } else if (address == TcpPacketFactory.AUDIO_LIVE_ACCOUNT_PASSWORD) {
+            //音频直播频道账户密码
+            String[] accountAndPwd = data.split(",");
+            if (accountAndPwd.length > 2) {
+                //频道编号，0开始
+                String channelNum = accountAndPwd[0];
+                //流媒体服务器的账户
+                String account = accountAndPwd[1];
+                //流媒体服务器的密码
+                String pwd = accountAndPwd[2];
+
+            }
+
+        } else if (address == TcpPacketFactory.AUDIO_LIVE_START_AND_END_TIME) {
+            //音频直播频道开始结束时间
+            String[] liveTime = data.split(",");
+            if (liveTime.length > 3) {
+                //频道编号，0开始
+                String channelNum = liveTime[0];
+                //直播开始时间，小时分钟秒
+                String startTime = liveTime[1];
+                //直播结束时间，小时分钟秒
+                String endTime = liveTime[2];
+                //直播音量，0-9
+                String volume = liveTime[3];
+
+            }
+        } else if (address == TcpPacketFactory.AUDIO_LIVE_CHANNEL_URL) {
+            //音频直播频道url
+            String[] channelAndUrl = data.split(",");
+            if (channelAndUrl.length > 1) {
+                //频道编号，0开始
+                String channelNum = channelAndUrl[0];
+                //频道音频流的url第1部分, url最大长度32字符
+                String url = channelAndUrl[1];
+
+            }
+        } else if (address == TcpPacketFactory.FM_FIXED_CHANNEL_SETTINGS) {
+            //FM固定频道设置
+            if (data.equals(TcpPacketFactory.dataZero)) {
+                //频道数字为0，表明清除所有频道。
+
+            } else {
+                String[] dataList = data.split("/");
+                String[] channelArray = new String[dataList.length -1];
+                System.arraycopy(dataList, 0 , channelArray , 0 , channelArray.length);
+                //channelArray为设置的固定频道列表
+
+            }
+
+        }
+    }
+
 }
