@@ -1,28 +1,21 @@
-package flyscale.monitor.util;
+package com.flyscale.alertor.helper;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.flyscale.FlyscaleManager;
 import android.location.Location;
 import android.location.LocationManager;
-import android.os.BatteryManager;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
-import android.text.TextUtils;
+
+import com.flyscale.alertor.Constants;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
-import flyscale.monitor.global.Constants;
 
 public class PhoneManagerUtil {
 
@@ -81,6 +74,10 @@ public class PhoneManagerUtil {
     }
 
     public static Integer getBatteryTemperature(Context context) {
+        return (Integer) SPUtil.get(context, Constants.BatteryInfo.BATTERY_TEMPERATURE, 0);
+    }
+
+    public static Integer getTamperSwitch(Context context) {
         return (Integer) SPUtil.get(context, Constants.BatteryInfo.BATTERY_TEMPERATURE, 0);
     }
 
