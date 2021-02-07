@@ -1,8 +1,13 @@
 package com.flyscale.alertor.data.packet;
 
+import android.content.Context;
+import android.text.TextUtils;
+
 import com.flyscale.alertor.helper.DDLog;
+import com.flyscale.alertor.helper.PhoneManagerUtil;
 import com.flyscale.alertor.helper.PhoneUtil;
 
+import java.net.ContentHandler;
 import java.util.ArrayList;
 
 public class TcpPacketFactory {
@@ -196,7 +201,7 @@ public class TcpPacketFactory {
     public static final long FM_FIXED_CHANNEL_SETTINGS = 0x00000055L;
 
     /*全0数据*/
-    public  static final String dataZero = "00000000000000000000000000000000";
+    public static final String dataZero = "00000000000000000000000000000000";
 
 
     static {
@@ -218,6 +223,7 @@ public class TcpPacketFactory {
     public static final long LOGIN_CONFIRM = 0X00000001L;
     /*登录结果*/
     public static final long LOGIN_RESULT = 0X00000003L;
+
 
     public enum LOGIN_CODE {
         SUCCESS(0),    //登录成功
@@ -271,6 +277,25 @@ public class TcpPacketFactory {
             DDLog.i("不识别的指令！");
             return null;
         }
+    }
+
+    public static TcpPacket createPacketSend(Context context, long address) {
+        if (address == LOGIN) {
+            String imsi = PhoneManagerUtil.getIMSI(context);
+            String imei1 = PhoneManagerUtil.getIMEI1(context);
+
+            //TODO 测试时使用
+            imsi = "460031234567890";
+            imei1 = "0A9464026708209";
+
+            //imsi和imei1中的86要替换为0A
+            if (!TextUtils.isEmpty(imsi) && !TextUtils.isEmpty(imei1)) {
+                imsi.replace("86", "0A");
+                imei1.replace("86", "0A");
+            }
+            return createPacketSend(address, imsi + "/" + imei1 + "/");
+        }
+        return null;
     }
 
     public static TcpPacket from(byte[] tcpBytes) {
