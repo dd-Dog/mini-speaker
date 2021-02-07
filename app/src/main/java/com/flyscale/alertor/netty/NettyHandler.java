@@ -88,7 +88,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             public void run() {
                 NettyHelper.getInstance().connect();
             }
-        }, 5 * 1000);
+        }, 65 * 1000);
     }
 
     /**
