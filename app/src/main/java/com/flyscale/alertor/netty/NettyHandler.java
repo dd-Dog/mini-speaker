@@ -122,7 +122,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         LedInstance.getInstance().showStateLed();
 
         //开始鉴权
-        NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN, "460031234567890/0A9464026708209/"));
+        //TcpPacketFactory.LOGIN, "460031234567890/0A9464026708209/")
+        NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(BaseApplication.sContext, TcpPacketFactory.LOGIN));
     }
 
     /**
@@ -141,10 +142,10 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, TcpPacketFactory.HEARTBEAT_DATA,
                         PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
                                 DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
-                                PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext)  + "/" +
-                                (float)(Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000)*10))/10 + "/" +
+                                PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
+                                (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
                                 36 + "/" +
-                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getVolume()
+                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getVolume()
                 ));
             }
         }
@@ -474,7 +475,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 int result = Integer.parseInt(data.split("/")[3]);
             } else {
                 //系统变量
-                SystemVariable(address ,tcpPacket);
+                SystemVariable(address, tcpPacket);
             }
 
 
@@ -588,7 +589,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     //系统变量
     private void SystemVariable(long address, TcpPacket tcpPacket) {
-        DDLog.d(getClass() ,"SystemVariable()... ");
+        DDLog.d(getClass(), "SystemVariable()... ");
         String data = tcpPacket.getData();
         if (TextUtils.isEmpty(data)) {
             return;
@@ -603,7 +604,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String MEID = split[1];
 
             }
-        }else if (address == TcpPacketFactory.SHORT_LINK_PARAM) {
+        } else if (address == TcpPacketFactory.SHORT_LINK_PARAM) {
             //短连接参数
             if (split.length > 2) {
                 //链接类型 ：0短链接；1长链接
@@ -614,7 +615,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String shortLinkDelay = split[2];
 
             }
-        }else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_1) {
+        } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_1) {
             //文件下载模式参数1
             if (split.length > 2) {
                 //下载模式：0 ftp模式；1 http下载模式
@@ -625,7 +626,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String httpPwd = split[2];
 
             }
-        }else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
+        } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
             //文件下载模式参数2
             if (split.length > 0) {
                 //http下载域名端口
@@ -809,19 +810,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //第1个字符: 0 APP紧急语音单次播放; 1：APP紧急语音循环播放
             String playMode = data.substring(0, 1);
             //第2个字符: 0防移开关启用; 1防移开关禁用
-            String moveSwitch = data.substring(1,2);
+            String moveSwitch = data.substring(1, 2);
             //第3个字符:
             // 0一键报警普通模式（十户联防号码呼入：用户按键接听）;
             // 1一键报警奎屯模式（十户联防号码呼入后：响3声报警音，再自动接听，播放完成报警信息后，用户挂断）
             //2：一键报警沙湾模式（十户联防号码呼入后：不响报警音，自动接听，播放完成报警信息后，用户挂断；）
-            String alarmMode = data.substring(2,3);
+            String alarmMode = data.substring(2, 3);
             //第4个字符: 1就是只能拨打报警与快捷键; 0可以拨打所有电话
-            String callEnable = data.substring(3,4);
+            String callEnable = data.substring(3, 4);
             //第5个字符,“频选”参数 ：0 默认; 1 4G-800M优选;  2:4G-1800M优选
             String channelSelect = data.substring(4, 5);
             //第6个字符,“WIFI开关”参数 ：0 开通; 1 关闭
-            String wifiSwitch = data.substring(5,6);
-
+            String wifiSwitch = data.substring(5, 6);
 
 
         } else if (address == TcpPacketFactory.PLATFORM_PHONE_NUM) {
@@ -909,8 +909,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
             } else {
                 String[] dataList = data.split("/");
-                String[] channelArray = new String[dataList.length -1];
-                System.arraycopy(dataList, 0 , channelArray , 0 , channelArray.length);
+                String[] channelArray = new String[dataList.length - 1];
+                System.arraycopy(dataList, 0, channelArray, 0, channelArray.length);
                 //channelArray为设置的固定频道列表
 
             }
