@@ -21,7 +21,7 @@ public class MD5Util {
      * @return
      */
     public static String getKI(){
-        return "99988000000000000000000000199988";
+        return FileHelper.getKI();
     }
     /**
      * 计算字符串MD5值
