@@ -15,14 +15,25 @@ import java.security.NoSuchAlgorithmException;
  */
 public class MD5Util {
 
+    public static String KI;
+
+    static {
+        KI = getKI();
+    }
+
     /**
      * 实际上该KI值是预设在机器中，每台不一样
      * A9464026708209 串号用这个ki认证码    99988000000000000000000000199988
+     *
      * @return
      */
-    public static String getKI(){
-        return FileHelper.getKI();
+    public static String getKI() {
+        if (TextUtils.isEmpty(KI))
+            return FileHelper.getKI();
+        else
+            return KI;
     }
+
     /**
      * 计算字符串MD5值
      *
@@ -152,13 +163,13 @@ public class MD5Util {
 
     /**
      * MD5加盐
-     *
+     * <p>
      * 加盐的方式也是多种多样
-     *
+     * <p>
      * string+key（盐值key）然后进行MD5加密
-     *
+     * <p>
      * 用string明文的hashcode作为盐，然后进行MD5加密
-     *
+     * <p>
      * 随机生成一串字符串作为盐，然后进行MD5加密
      *
      * @param string
