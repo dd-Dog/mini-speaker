@@ -3,14 +3,20 @@ package com.flyscale.alertor.media;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.flyscale.alertor.helper.DDLog;
+import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.helper.ThreadPool;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Timer;
+
+import io.netty.util.Timeout;
+import io.netty.util.TimerTask;
 
 public class MusicPlayer {
     private final MediaPlayer mMediaPlayer;
@@ -33,6 +39,7 @@ public class MusicPlayer {
 
     private PLAY_MODE mPlayMode = PLAY_MODE.LIST_LOOP;//默认列表循环播放
     private PLAY_TYPE mPlayType = PLAY_TYPE.NORMAL;//默认播放常规音频
+    public static int mPlayCount;
 
     private MusicPlayer() {
         mMediaPlayer = new MediaPlayer();
@@ -148,7 +155,8 @@ public class MusicPlayer {
      * @param path
      * @param enforce 如果当前正在播放，是否强制停止当前
      */
-    public void playTip(String path, boolean enforce) {
+    public void playTip(String path, boolean enforce, final int count) {
+        mPlayCount = count;
         if (TextUtils.isEmpty(path)) {
             DDLog.i("文件路径为空");
             return;
@@ -160,13 +168,34 @@ public class MusicPlayer {
             return;
         }
         try {
+            final Timer timer = new Timer();
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+//            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
             // 通过异步的方式装载媒体资源
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
-            mMediaPlayer.setOnCompletionListener(null);
+            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(final MediaPlayer mp) {
+                    mPlayCount --;
+                    if (mPlayCount > 0) {
+                        DDLog.i("播放次数" + mPlayCount);
+                        if (mPlayCount == 1) {
+                            mp.start();
+                            DDLog.i("播放完成" + mPlayCount);
+                        } else if (mPlayCount > 1){
+                            mp.start();
+                            timer.schedule(new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    DDLog.i("播放完成" + mPlayCount);
+                                }
+                            }, 1000);
+                        }
+                    }
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -176,6 +205,9 @@ public class MusicPlayer {
      * 播放本地文件
      */
     public void playLocal() {
+        ArrayList<String> mCurrentList = new ArrayList<>();
+
+        mCurrentList.add("/mnt/sdcard/flyscale/media/normal/dnxk.mp3");
         DDLog.i("play");
         if (mCurrentList.size() <= 0) {
             DDLog.w("没有曲目可以播放！");
