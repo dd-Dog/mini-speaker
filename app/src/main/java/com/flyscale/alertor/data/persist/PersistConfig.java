@@ -1,11 +1,15 @@
 package com.flyscale.alertor.data.persist;
 
+import android.app.PendingIntent;
 import android.text.TextUtils;
 
 import com.flyscale.alertor.helper.DateHelper;
 
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 高鹤泉
@@ -68,6 +72,17 @@ public class PersistConfig extends LitePalSupport {
     //DES随机密钥，只有登录成功后才能使用
     private String randomKey;
     private boolean login = false;
+
+    //闹钟列表
+    List<PendingIntent> list;
+
+    public void setArrayList(List<PendingIntent> list) {
+        this.list = list;
+    }
+
+    public List<PendingIntent> getList() {
+        return list;
+    }
 
     public boolean isLogin() {
         return login;
@@ -556,6 +571,12 @@ public class PersistConfig extends LitePalSupport {
     public static void saveDefaultAlarmOn(boolean on) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setDefaultAlarmOn(on);
+        persistConfig.save();
+    }
+
+    public static void saveAlarmManager(List<PendingIntent> list) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setArrayList(list);
         persistConfig.save();
     }
 

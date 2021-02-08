@@ -1,8 +1,10 @@
 package com.flyscale.alertor.netty;
 
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.Service;
 import android.text.TextUtils;
 import android.util.Log;
-import android.webkit.DownloadListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,25 +18,22 @@ import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
+import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.HttpDownloadHelper;
 import com.flyscale.alertor.helper.MD5Util;
+import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
 import com.flyscale.alertor.helper.UserActionHelper;
-import com.flyscale.alertor.helper.MediaHelper;
-import com.flyscale.alertor.jni.NativeHelper;
 import com.flyscale.alertor.led.LedInstance;
+import com.flyscale.alertor.media.MusicPlayer;
 import com.liulishuo.okdownload.DownloadTask;
 import com.liulishuo.okdownload.core.cause.EndCause;
-import com.liulishuo.okdownload.core.cause.ResumeFailedCause;
-import com.liulishuo.okdownload.core.listener.DownloadListener1;
 import com.liulishuo.okdownload.core.listener.DownloadListener2;
-import com.liulishuo.okdownload.core.listener.DownloadListener3;
-import com.liulishuo.okdownload.core.listener.DownloadListener4;
 
 import java.io.File;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,6 +51,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     String TAG = "NettyHandler";
     String data;
+    DownloadTask task;
+    Timer timer = new Timer();
 
 
     public NettyHandler() {
@@ -79,6 +80,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
+        if (timer != null) {
+            timer.cancel();
+        }
         Log.i(TAG, "channelInactive:  --- 准备重连 ---  ");
 //        PersistConfig.saveLogin(false);
 //        LedInstance.getInstance().offStateLed();
@@ -124,6 +128,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         //开始鉴权
         //TcpPacketFactory.LOGIN, "460031234567890/0A9464026708209/")
         NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(BaseApplication.sContext, TcpPacketFactory.LOGIN));
+//        NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.LOGIN, "460031234567891/0A6285039008479/"));
+
+        //模拟数据
+//        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, TcpPacketFactory.EMR_BROADCAST_MP3,
+//                "abcdefgh.amr/0000006789/30/13235"));
+//        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, TcpPacketFactory.LOGIN_RESULT,
+//                FillZeroUtil.getString(0 + "/", 32)));
     }
 
     /**
@@ -137,8 +148,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
         if (evt instanceof IdleStateEvent) {
-            if (((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE) {
-                long time = System.currentTimeMillis();
+            if (((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE || ((IdleStateEvent) evt).state() == IdleState.ALL_IDLE) {
+                final long time = System.currentTimeMillis();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, TcpPacketFactory.HEARTBEAT_DATA,
                         PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
                                 DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
@@ -195,6 +206,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         if (TextUtils.equals(TcpPacketFactory.LOGIN_CODE.SUCCESS.getCode() + "", data.split("/")[0])) {
                             DDLog.i("登录成功");
                             PersistConfig.saveLogin(true);
+                            LoginSuccess();
                             return;
                         }
                     }
@@ -211,151 +223,44 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 /*7.3.2a下传紧急广播AMR文件（内容是MP3格式，文件名后缀是amr）*/
                 DDLog.i("下传紧急广播AMR文件（内容是MP3格式，文件名后缀是amr）" + data);
                 //wd,01000000,abcdefgh.amr/0123456789/30/13235xxxx
-                /*
-                输入格式：
-                    如果终端可以下载，         返回 wa,01000000,0/000000000000000000000000000000xxxx
-                    如果终端有下载正在进行中，  返回 wa,01000000,-1/00000000000000000000000000000xxxx
-                    如果终端FTP下载失败，      返回 wa,01000000,-2/00000000000000000000000000000xxxx
-                    如果终端没有足够的空间，    返回 wa,01000000,-3/00000000000000000000000000000xxxx
-                 */
+                /*行地址为01000000，表明文件头，数据中1-12字节为文件名，14-23字节为文件原始大小，25-26字节为连续播放次数，每次播放间隔1秒。*/
                 if (!TextUtils.isEmpty(data)) {
                     if (data.split("/") != null) {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
-                        if (size > ClientInfoHelper.getAvailableSize()) {
-                            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
-                                    "-3/00000000000000000000000000000"));
-                            return;
-                        }
-                        String url = "http://ftp3.xjxlb.com:58021/au/hnkt01/5aad974525934efb/" + "MP3C.amr";
-
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                TcpPacketFactory.EMR_BROADCAST_MP3_FTP, "-2/00000000000000000000000000000"));
-                        HttpDownloadHelper.downloadFile(url, "dada/dada/Alertor/", fileName, new DownloadListener2() {
-                            @Override
-                            public void taskStart(@NonNull DownloadTask task) {
-                                //开始下载
-                                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                        TcpPacketFactory.EMR_BROADCAST_MP3_FTP, "0/000000000000000000000000000000"));
-                            }
-
-                            @Override
-                            public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
-                                if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
-                                    //下载失败
-                                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                            TcpPacketFactory.EMR_BROADCAST_MP3_FTP, "-2/00000000000000000000000000000"));
-                                } else if (cause.equals(EndCause.COMPLETED)) {
-                                    //下载完成，设置播放列表
-                                    DDLog.i("下载完成，打印播放次数" + playTimes);
-                                }
-                            }
-                        });
+                        DDLog.i("结果" + fileName + size + playTimes);
+                        DownLoadAmr(fileName, size, playTimes, "mp3");
                     }
                 }
             } else if (address == TcpPacketFactory.EMR_BROADCAST_MP3) {
                 /*7.3.2b下传紧急广播AMR文件播放反馈（内容是MP3格式，文件名后缀是amr）*/
-                /**
-                 * 参数说明：
-                 * 第一个参数为文件名，
-                 * 第二个参数为成功播放结果代码：
-                 * 0	播放成功
-                 * -31	没有播放文件
-                 * -32	文件损坏
-                 * -33	不可识别的文件
-                 * 第三个参数为播放时间YYMMDDHHMISS：
-                 * 该报文如果终端和设备暂时没有连接到平台无法发送，那么必须保存在终端中，待终端再次上线后逐条补发给平台。
-                 */
-                String fileName = data.split("/")[0];
-                int result = Integer.parseInt(data.split("/")[1]);
                 DDLog.i("下传紧急广播AMR文件播放反馈（内容是MP3格式，文件名后缀是amr）");
 
             } else if (address == TcpPacketFactory.EMR_BROADCAST_AMR_FTP) {
                 /*7.3.2a下传紧急广播AMR文件（内容是MP3格式，文件名后缀是amr）*/
-                /*
-                输入格式：
-                    wd,01000009,abcdefgh.amr/0123456789/30/13235xxxx
-                    如果终端可以下载，         返回 wa,01000000,0/000000000000000000000000000000xxxx
-                    如果终端有下载正在进行中，  返回 wa,01000000,-1/00000000000000000000000000000xxxx
-                    如果终端FTP下载失败，      返回 wa,01000000,-2/00000000000000000000000000000xxxx
-                    如果终端没有足够的空间，    返回 wa,01000000,-3/00000000000000000000000000000xxxx
-                 */
+                /*行地址为01000009，表明文件头，数据中1-12字节为文件名，14-23字节为文件原始大小，25-26字节为连续播放次数，每次播放间隔1秒。*/
                 DDLog.i("下传紧急广播AMR文件（内容是amr格式，文件名后缀是amr）" + data);
                 if (!TextUtils.isEmpty(data)) {
                     if (data.split("/") != null) {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
-                        if (size > ClientInfoHelper.getAvailableSize()) {
-                            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
-                                    "-3/00000000000000000000000000000"));
-                            return;
-                        }
-                        String url = "http://ftp3.xjxlb.com:58021/au/hnkt01/5aad974525934efb/" + "MP3C.amr";
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                TcpPacketFactory.EMR_BROADCAST_AMR_FTP, "-2/00000000000000000000000000000"));
-                        HttpDownloadHelper.downloadFile(url, "dada/dada/Alertor/", fileName, new DownloadListener2() {
-                            @Override
-                            public void taskStart(@NonNull DownloadTask task) {
-
-                            }
-
-                            @Override
-                            public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
-                                if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
-                                    //下载失败
-                                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                            TcpPacketFactory.EMR_BROADCAST_AMR_FTP, "-2/00000000000000000000000000000"));
-                                } else if (cause.equals(EndCause.COMPLETED)) {
-                                    //下载完成，设置播放列表
-                                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                            TcpPacketFactory.EMR_AMR_FILE_OPERATION, "0/000000000000000000000000000000"));
-                                    DDLog.i("下载完成，打印播放次数" + playTimes);
-                                }
-                            }
-                        });
+                        DownLoadAmr(fileName, size, playTimes, "amr");
                     }
                 }
             } else if (address == TcpPacketFactory.EMR_BROADCAST_AMR) {
                 /*7.3.2d下传紧急广播AMR文件播放反馈（内容是amr格式，文件名后缀是amr）*/
                 DDLog.i("下传紧急广播AMR文件播放反馈（内容是amr格式，文件名后缀是amr）");
-                /**
-                 * 参数说明：
-                 * 第一个参数为文件名，
-                 * 第二个参数为播放前后标志：0播放前；1播放后
-                 * 第三个参数为成功播放结果代码：
-                 * 0	播放成功
-                 * -31	没有播放文件
-                 * -32	文件损坏
-                 * -33	不可识别的文件
-                 * 第四个参数为播放时间YYMMDDHHMISS：
-                 * 该报文如果终端和设备暂时没有连接到平台无法发送，那么必须保存在终端中，待终端再次上线后逐条补发给平台。
-                 */
-                String fileName = data.split("/")[0];
-                int beforePlay = Integer.parseInt(data.split("/")[1]);
-                int result = Integer.parseInt(data.split("/")[2]);
-                String time = data.split("/")[3];
-
 
             } else if (address == TcpPacketFactory.EMR_AMR_FILE_OPERATION) {
                 /*7.3.3下传和删除普通AMR格式音频文件*/
-                /*
-                输入格式：
-                    wd,01000001,abcdefgh.amr/0123456789/30/13235xxxx
-                    wd,01000001,abcdefgh.amr/0123456789/30/13235xxxx
-                    行地址为01000001，表明文件头，数据中1-12字节为文件名，14-23字节为文件原始大小，25-26字节为连续播放次数，
-                    每次播放间隔1秒。 如果文件大小是0，则表明需要删除改音频文件
-                        如果终端可以下载，         返回 wa,01000001,0/000000000000000000000000000000xxxx
-                        如果终端有下载正在进行中，  返回 wa,01000001,-1/00000000000000000000000000000xxxx
-                        如果终端FTP下载失败，      返回 wa,01000001,-2/00000000000000000000000000000xxxx
-                        如果终端没有足够的空间，    返回 wa,01000001,-3/00000000000000000000000000000xxxx
-                        如果FTP域名无法解析，     返回 wa,01000001,-10/0000000000000000000000000000xxxx
-                        如果FTP地址端口无法连接， 返回 wa,01000001,-11/0000000000000000000000000000xxxx
-                        如果FTP账户密码错误，     返回 wa,01000001,-12/0000000000000000000000000000xxxx
-                        如果FTP目录不存在，       返回 wa,01000001,-13/0000000000000000000000000000xxxx
-                        如果文件正在播放无法删除， 返回 wa,01000001,-15/0000000000000000000000000000xxxx
-                        终端收到指令先删除终端本地存储的该文件，再进行下载， 如果该文件正在播放，需返回-15
+                /**
+                 * wd,01000001,abcdefgh.amr/0123456789/30/13235xxxx
+                 * 行地址为01000001，
+                 * 表明文件头，数据中1-12字节为文件名，
+                 * 14-23字节为文件原始大小，
+                 * 25-26字节为连续播放次数，每次播放间隔1秒。
                  */
                 DDLog.i("下传和删除普通AMR格式音频文件" + data);
                 if (!TextUtils.isEmpty(data)) {
@@ -363,50 +268,21 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
-
-                        if (ClientInfoHelper.getAvailableSize() < size) {
-                            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                    TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-3/00000000000000000000000000000"));
-                        } else if (size == 0) {
-                            //删除该文件
-                            DDLog.i("删除该文件");
-                        } else {
-                            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                    TcpPacketFactory.EMR_AMR_FILE_OPERATION, "0/000000000000000000000000000000"));
-
-                            String url = "http://ftp3.xjxlb.com:58021/au/hnkt01/5aad974525934efb/" + "MP3C.amr";
-                            HttpDownloadHelper.downloadFile(url, "dada/dada/Alertor/", fileName, new DownloadListener2() {
-                                @Override
-                                public void taskStart(@NonNull DownloadTask task) {
-                                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                            TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-2/00000000000000000000000000000"));
-                                }
-
-                                @Override
-                                public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
-                                    if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
-                                        //下载失败
-                                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                                TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-2/00000000000000000000000000000"));
-                                    } else if (cause.equals(EndCause.COMPLETED)) {
-                                        //下载完成，设置播放列表
-                                        DDLog.i("下载完成，打印播放次数" + playTimes);
-                                    }
-                                }
-                            });
-                        }
+                        DownLoadAndDelete(fileName, size, playTimes);
                     }
                 }
             } else if (address == TcpPacketFactory.GET_FILE_SIZE) {
                 /*7.3.3a 获取AMR格式音频文件大小*/
                 //ra,01000002,abcdefgh.amr/123456789/000000000xxxx
+                @SuppressLint("SdCardPath")
+                String filePath = "/mnt/sdcard/flyscale/music/" + data.split("/")[0];
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         data.split("/")[0] + "/" +
-                                FileHelper.getFileSize(new File(data.split("/")[0])) + "000000000"));
+                                FillZeroUtil.getString(9, FileHelper.getFileSize(new File(filePath)) +
+                                "000000000")));
             } else if (TcpPacketFactory.MUSIC_SHOW_LIST.contains(address)) {
                 /*7.3.3b设置音频文件播放节目*/
-
-                                /*
+                /*
                 文件名(最长16个字符)/
                 开始播放时间(6字节)/
                 结束播放时间(6字节)/
@@ -415,25 +291,17 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 星期控制字节
                  */
                 String fileName = data.split("/")[0];
-                String playTime = data.split("/")[1];
+                String startTime = data.split("/")[1];
                 String endTime = data.split("/")[2];
                 String voice = data.split("/")[3];
-                boolean isPlay;
-                if (data.split("/")[4].equals("1")) {
-                    isPlay = true;
-                } else isPlay = false;
+                boolean isPlay = data.split("/")[4].equals("1");
                 String week = data.split("/")[5];
 
                 if (address == TcpPacketFactory.CLEAR_ALL_MUSIC_SHOW) {
                     /*清除所有音频节目列表*/
                     DDLog.i("清除所有音频节目列表");
                 }
-                //播放正常
-                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
-                        "0/000000000000000000000000000000"));
-                //播放错误
-                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
-                        "-100/000000000000000000000000000"));
+                ShowProgram(fileName, startTime, endTime, voice, isPlay, week, address);
             } else if (address == TcpPacketFactory.DOWNLOAD_AMR) {
                 /*7.3.3bc 终端接收完AMR音频文件后反馈*/
                 DDLog.i("终端接收完AMR音频文件后反馈");
@@ -452,6 +320,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     -8	解密失败
                     -9 解密中
                  */
+                String fileName = data.split("/")[0];
+                long size = Long.parseLong(data.split("/")[1]);
 
             } else if (address == TcpPacketFactory.PLAY_AMR) {
                 /*7.3.3bd普通AMR文件播放反馈 ok*/
@@ -471,8 +341,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                  */
                 String fileName = data.split("/")[0];
                 int program = Integer.parseInt(data.split("/")[1]);
-                int beforePlay = Integer.parseInt(data.split("/")[2]);
-                int result = Integer.parseInt(data.split("/")[3]);
+                String beforePlay = data.split("/")[2];
+                DDLog.i("播放前后标志" + beforePlay);
+                if (data.split("/")[3] != null) {
+                    Log.i(TAG, "结果加时间: " + data.split("/")[3]);
+                }
+//                int beforePlay = Integer.parseInt(data.split("/")[2]);
+//                int result = Integer.parseInt(data.split("/")[3]);
             } else {
                 //系统变量
                 SystemVariable(address, tcpPacket);
@@ -585,6 +460,213 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 }
             });
         }*/
+    }
+
+    private void ShowProgram(String fileName, String startTime, String endTime, String voice, boolean isPlay,
+                             String week, Long address) {
+        /**
+         * 根据指定的音频文件名，读写播放开始和结束时间
+         * 输入格式：
+         * wd,00000200,MP3A.amr/080000/090000/1/0/00000xxxx
+         * wd,00000208,MP3D.amr/080000/090000/1/0/00000xxxx
+         * wd,00000209,GUOGE.amr/080000/090000/1/0/1270xxxx
+         *
+         * 设置音频文件广播的行地址200-20f，最多16个节目，27F地址用作清除全部音频文件广播。每行数据格式为：
+         * 文件名(最长16个字符)/开始播放时间(6字节)/结束播放时间(6字节)/播放音量(1字节)/是否播放前导音(1字节：0不播放；1播放)/星期控制字节
+         * 设置正常反馈代码为0,否则为错误编码,例如:
+         * wa,00000201,0/000000000000000000000000000000xxxx
+         * wa,00000201,-100/000000000000000000000000000xxxx
+         *
+         * 星期控制字节（长度3字节）为0-127之间的整数，用二进制表示就是 0000-0000 到 0111-1111，
+         * Bit0表示星期一是否播放(0播放、1不播放)；
+         * Bit1表示星期二是否播放(0播放、1不播放)；
+         */DDLog.i("地址=" + address);
+         for (int i = 0; i < TcpPacketFactory.MUSIC_SHOW_LIST.size(); i++) {
+             if (address.equals(TcpPacketFactory.MUSIC_SHOW_LIST.get(i))) {
+                 /**
+                  * 设置节目为i
+                  * 设置开始时间为startTime
+                  * 设置结束事假哪位endTime
+                  * 设置播放音量为voice
+                  * 设置是否播放前导音
+                  * 设置星期播放
+                  */
+                 AlarmManager am = (AlarmManager) BaseApplication.sContext.getSystemService(Service.ALARM_SERVICE);
+             }
+         }
+
+        if (true) {
+            //播放正常
+            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
+                    FillZeroUtil.getString("0/", 32)));
+        } else {
+            //播放错误
+            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
+                    FillZeroUtil.getString("-100/", 32)));
+        }
+    }
+
+    //下载和删除
+    @SuppressLint("SdCardPath")
+    private void DownLoadAndDelete(String fileName, long size, final int playTimes) {
+        /**
+         * 输入格式：
+         * wd,01000001,abcdefgh.amr/0123456789/30/13235xxxx
+         * wd,01000001,abcdefgh.amr/0123456789/30/13235xxxx
+         * 行地址为01000001，表明文件头，数据中1-12字节为文件名，14-23字节为文件原始大小，25-26字节为连续播放次数，每次播放间隔1秒。 如果文件大小是0，则表明需要删除改音频文件
+         * 如果终端可以下载，         返回 wa,01000001,0/000000000000000000000000000000xxxx
+         * 如果终端有下载正在进行中，  返回 wa,01000001,-1/00000000000000000000000000000xxxx
+         * 如果终端FTP下载失败，      返回 wa,01000001,-2/00000000000000000000000000000xxxx
+         * 如果终端没有足够的空间，    返回 wa,01000001,-3/00000000000000000000000000000xxxx
+         * 如果FTP域名无法解析，     返回 wa,01000001,-10/0000000000000000000000000000xxxx
+         * 如果FTP地址端口无法连接， 返回 wa,01000001,-11/0000000000000000000000000000xxxx
+         * 如果FTP账户密码错误，     返回 wa,01000001,-12/0000000000000000000000000000xxxx
+         * 如果FTP目录不存在，       返回 wa,01000001,-13/0000000000000000000000000000xxxx
+         * 如果文件正在播放无法删除， 返回 wa,01000001,-15/0000000000000000000000000000xxxx
+         * 终端收到指令先删除终端本地存储的该文件，再进行下载， 如果该文件正在播放，需返回-15
+         */
+        if (ClientInfoHelper.getAvailableSize() < size) {
+            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                    TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-3/00000000000000000000000000000"));
+        } else if (size == 0) {
+            //删除该文件
+            DDLog.i("删除该文件");
+            if (new File("/mnt/sdcard/flyscale/media/normal/" + fileName).exists()) {
+                FileHelper.deleteFile("/mnt/sdcard/flyscale/media/normal/" + fileName);
+            }
+        } else if (MusicPlayer.getInstance().isPlaying()) {
+            //正在播放，无法删除
+            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                    TcpPacketFactory.EMR_AMR_FILE_OPERATION, FillZeroUtil.getString(-15 + "/", 32)));
+        } else {
+            if (new File("/mnt/sdcard/flyscale/media/normal/" + fileName).exists()) {
+                FileHelper.deleteFile("/mnt/sdcard/flyscale/media/normal/" + fileName);
+            }
+            String url = PersistConfig.findConfig().getHttpDownloadUrl() + "MP3C.amr";
+            HttpDownloadHelper.downloadFile(url, "/mnt/sdcard/flyscale/media/emr/" + fileName, fileName,
+                    new DownloadListener2() {
+                @Override
+                public void taskStart(@NonNull DownloadTask task) {
+                    DDLog.i("下载开始" + task);
+                }
+
+                @Override
+                public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
+                    DDLog.i("下载结束" + cause);
+                    if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
+                        //下载失败
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                                TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-2/00000000000000000000000000000"));
+                    } else if (cause.equals(EndCause.COMPLETED)) {
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                                TcpPacketFactory.EMR_AMR_FILE_OPERATION, "0/000000000000000000000000000000"));
+                        // TODO: 2021/2/8 下载完成，设置播放列表
+                        DDLog.i("下载完成，打印播放次数" + playTimes);
+
+                    }
+                }
+            });
+        }
+    }
+
+
+    //下载文件
+    private void DownLoadAmr(final String fileName, long size, final int playTimes, final String type) {
+        Log.i(TAG, "DownLoadAmr: 下载文件");
+        /**
+         * 输入格式：
+         * 如果终端可以下载，         返回 wa,01000000,0/000000000000000000000000000000xxxx
+         * 如果终端有下载正在进行中，  返回 wa,01000000,-1/00000000000000000000000000000xxxx
+         * 如果终端FTP下载失败，      返回 wa,01000000,-2/00000000000000000000000000000xxxx
+         * 如果终端没有足够的空间，    返回 wa,01000000,-3/00000000000000000000000000000xxxx
+         */
+        String url = PersistConfig.findConfig().getHttpDownloadUrl() + "/" + fileName;
+        final long address;
+        if ("mp3".equals(type)) {
+            address = TcpPacketFactory.EMR_BROADCAST_MP3_FTP;
+        } else address = TcpPacketFactory.EMR_BROADCAST_AMR_FTP;
+
+        if (size > ClientInfoHelper.getAvailableSize()) {
+            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                    "-3/00000000000000000000000000000"));
+        } else {
+            DDLog.i("这里会下载i");
+            HttpDownloadHelper.downloadFile(url, fileName, fileName, new DownloadListener2() {
+                @Override
+                public void taskStart(@NonNull DownloadTask task1) {
+                    DDLog.i("开始下载" + task1.toString());
+                    //开始下载
+//                    if (task1.getInfo().isSameFrom(task)) {
+//                        DDLog.i("重复");
+//                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+//                                "-1/00000000000000000000000000000"));
+//                    }
+                }
+
+                @Override
+                public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
+                    DDLog.i("下载结果" + cause);
+                    DDLog.i("realCause" + realCause);
+                    if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
+                        //下载失败
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                                "-2/00000000000000000000000000000"));
+                    } else if (cause.equals(EndCause.COMPLETED)) {
+                        /**
+                         * 参数说明：
+                         * 第一个参数为文件名，
+                         * 第二个参数为成功播放结果代码：
+                         * 0	播放成功
+                         * -31	没有播放文件
+                         * -32	文件损坏
+                         * -33	不可识别的文件
+                         * 第三个参数为播放时间YYMMDDHHMISS：
+                         * 该报文如果终端和设备暂时没有连接到平台无法发送，那么必须保存在终端中，待终端再次上线后逐条补发给平台。
+                         */
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                                "0/000000000000000000000000000000"));
+                        if (address == TcpPacketFactory.EMR_BROADCAST_MP3_FTP) {
+                            DDLog.i("mp3下载完成，打印播放次数" + playTimes);
+                            // TODO: 2021/2/7  下载完成，设置播放列表----mp3
+                            MusicPlayer.getInstance().playTip("/data/app/abcdefgh.mp3", true, playTimes);
+                            if (MusicPlayer.mPlayCount == 0) {
+                                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                                        TcpPacketFactory.EMR_BROADCAST_MP3, FillZeroUtil.getString(fileName + "/" + 0 + "/" +
+                                                DateHelper.longToString(DateHelper.yyMMddHHmmss) + "/", 32)));
+                            }
+                        } else {
+                            DDLog.i("amr下载完成，打印播放次数" + playTimes);
+                            // TODO: 2021/2/7  下载完成，设置播放列表----amr
+                            MusicPlayer.getInstance().playTip("/data/app/abcdefgh.mp3", true, playTimes);
+                            if (MusicPlayer.mPlayCount == 0) {
+                                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                                        TcpPacketFactory.EMR_BROADCAST_AMR, FillZeroUtil.getString(fileName + "/" + 0 + "/" +
+                                                DateHelper.longToString(DateHelper.yyMMddHHmmss) + "/", 32)));
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    //发送心跳，定时发送空白心跳
+    private void LoginSuccess() {
+        final long time = System.currentTimeMillis();
+        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, TcpPacketFactory.HEARTBEAT_DATA,
+                PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
+                        DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
+                        PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext)  + "/" +
+                        (float)(Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000)*10))/10 + "/" +
+                        36 + "/" +
+                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getVolume()
+        ));
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+            }
+        }, 0, 20 * 1000);
     }
 
     //系统变量

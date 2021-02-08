@@ -26,6 +26,7 @@ public class DateHelper {
     public static final String yyyyMMddHH_mm = "yyyyMMddHH:mm";
     public static final String yyyy_MM_dd_hh_mm_ss = "yyyy-MM-dd hh:mm:ss";
     public static final String yyyyMMdd_HHmmss = "yyyyMMdd-HHmmss";
+    public static final String yyMMddHHmmss = "yyMMddHHmmss";
 
 
     /**
