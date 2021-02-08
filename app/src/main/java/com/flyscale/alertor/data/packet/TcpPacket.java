@@ -266,4 +266,29 @@ public class TcpPacket {
                 ", data='" + data + '\'' +
                 '}';
     }
+    /**
+     * 加密数据，并生成TcpPacket对象，用于向服务器发送
+     *
+     * @param blank   空白命令行
+     * @return
+     */
+    public TcpPacket encode(String blank) {
+        this.data = blank;
+        decodedBytes = data.getBytes();
+        //对明文DES加密
+        encodedBytes = NativeHelper.encrypt(decodedBytes);
+        //将密文数据放入等发送的数据包
+        if (encodedBytes != null) {
+            tcpBytes = new byte[encodedBytes.length + END_FLAG_LENGTH];
+            System.arraycopy(encodedBytes, 0, tcpBytes, 0, 48);
+        } else {
+            System.out.println("加密失败！");
+            return null;
+        }
+        //最后拼接结束符
+        System.arraycopy(endFlagBytes, 0, tcpBytes, encodedBytes.length, endFlagBytes.length);
+        System.out.println("TCP数据：");
+        System.out.println(DDLog.printArrayHex(tcpBytes));
+        return this;
+    }
 }
