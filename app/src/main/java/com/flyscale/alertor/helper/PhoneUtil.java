@@ -267,8 +267,10 @@ public class PhoneUtil {
         ActivityManager.MemoryInfo memoryInfo = new ActivityManager.MemoryInfo();
         assert am != null;
         am.getMemoryInfo(memoryInfo);
-        meminfo[0] = memoryInfo.totalMem / 1024 + " KB";
-        meminfo[1] = memoryInfo.availMem / 1024 + " KB";
+//        meminfo[0] = memoryInfo.totalMem / 1024 + " KB";
+//        meminfo[1] = memoryInfo.availMem / 1024 + " KB";
+        meminfo[0] = memoryInfo.totalMem + "";
+        meminfo[1] = memoryInfo.availMem + "";
         DDLog.i(PhoneUtil.class, "totalMem=" + meminfo[0]);
         DDLog.i(PhoneUtil.class, "availMem=" + meminfo[1]);
         return meminfo;
