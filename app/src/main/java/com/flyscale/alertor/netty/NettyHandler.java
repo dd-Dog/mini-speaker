@@ -19,6 +19,7 @@ import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.HttpDownloadHelper;
 import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
+import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.jni.NativeHelper;
@@ -591,330 +592,683 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     private void SystemVariable(long address, TcpPacket tcpPacket) {
         DDLog.d(getClass(), "SystemVariable()... ");
         String data = tcpPacket.getData();
+        CMD cmd = tcpPacket.getCmd();
         if (TextUtils.isEmpty(data)) {
+            DDLog.e(getClass() , "data数据内容为空");
             return;
         }
         DDLog.d(getClass(), "SystemVariable() , data ：" + data);
         String[] split = data.split("/");
+
         if (address == TcpPacketFactory.DEVICE_ID) {
-            //设备出厂编号
-            if (split.length > 1) {
-                //厂家名称
-                String companyName = split[0];
-                String MEID = split[1];
-
-            }
-        } else if (address == TcpPacketFactory.SHORT_LINK_PARAM) {
-            //短连接参数
-            if (split.length > 2) {
-                //链接类型 ：0短链接；1长链接
-                String linkType = split[0];
-                //短链接休眠时长（秒）
-                String shortLinkSleepTime = split[1];
-                //短链接工作等待延迟（秒）
-                String shortLinkDelay = split[2];
-
-            }
-        } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_1) {
-            //文件下载模式参数1
-            if (split.length > 2) {
-                //下载模式：0 ftp模式；1 http下载模式
-                String mode = split[0];
-                //http下载账户
-                String httpAccount = split[1];
-                //http下载密码
-                String httpPwd = split[2];
-
-            }
-        } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
-            //文件下载模式参数2
-            if (split.length > 0) {
-                //http下载域名端口
-                String httpDomianName = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
-            //硬件版本号
-            if (split.length > 0) {
-                String hardwareVersion = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.SOFTWARE_VERSION) {
-            //软件版本号
-            if (split.length > 0) {
-                String softwareVersion = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.EVDO_IP_ADDRESS) {
-            //EVDO网络ip地址
-            if (split.length > 0) {
-                String evdoIP = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.VOLUME) {
-            //音量
-            if (split.length > 2) {
-                //音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
-                String volume = split[0];
-                //FM普通广播使能标志：1 使能，0 禁止
-                String normalFM = split[1];
-                //FM插播广播使能标志：1 使能，0 禁止
-                String insertFM = split[2];
-
-            }
-        } else if (address == TcpPacketFactory.PLATFORM_SERVER_IP_ADDRESS_1) {
-            //平台服务器ip地址1
-            if (split.length > 0) {
-                //这两个域名如果一个无法访问，终端应该切换至第二个域名
-                String ip_1 = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.PLATFORM_SERVER_IP_ADDRESS_2) {
-            //平台服务器ip地址2
-            if (split.length > 0) {
-                //这两个域名如果一个无法访问，终端应该切换至第二个域名
-                String ip_2 = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.BASE_STATION_INFORMATION) {
-            //基站信息
-            if (split.length > 5) {
-                String sid = split[0];
-                String nid = split[1];
-                String s = split[2];
-                String bid = split[3];
-                String singleLevel = split[4];
-
-            }
-        } else if (address == TcpPacketFactory.LOCATION_INFORMATION) {
-            //位置信息
-            if (split.length > 1) {
-                //经度E119.327833
-                String lat = split[0];
-                //纬度N39.961949
-                String lon = split[1];
-
-            }
-        } else if (address == TcpPacketFactory.FTP_SERVER_IP_ADDRESS) {
-            //FTP服务器IP地址
-            if (split.length > 0) {
-                //ftp3.xjxlb.com:12345
-                String ftpAddress = split[0];
-
-            }
-        } else if (address == TcpPacketFactory.FTP_SERVER_ACCOUNT_PASSWORD) {
-            //FTP服务器账户口令
-            if (split.length > 0) {
-                String[] userAndPwd = split[0].split("@");
-                if (userAndPwd == null || userAndPwd.length < 2) {
+            //设备出厂编号(只读) ra,00000009,cn-telcom/aren-aaluke-13-0000001xxxx
+            if (cmd == CMD.READ) {
+                String companyName = "";  //9位
+                String MEID = "";         //22位
+                if (companyName.length() > 9) {
+                    DDLog.e(getClass(), "厂家名字不能超过9位");
                     return;
                 }
-                String account = userAndPwd[0];
-                String pwd = userAndPwd[1];
+                companyName = companyName + TcpPacketFactory.dataZero.substring(0, 9 - companyName.length());
+                MEID = MEID + TcpPacketFactory.dataZero.substring(0, 22 - MEID.length());
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        companyName + "/" + MEID));
+            }
 
+        } else if (address == TcpPacketFactory.SHORT_LINK_PARAM) {
+            //短连接参数(可读可写)
+            //参数1：链接类型(0短链接；1长链接)
+            String linkType = "";
+            //参数2：短链接休眠时长（秒）
+            String shortLinkSleepTime = "";
+            //参数3： 短链接工作等待延迟（秒）
+            String shortLinkDelay = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 2) {
+                    linkType = split[0];
+                    shortLinkSleepTime = split[1];
+                    shortLinkDelay = split[2];
+                    // TODO 服务器下发的数据，修改设备中的短链接参数
+
+
+                }
+            } else if (cmd == CMD.READ){
+                //从设备中获取参数
+                linkType = "";
+                shortLinkSleepTime = "";
+                shortLinkDelay = "";
+                String shortLinkParam = linkType + "/" + shortLinkSleepTime + "/" + shortLinkDelay + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        shortLinkParam + TcpPacketFactory.dataZero.substring(shortLinkParam.length())));
+            }
+        } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_1) {
+            //文件下载模式参数1(可读可写) wd,0000000b,1/ostar/ikll*^AA/0000000000000000000xxxx
+            //参数1：下载模式：0 ftp模式；1 http下载模式
+            String mode = "";
+            //参数2：ttp下载账户
+            String httpAccount = "";
+            //参数3：http下载密码
+            String httpPwd = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 2) {
+                    mode = split[0];
+                    httpAccount = split[1];
+                    httpPwd = split[2];
+                    // TODO 服务器下发的数据，修改设备中的下载模式参数1
+
+                }
+            }else if (cmd == CMD.READ) {
+                //从设备中获取下载模式的参数
+                mode = "";
+                httpAccount = "";
+                httpPwd = "";
+                String fileDownloadModeParam = mode + "/" + httpAccount + "/" + httpPwd + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        fileDownloadModeParam + TcpPacketFactory.dataZero.substring(fileDownloadModeParam.length())));
+
+            }
+
+        } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
+            //文件下载模式参数2(可读可写) wd,0000000c,htp1.xjxlb.com:58003/0000000000xxxx
+            //参数1：http下载域名端口
+            String httpDomianName = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    httpDomianName = split[0];
+                    // TODO 服务器下发的数据，修改设备中的下载模式参数2
+
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取文件下载模式参数2
+                httpDomianName = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        httpDomianName+ "/" + TcpPacketFactory.dataZero.substring(httpDomianName.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
+            //硬件版本号(只读) ra,00000021,xj-6850-v2.19b/00000000000000000xxxx
+            if (cmd == CMD.READ) {
+                String hardwareVersion = PhoneManagerUtil.getDeviceModel();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        hardwareVersion + "/" + TcpPacketFactory.dataZero.substring(hardwareVersion.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.SOFTWARE_VERSION) {
+            //软件版本号(只读) ra,00000022,fm-mp3-evdo-v3.50a/0000000000000xxxx
+            if (cmd == CMD.READ) {
+                String softwareVersion = PhoneManagerUtil.getDisplay();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        softwareVersion + "/" + TcpPacketFactory.dataZero.substring(softwareVersion.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.EVDO_IP_ADDRESS) {
+            //EVDO网络ip地址(只读) ra,00000026,192.168.111.123/0000000000000000xxxx
+            if (cmd == CMD.READ) {
+                String evdoIP = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        evdoIP + "/" + TcpPacketFactory.dataZero.substring(evdoIP.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.VOLUME) {
+            //音量(可读可写) wa,00000027,7/1/1/00000000000000000000000000xxxx
+            // 参数1：音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
+            String volume = "";
+            //参数2：FM普通广播使能标志：1 使能，0 禁止
+            String normalFM = "";
+            //参数3：FM插播广播使能标志：1 使能，0 禁止
+            String insertFM = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 2) {
+                    volume = split[0];
+                    normalFM = split[1];
+                    insertFM = split[2];
+                    //TODO 服务器下发的数据，修改设备中的音量参数
+
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取音量参数
+                volume = "";
+                normalFM = "";
+                insertFM = "";
+                String volumeData = volume +"/" + normalFM + "/" + insertFM + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        volumeData + TcpPacketFactory.dataZero.substring(volumeData.length())));
+            }
+
+        } else if (address == TcpPacketFactory.PLATFORM_SERVER_IP_ADDRESS_1) {
+            //平台服务器ip地址1(可读可写) wd,00000028,xlb1.xjxlb.com:58005/0000000000xxxx
+            //参数1：平台服务器域名1(这两个域名如果一个无法访问，终端应该切换至第二个域名)
+            String ip_1 = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    ip_1 = split[0];
+                    //TODO 服务器下发的数据，修改设备中的平台服务器域名1
+
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取平台服务器域名1
+                ip_1 = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        ip_1 + "/" + TcpPacketFactory.dataZero.substring(ip_1.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.PLATFORM_SERVER_IP_ADDRESS_2) {
+            //平台服务器ip地址2(可读可写) wd,00000029,xlb1.xj-ict.com:58005/0000000000xxxx
+            //参数1：平台服务器域名2(这两个域名如果一个无法访问，终端应该切换至第二个域名)
+            String ip_2 = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    ip_2 = split[0];
+                    //TODO 服务器下发的数据，修改设备中的平台服务器域名2
+
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取平台服务器域名2
+                ip_2 = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        ip_2 + "/" + TcpPacketFactory.dataZero.substring(ip_2.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.BASE_STATION_INFORMATION) {
+            //基站信息(只读) rd,0000002a,36d0/000b/b0c1/0000/60/000000000xxxx
+            if (cmd == CMD.READ) {
+                //各个参数：SID/NID/0000/BID/signal_level
+                //从设备中获取参数
+                String sid = "";
+                String nid = "";
+                String s = "";
+                String bid = "";
+                String singleLevel = "";
+                String baseStationInfo = sid + "/" + nid + "/" + s + "/" + bid + "/" + singleLevel + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        baseStationInfo + TcpPacketFactory.dataZero.substring(baseStationInfo.length())));
+            }
+        } else if (address == TcpPacketFactory.LOCATION_INFORMATION) {
+            //位置信息(只读) rd,0000002b,E119.327833/N39.961949/000000000xxxx
+            if (cmd == CMD.READ) {
+                //参数1：经度
+                String lat = "";
+                //参数2：纬度
+                String lon = "";
+                //从设备中获取经纬度，发送给服务器
+                String location = lat + "/" + lon + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        location + TcpPacketFactory.dataZero.substring(location.length())));
+            }
+        } else if (address == TcpPacketFactory.FTP_SERVER_IP_ADDRESS) {
+            //FTP服务器IP地址(可读可写) wd,0000002c,ftp3.xjxlb.com:12345/00000000000xxxx
+            // 参数1：FTP服务器IP
+            String ftpAddress = "";
+            if (cmd == CMD.WRITE) {
+                ftpAddress = split[0];
+                //TODO 服务器下发最新FTP服务器IP，修改设备中的该数据
+
+            } else if (cmd == CMD.READ) {
+                //从设备中获取FTP服务器IP
+                ftpAddress = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        ftpAddress + "/" + TcpPacketFactory.dataZero.substring(ftpAddress.length() + 1)));
+            }
+        } else if (address == TcpPacketFactory.FTP_SERVER_ACCOUNT_PASSWORD) {
+            //FTP服务器账户口令(可读可写) wd,0000002d,ftpuser@passwd111/00000000000000xxxx
+            //参数1：FTP服务器账号
+            String account = "";
+            //参数2：FTP服务器账号对应的密码
+            String pwd = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    String[] userAndPwd = split[0].split("@");
+                    if (userAndPwd == null || userAndPwd.length < 2) {
+                        DDLog.e(getClass() , "FTP服务器账号或密码为空");
+                        return;
+                    }
+                    account = userAndPwd[0];
+                    pwd = userAndPwd[1];
+                    //TODO 服务器下发最新FTP服务器账号密码，修改设备中的该数据
+
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取FTP服务器账号密码
+                account = "";
+                pwd = "";
+                String accountAndPwd = account + "@" + pwd + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        accountAndPwd + TcpPacketFactory.dataZero.substring(accountAndPwd.length())));
             }
         } else if (address == TcpPacketFactory.FOTA_FILE_FTP_DIR) {
-            //升级文件FTP目录
-            String[] fotaDir = data.split(",");
-            if (fotaDir.length > 0) {
-                String ftpFotafilePath = fotaDir[0];
+            //升级文件FTP目录(可读可写) wd,0000002f,/china_telcom/3gdev,000000000000xxxx
+            //参数1：升级目录（逗号前面的字符串）
+            String ftpFotafilePath = "";
+            if (cmd == CMD.WRITE) {
+                String[] fotaDir = data.split(",");
+                if (fotaDir.length > 0) {
+                    ftpFotafilePath = fotaDir[0];
+                    //TODO 服务器下发的最新升级目录，修改本地设备中的该数据
 
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取升级目录
+                ftpFotafilePath = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        ftpFotafilePath + "," + TcpPacketFactory.dataZero.substring(ftpFotafilePath.length() + 1)));
             }
         } else if (address == TcpPacketFactory.AUDIO_FILE_FTP_DIR) {
-            //音频文件FTP目录
-            String[] audioDir = data.split(",");
-            if (audioDir.length > 0) {
-                String ftpAudioFilepath = audioDir[0];
+            //音频文件FTP目录(可读可写) wd,00000031,/dev1,00000000000000000000000000xxxx
+            //参数1：音频文件FTP目录（逗号前面的字符串）
+            String ftpAudioFilepath = "";
+            if (cmd == CMD.WRITE) {
+                String[] audioDir = data.split(",");
+                if (audioDir.length > 0) {
+                    ftpAudioFilepath = audioDir[0];
+                    //TODO 服务器下发的最新FTP音频目录，修改设备中该数据
 
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取音频文件FTP目录
+                ftpAudioFilepath = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        ftpAudioFilepath + "," + TcpPacketFactory.dataZero.substring(ftpAudioFilepath.length() + 1)));
             }
         } else if (address == TcpPacketFactory.LONG_LINK_HEARTBEAT_INTERVAL) {
-            //长链接心跳间隔(秒)
-            if (split.length > 3) {
-                //长连接心跳间隔(秒)
-                String longLinkHeartbeat = split[0];
-                //长连接登录延迟(秒)
-                String longLinkSignDelay = split[1];
-                //连接短连接选择 (固定为0:短连接 ;固定为1:长连接)
-                String linkType = split[2];
-                //平台短信号码
-                String platformSmsNum = split[3];
+            //长链接心跳间隔(秒)[可读可写] wd,00000030,20/300/1/13309910000/00000000000xxxx
+            //参数1：长连接心跳间隔(秒)
+            String longLinkHeartbeat = "";
+            //参数2：长连接登录延迟(秒)
+            String longLinkSignDelay = "";
+            //参数3：长链接短链接选择 (固定为0:短连接 ;固定为1:长连接)
+            String linkType = "";
+            //参数4：平台短信号码
+            String platformSmsNum = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 3) {
+                    longLinkHeartbeat = split[0];
+                    longLinkSignDelay = split[1];
+                    linkType = split[2];
+                    platformSmsNum = split[3];
+                    //TODO 服务器下发的最新参数，修改设备中的该参数
 
+
+                }
+            } else if (cmd == CMD.READ) {
+                //获取设备中的长链接心跳参数
+                longLinkHeartbeat = "";
+                longLinkSignDelay = "";
+                linkType = "";
+                platformSmsNum = "";
+                String longLinkParam = longLinkHeartbeat + "/" + longLinkSignDelay + "/" + linkType + "/" + platformSmsNum + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        longLinkParam + TcpPacketFactory.dataZero.substring(longLinkParam.length())));
             }
         } else if (address == TcpPacketFactory.DEVICE_RESET) {
-            //终端复位
-            //写入全0数据，代表平台要求终端先复位重新启动（网络通讯模块也需要重新启动）
-            if (data.equals(TcpPacketFactory.dataZero)) {
+            //终端复位(可读可写) wd,00000032,00000000000000000000000000000000xxxx
+            if (cmd == CMD.WRITE) {
+                if (data.equals(TcpPacketFactory.dataZero)) {
+                    //TODO 服务器写入全0数据，代表平台要求终端先复位重新启动（网络通讯模块也需要重新启动）
+
+                }
+            } else if (cmd == CMD.READ) {
 
             }
+
         } else if (address == TcpPacketFactory.CALL_COMMAND_PARAM) {
-            //拨打电话指令参数
-            if (split.length > 3) {
-                //拨打电话号码
-                String phoneNum = split[0];
-                //每次通话时长(秒)
-                String callTime = split[1];
-                //拨打时间(年月日时分)
-                String callDate = split[2];
-                //拨打失败后重试次数
-                String times = split[3];
+            //拨打电话指令参数（可读可写） wd,00000040,18909910000/10/201706051130/03xxxx
+            //参数1：拨打的电话号码
+            String phoneNum = "";
+            //参数2：每次通话时长（秒）
+            String callTime = "";
+            //参数3：拨打电话的时间（年月日时分）
+            String callDate = "";
+            //参数4：拨打失败后的重试次数
+            String times = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 3) {
+                    phoneNum = split[0];
+                    callTime = split[1];
+                    callDate = split[2];
+                    times = split[3];
+                    //TODO 服务器最新下发数据，修改设备中的该参数
 
-            }
+
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取以下参数
+                phoneNum = "";
+                callTime = "";
+                callDate = "";
+                times = "";
+                String callCommandParam = phoneNum + "/" + callTime + "/" + callDate + "/" +times + "/";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        callCommandParam + TcpPacketFactory.dataZero.substring(callCommandParam.length())));
+             }
         } else if (address == TcpPacketFactory.FUNCTION_1_CALL_PHONE_NUM) {
-            //功能键 1 拨打电话号码
-            if (split.length > 0) {
-                //功能键1对应电话号码 0为取消
-                String funcOneNum = split[0];
+            //功能键 1 拨打电话号码（可写） wd,00000041,18909910000/000000000000000000xxxx
+            //参数1：功能键1对应电话号码 0为取消
+            String funcOneNum = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    funcOneNum = split[0];
+                    if (TextUtils.equals(funcOneNum , "0")) {
+                        //TODO 取消功能键1的功能
+
+                        return;
+                    }
+                    //TODO 服务器最新下发的功能键1的号码，修改设备中的该数据
+
+                }
+            } else if (cmd == CMD.READ) {
 
             }
+
         } else if (address == TcpPacketFactory.FUNCTION_2_CALL_PHONE_NUM) {
-            //功能键 2 拨打电话号码
-            if (split.length > 0) {
-                //功能键2对应电话号码 0为取消
-                String funcTwoNum = split[0];
+            //功能键 2 拨打电话号码(可写) wd,00000042,18909910000/000000000000000000xxxx
+            //参数1：功能键2对应电话号码 0为取消
+            String funcTwoNum = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    funcTwoNum = split[0];
+                    if (TextUtils.equals(funcTwoNum , "0")) {
+                        //TODO 取消功能键2的功能
+
+                        return;
+                    }
+                    //TODO 服务器最新下发的功能键2的号码，修改设备中的该数据
+
+                }
+            } else if (cmd == CMD.READ) {
 
             }
+
         } else if (address == TcpPacketFactory.FUNCTION_3_CALL_PHONE_NUM) {
-            //功能键 3 拨打电话号码
-            if (split.length > 0) {
-                //功能键3对应电话号码 0为取消
-                String funcThreeNum = split[0];
+            //功能键 3 拨打电话号码（可写）wd,00000043,18909910000/000000000000000000xxxx
+            //参数1：功能键3对应电话号码 0为取消
+            String funcThreeNum = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    funcThreeNum = split[0];
+                    if (TextUtils.equals(funcThreeNum , "0")) {
+                        //TODO 取消功能键3的功能
+
+                        return;
+                    }
+                    //TODO 服务器最新下发的功能键3的号码，修改设备中的该数据
+
+                }
+            } else if (cmd == CMD.READ) {
 
             }
         } else if (address == TcpPacketFactory.FUNCTION_4_CALL_PHONE_NUM) {
-            //功能键 4 拨打电话号码
-            if (split.length > 0) {
-                //功能键4对应电话号码 0为取消
-                String funcFourNum = split[0];
+            //功能键 4 拨打电话号码（可写）wd,00000044,18909910000/000000000000000000xxxx
+            //参数1：功能键4对应电话号码 0为取消
+            String funcFourNum = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    funcFourNum = split[0];
+                    if (TextUtils.equals(funcFourNum , "0")) {
+                        //TODO 取消功能键4的功能
+
+                        return;
+                    }
+                    //TODO 服务器最新下发的功能键4的号码，修改设备中的该数据
+
+                }
+            } else if (cmd == CMD.READ) {
 
             }
-        } else if (address == TcpPacketFactory.DEVICE_AVAILABLE_SIZE) {
-            //平台获取终端可用存储空间大小
-            if (data.equals(TcpPacketFactory.dataZero)) {
-                //可用存储全部大小
-                String availSize = "";
-                //可用存储空闲大小
-                String freeSize = "";
-                //向服务器返回数据 ，ra,00000045,12345678901/12345678901/000000xxxx
 
+        } else if (address == TcpPacketFactory.DEVICE_AVAILABLE_SIZE) {
+            //平台获取终端可用存储空间大小（只读），查询指令：rd,00000045,000000000000000000000000000000xxxx
+            if (cmd == CMD.READ) {
+                if (data.equals(TcpPacketFactory.dataZero)) {
+                    String[] memInfo = PhoneUtil.getRamInfo(BaseApplication.sContext);
+                    //可用存储全部大小
+                    String totalMem = memInfo[0];
+                    //可用存储空闲大小
+                    String availMem = memInfo[1];
+                    //反馈指令：ra,00000045,12345678901/12345678901/000000xxxx
+                    String totalAndAvail = totalMem + "/" + availMem + "/";
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                            totalAndAvail + TcpPacketFactory.dataZero.substring(totalAndAvail.length())));
+                }
             }
         } else if (address == TcpPacketFactory.QUERY_TIME_FORM_PLATFORM) {
-            //平台查询终端系统当前时间
-            if (data.equals(TcpPacketFactory.dataZero)) {
-                //时间格式为yyyymmddhhmiss
-                String systemTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(System.currentTimeMillis()));
-                //向服务器发送数据，ra,00000046,20180103201059/000000000000000xxxx
-
+            //平台查询终端系统当前时间（只读），查询指令：rd,00000046,000000000000000000000000000000xxxx
+            if (cmd == CMD.READ) {
+                if (data.equals(TcpPacketFactory.dataZero)) {
+                    //时间格式为yyyymmddhhmiss
+                    String systemTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(System.currentTimeMillis()));
+                    //反馈指令：ra,00000046,20180103201059/000000000000000xxxx
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                            systemTime + "/" + TcpPacketFactory.dataZero.substring(systemTime.length() + 1)));
+                }
             }
         } else if (address == TcpPacketFactory.DEVICE_PERSON_FUNCTION) {
-            //终端个性化功能
+            //终端个性化功能（可读可写）
             //第1个字符: 0 APP紧急语音单次播放; 1：APP紧急语音循环播放
-            String playMode = data.substring(0, 1);
+            String playMode = "";
             //第2个字符: 0防移开关启用; 1防移开关禁用
-            String moveSwitch = data.substring(1, 2);
+            String moveSwitch = "";
             //第3个字符:
             // 0一键报警普通模式（十户联防号码呼入：用户按键接听）;
             // 1一键报警奎屯模式（十户联防号码呼入后：响3声报警音，再自动接听，播放完成报警信息后，用户挂断）
             //2：一键报警沙湾模式（十户联防号码呼入后：不响报警音，自动接听，播放完成报警信息后，用户挂断；）
-            String alarmMode = data.substring(2, 3);
+            String alarmMode = "";
             //第4个字符: 1就是只能拨打报警与快捷键; 0可以拨打所有电话
-            String callEnable = data.substring(3, 4);
+            String callEnable = "";
             //第5个字符,“频选”参数 ：0 默认; 1 4G-800M优选;  2:4G-1800M优选
-            String channelSelect = data.substring(4, 5);
+            String channelSelect = "";
             //第6个字符,“WIFI开关”参数 ：0 开通; 1 关闭
-            String wifiSwitch = data.substring(5, 6);
+            String wifiSwitch = "";
+
+            if (cmd == CMD.WRITE) {
+                playMode = data.substring(0, 1);
+                moveSwitch = data.substring(1, 2);
+                alarmMode = data.substring(2, 3);
+                callEnable = data.substring(3, 4);
+                channelSelect = data.substring(4, 5);
+                wifiSwitch = data.substring(5, 6);
+                //TODO 服务器下发的最新参数，修改设备中的该参数
 
 
+            } else if (cmd == CMD.READ) {
+                //从设备中获取参数
+                playMode = "";
+                moveSwitch = "";
+                alarmMode = "";
+                callEnable = "";
+                channelSelect = "";
+                wifiSwitch = "";
+                String devicePersonFunc = playMode + moveSwitch + alarmMode + callEnable + channelSelect + wifiSwitch;
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        devicePersonFunc + TcpPacketFactory.dataZero.substring(devicePersonFunc.length())));
+            }
         } else if (address == TcpPacketFactory.PLATFORM_PHONE_NUM) {
-            //一键报警平台电话号码
-            if (split.length > 0) {
-                //一键报警平台对应电话号码 ; 0为取消
-                String platformPhoneNum = split[0];
+            //一键报警平台电话号码(可写) wd,00000048,18909910000/000000000000000000xxxx
+            //参数1：一键报警平台对应电话号码 ; 0为取消
+            String platformPhoneNum = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    platformPhoneNum = split[0];
+                    if (TextUtils.equals(platformPhoneNum , "0")) {
+                        //TODO 取消功能
+
+                        return;
+                    }
+                    //TODO 服务器下发最新的一键报警平台电话号码，修改设备中的数据
+
+
+                }
+            } else if (cmd == CMD.READ) {
 
             }
+
         } else if (address == TcpPacketFactory.ALARM_VOLUME) {
-            //接警音量
-            if (split.length > 0) {
-                //接警音量: 1 1档; 2 2档; 3 3档; 4 4档
-                String alarmVolume = split[0];
+            //接警音量(可读可写) wd,00000049,1/0000000000000000000000000000xxxx
+            //参数1：接警音量: 1 1档; 2 2档; 3 3档; 4 4档
+            String alarmVolume = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    alarmVolume = split[0];
+                    //TODO 服务器下发接警音量，修改设备中的数据
 
-
+                }
+            } else if (cmd == CMD.READ) {
+                //从设备中获取接警音量
+                alarmVolume = "";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        alarmVolume + "/" + TcpPacketFactory.dataZero.substring(alarmVolume.length() + 1)));
             }
         } else if (address == TcpPacketFactory.BATCH_DEL_FILE) {
-            //批量删除文件指令
-            if (split.length > 0) {
-                //第一个参数为批量删除的文件名缩写，代表含义为：A=MP3A.amr; B=MP3B.amr... P=MP3P.amr
-                String files = split[0];
+            //批量删除文件指令(可写) wd,0000004a,ABCDEFGHIJKLMNOP/0000000000000xxxx
+            //参数1：批量删除的文件名缩写，代表含义为：A=MP3A.amr; B=MP3B.amr... P=MP3P.amr
+            String fliesName = "";
+            if (cmd == CMD.WRITE) {
+                if (split.length > 0) {
+                    fliesName = split[0];
+                    //TODO 服务器下发要删除的文件名缩写，执行删除操作
 
+                }
             }
-
         } else if (address == TcpPacketFactory.DEVICE_SHORT_LINK_SLEEP) {
-            //设备进入短链接休眠
-            if (data.equals(TcpPacketFactory.dataZero)) {
-                //平台发给设备wd，表示设备进入通讯休眠等待，平台收到设备的确认指令wa后，断开连接
-                //wa,0000004b,00000000000000000000000000000000xxxx
-
+            //设备进入短链接休眠（可写）wd,0000004b,00000000000000000000000000000000xxxx
+            if (cmd == CMD.WRITE) {
+                if (data.equals(TcpPacketFactory.dataZero)) {
+                    //平台发给设备wd，表示设备进入通讯休眠等待，平台收到设备的确认指令wa后，断开连接
+                    //确认指令：wa,0000004b,00000000000000000000000000000000xxxx
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                            TcpPacketFactory.dataZero));
+                }
             }
-        } else if (address == TcpPacketFactory.AUDIO_LIVE_IP_ADDRESS_AND_PORT) {
-            //音频直播频道服务器地址和端口
-            String[] audioLive = data.split(",");
-            if (audioLive.length > 1) {
-                //频道编号,0开始
-                String channelNum = audioLive[0];
-                //频道音频流的服务器ip和端口
-                String ipAndPort = audioLive[1];
 
+        } else if (address == TcpPacketFactory.AUDIO_LIVE_IP_ADDRESS_AND_PORT) {
+            //音频直播频道服务器地址和端口(可读可写) wd,00000050,0,au.xjxlb.com:58007,00000000000xxxx
+            //参数1：频道编号，0开始
+            String channelNum = "";
+            //参数2：频道音频流的服务器ip和端口
+            String ipAndPort = "";
+            if (cmd == CMD.WRITE) {
+                String[] audioLive = data.split(",");
+                if (audioLive.length > 1) {
+                    channelNum = audioLive[0];
+                    ipAndPort= audioLive[1];
+                    //TODO 修改设备中的该参数数据
+
+
+                }
+            } else if (cmd == CMD.READ) {
+                //获取本地存储的参数
+                channelNum = "";
+                ipAndPort = "";
+                String audioLiveChannelAndIP = channelNum + "," + ipAndPort + ",";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        audioLiveChannelAndIP + TcpPacketFactory.dataZero.substring(audioLiveChannelAndIP.length())));
             }
 
         } else if (address == TcpPacketFactory.AUDIO_LIVE_ACCOUNT_PASSWORD) {
-            //音频直播频道账户密码
-            String[] accountAndPwd = data.split(",");
-            if (accountAndPwd.length > 2) {
-                //频道编号，0开始
-                String channelNum = accountAndPwd[0];
-                //流媒体服务器的账户
-                String account = accountAndPwd[1];
-                //流媒体服务器的密码
-                String pwd = accountAndPwd[2];
+            //音频直播频道账户密码(可读可写) wd,00000051,0,auplay,s1Wi_v8X,00000000000000xxxx
+            //参数1：频道编号，0开始
+            String channelNum = "";
+            //参数2：流媒体服务器的账户
+            String account = "";
+            //参数3：流媒体服务器的密码
+            String pwd = "";
+            if (cmd == CMD.WRITE) {
+                String[] accountAndPwd = data.split(",");
+                if (accountAndPwd.length > 2) {
+                    channelNum = accountAndPwd[0];
+                    account = accountAndPwd[1];
+                    pwd = accountAndPwd[2];
+                    //TODO 修改设备中的的这几个参数
 
+
+                }
+            } else if (cmd == CMD.READ) {
+                //获取设备中的数据
+                channelNum = "";
+                account = "";
+                pwd = "";
+                String audioLiveAccountAndPwd = channelNum + "," + account + "," + pwd + ",";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        audioLiveAccountAndPwd + TcpPacketFactory.dataZero.substring(audioLiveAccountAndPwd.length())));
             }
-
         } else if (address == TcpPacketFactory.AUDIO_LIVE_START_AND_END_TIME) {
-            //音频直播频道开始结束时间
-            String[] liveTime = data.split(",");
-            if (liveTime.length > 3) {
-                //频道编号，0开始
-                String channelNum = liveTime[0];
-                //直播开始时间，小时分钟秒
-                String startTime = liveTime[1];
-                //直播结束时间，小时分钟秒
-                String endTime = liveTime[2];
-                //直播音量，0-9
-                String volume = liveTime[3];
+            //音频直播频道开始结束时间(可读可写) wd,00000052,0,100001,113000,5,00000000000000xxxx
+            //参数1：频道编号，0开始
+            String channelNum = "";
+            //参数2：直播开始时间，小时分钟秒
+            String startTime = "";
+            //参数3：直播结束时间，小时分钟秒
+            String endTime = "";
+            //参数4：直播音量，0-9
+            String volume = "";
+            if (cmd == CMD.WRITE) {
+                String[] liveTime = data.split(",");
+                if (liveTime.length > 3) {
+                    channelNum = liveTime[0];
+                    startTime = liveTime[1];
+                    endTime = liveTime[2];
+                    volume = liveTime[3];
+                    //TODO 修改设备中的以上几个参数
 
+
+                }
+            } else if (cmd == CMD.READ) {
+                //获取设备中的参数
+                channelNum = "";
+                startTime = "";
+                endTime = "";
+                volume = "";
+                String audioLiveStartAndEnd = channelNum + "," + startTime + "," + endTime + "," + volume +",";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        audioLiveStartAndEnd + TcpPacketFactory.dataZero.substring(audioLiveStartAndEnd.length())));
             }
+
         } else if (address == TcpPacketFactory.AUDIO_LIVE_CHANNEL_URL) {
-            //音频直播频道url
-            String[] channelAndUrl = data.split(",");
-            if (channelAndUrl.length > 1) {
-                //频道编号，0开始
-                String channelNum = channelAndUrl[0];
-                //频道音频流的url第1部分, url最大长度32字符
-                String url = channelAndUrl[1];
+            //音频直播频道url(可读可写) wd,00000053,0,audio_play,0000000000000000000xxxx
+            //参数1：频道编号，0开始
+            String channelNum = "";
+            //参数2：频道音频流的url第1部分, url最大长度32字符
+            String url = "";
+            if (cmd == CMD.WRITE) {
+                String[] channelAndUrl = data.split(",");
+                if (channelAndUrl.length > 1) {
+                    channelNum = channelAndUrl[0];
+                    url = channelAndUrl[1];
+                    //TODO 修改设备中的参数
 
+
+                }
+            } else if (cmd == CMD.READ) {
+                channelNum = "";
+                url = "";
+                String audioLiveChannelUrl = channelNum + "," + url + ",";
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        audioLiveChannelUrl + TcpPacketFactory.dataZero.substring(audioLiveChannelUrl.length())));
             }
-        } else if (address == TcpPacketFactory.FM_FIXED_CHANNEL_SETTINGS) {
-            //FM固定频道设置
-            if (data.equals(TcpPacketFactory.dataZero)) {
-                //频道数字为0，表明清除所有频道。
 
-            } else {
+        } else if (address == TcpPacketFactory.FM_FIXED_CHANNEL_SETTINGS) {
+            //FM固定频道设置(可读可写) wd,00000055,1/96.5/93.5/000000000000000xxxx
+            //1、固定FM频道到设置的值，可以设置多个，每条指令最多设置4个频道；
+            //2、设置后，终端平台控制播放，包括本地播放必须全部锁定这个频道
+            //3、如果平台下发FM播放或者插播的频道不在这个频道范围，终端直接反馈播放停止指令；
+            //4、频道从1开始
+            //5、如果频道数字为0，表明清除所有频道。
+            //6、该指令要求可以查询
+
+            //wd,00000055,1/96.5/93.5/000000000000000xxxx
+            //wd,00000055,2/96.5/93.5/000000000000000xxxx
+            //wa,00000055,0/0000000000000000000000000XXXX
+            //rd,00000055,000000000000000000000000000XXXX
+            //ra,00000055,2/96.5/93.5/000000000000000xxxx
+
+            if (cmd == CMD.WRITE) {
+                if (TextUtils.equals(TcpPacketFactory.dataZero , data)) {
+                    //TODO 频道字数为0 ，清除所有频道
+
+                    return;
+                }
                 String[] dataList = data.split("/");
                 String[] channelArray = new String[dataList.length - 1];
                 System.arraycopy(dataList, 0, channelArray, 0, channelArray.length);
                 //channelArray为设置的固定频道列表
 
-            }
 
+            } else if (cmd == CMD.READ) {
+
+            }
         }
     }
 
