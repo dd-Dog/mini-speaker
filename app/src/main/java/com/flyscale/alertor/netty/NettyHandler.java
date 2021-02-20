@@ -1181,17 +1181,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     platformPhoneNum = split[0];
-                    if (TextUtils.equals(platformPhoneNum , "0")) {
-                        //TODO 取消功能
-
-                        return;
-                    }
-                    //TODO 服务器下发最新的一键报警平台电话号码，修改设备中的数据
-
-
+                    //TODO 服务器下发最新的一键报警平台电话号码，修改设备中的数据(0 取消功能)
+                    PersistConfig.savePlatformNum(platformPhoneNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                platformPhoneNum = PersistConfig.findConfig().getPlatformNum();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        platformPhoneNum + "/" + TcpPacketFactory.dataZero.substring(platformPhoneNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.ALARM_VOLUME) {

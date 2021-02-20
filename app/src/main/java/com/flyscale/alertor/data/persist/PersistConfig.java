@@ -69,6 +69,9 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
 
+    //平台电话号码
+    String platformNum = "0";
+
     //DES随机密钥，只有登录成功后才能使用
     private String randomKey;
     private boolean login = false;
@@ -479,6 +482,14 @@ public class PersistConfig extends LitePalSupport {
         this.newPort = newPort;
     }
 
+    public String getPlatformNum() {
+        return platformNum;
+    }
+
+    public void setPlatformNum(String platformNum) {
+        this.platformNum = platformNum;
+    }
+
     public static PersistConfig findConfig() {
         PersistConfig persistConfig = LitePal.findFirst(PersistConfig.class);
         if (persistConfig == null) {
@@ -578,6 +589,13 @@ public class PersistConfig extends LitePalSupport {
         PersistConfig persistConfig = findConfig();
         persistConfig.setArrayList(list);
         persistConfig.save();
+    }
+
+    public static PersistConfig savePlatformNum(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPlatformNum(num);
+        persistConfig.save();
+        return persistConfig;
     }
 
     @Override
