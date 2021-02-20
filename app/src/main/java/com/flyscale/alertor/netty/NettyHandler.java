@@ -770,7 +770,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
             //硬件版本号(只读) ra,00000021,xj-6850-v2.19b/00000000000000000xxxx
             if (cmd == CMD.READ) {
-                String hardwareVersion = PhoneManagerUtil.getDeviceModel();
+                String hardwareVersion = PhoneManagerUtil.getPlatform();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         hardwareVersion + "/" + TcpPacketFactory.dataZero.substring(hardwareVersion.length() + 1)));
             }
@@ -822,12 +822,16 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     ip_1 = split[0];
                     //TODO 服务器下发的数据，修改设备中的平台服务器域名1
-                    PersistConfig.saveTcpHostNameRelease1(ip_1);
+                    String[] name1AndPort = ip_1.split(":");
+                    if (name1AndPort.length > 1) {
+                        PersistConfig.saveTcpHostNameRelease1(name1AndPort[0]);
+                        PersistConfig.saveTcpPortRelease(Integer.valueOf(name1AndPort[1]));
+                    }
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取平台服务器域名1
-                ip_1 = PersistConfig.findConfig().getTcpHostNameRelease1();
+                ip_1 = PersistConfig.findConfig().getTcpHostNameRelease1() + ":" + PersistConfig.findConfig().getTcpPortRelease();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ip_1 + "/" + TcpPacketFactory.dataZero.substring(ip_1.length() + 1)));
             }
@@ -839,11 +843,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     ip_2 = split[0];
                     //TODO 服务器下发的数据，修改设备中的平台服务器域名2
-                    PersistConfig.saveTcpHostNameRelease2(ip_2);
+                    String[] name2AndPort = ip_2.split(":");
+                    if (name2AndPort.length >1) {
+                        PersistConfig.saveTcpHostNameRelease2(name2AndPort[0]);
+                        PersistConfig.saveTcpPortRelease(Integer.valueOf(name2AndPort[1]));
+                    }
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取平台服务器域名2
-                ip_2 = PersistConfig.findConfig().getTcpHostNameRelease2();
+                ip_2 = PersistConfig.findConfig().getTcpHostNameRelease2() + ":" + PersistConfig.findConfig().getTcpPortRelease();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ip_2 + "/" + TcpPacketFactory.dataZero.substring(ip_2.length() + 1)));
             }
