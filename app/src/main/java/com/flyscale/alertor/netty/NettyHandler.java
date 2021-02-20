@@ -759,11 +759,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     httpDomianName = split[0];
                     // TODO 服务器下发的数据，修改设备中的下载模式参数2
-
+                    PersistConfig.saveHttpDownloadUrl(httpDomianName);
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取文件下载模式参数2
-                httpDomianName = "";
+                httpDomianName = PersistConfig.findConfig().getHttpDownloadUrl();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         httpDomianName+ "/" + TcpPacketFactory.dataZero.substring(httpDomianName.length() + 1)));
             }
