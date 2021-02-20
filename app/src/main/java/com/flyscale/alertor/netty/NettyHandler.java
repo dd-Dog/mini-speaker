@@ -822,11 +822,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     ip_1 = split[0];
                     //TODO 服务器下发的数据，修改设备中的平台服务器域名1
+                    PersistConfig.saveTcpHostNameRelease1(ip_1);
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取平台服务器域名1
-                ip_1 = "";
+                ip_1 = PersistConfig.findConfig().getTcpHostNameRelease1();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ip_1 + "/" + TcpPacketFactory.dataZero.substring(ip_1.length() + 1)));
             }
@@ -838,11 +839,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     ip_2 = split[0];
                     //TODO 服务器下发的数据，修改设备中的平台服务器域名2
-
+                    PersistConfig.saveTcpHostNameRelease2(ip_2);
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取平台服务器域名2
-                ip_2 = "";
+                ip_2 = PersistConfig.findConfig().getTcpHostNameRelease2();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ip_2 + "/" + TcpPacketFactory.dataZero.substring(ip_2.length() + 1)));
             }
