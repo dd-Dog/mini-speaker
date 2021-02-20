@@ -888,10 +888,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 ftpAddress = split[0];
                 //TODO 服务器下发最新FTP服务器IP，修改设备中的该数据
+                String[] ftpData = ftpAddress.split(":");
+                if (ftpData.length > 1) {
+                    PersistConfig.saveFtpHostNameRelease(ftpData[0]);
+                    PersistConfig.saveFtpHostPortRelease(Integer.valueOf(ftpData[1]));
+                }
 
             } else if (cmd == CMD.READ) {
                 //从设备中获取FTP服务器IP
-                ftpAddress = "";
+                ftpAddress = PersistConfig.findConfig().getFtpHostNameRelease() + ":" + PersistConfig.findConfig().getFtpHostPortRelease();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ftpAddress + "/" + TcpPacketFactory.dataZero.substring(ftpAddress.length() + 1)));
             }
@@ -911,12 +916,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     account = userAndPwd[0];
                     pwd = userAndPwd[1];
                     //TODO 服务器下发最新FTP服务器账号密码，修改设备中的该数据
+                    PersistConfig.saveFtpUsernameRelease(account);
+                    PersistConfig.saveFtpPasswordRelease(pwd);
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取FTP服务器账号密码
-                account = "";
-                pwd = "";
+                account = PersistConfig.findConfig().getFtpUsernameRelease();
+                pwd = PersistConfig.findConfig().getFtpPasswordRelease();
                 String accountAndPwd = account + "@" + pwd + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         accountAndPwd + TcpPacketFactory.dataZero.substring(accountAndPwd.length())));
