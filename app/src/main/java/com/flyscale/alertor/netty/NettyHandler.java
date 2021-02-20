@@ -1110,8 +1110,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //平台查询终端系统当前时间（只读），查询指令：rd,00000046,000000000000000000000000000000xxxx
             if (cmd == CMD.READ) {
                 if (data.equals(TcpPacketFactory.dataZero)) {
-                    //时间格式为yyyymmddhhmiss
-                    String systemTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(System.currentTimeMillis()));
+                    //时间格式为yyyyMMddHHmmss
+                    String systemTime = new SimpleDateFormat(DateHelper.yyyyMMddHHmmss).format(new Date(System.currentTimeMillis()));
                     //反馈指令：ra,00000046,20180103201059/000000000000000xxxx
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             systemTime + "/" + TcpPacketFactory.dataZero.substring(systemTime.length() + 1)));
