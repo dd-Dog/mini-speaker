@@ -1040,16 +1040,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcOneNum = split[0];
-                    if (TextUtils.equals(funcOneNum , "0")) {
-                        //TODO 取消功能键1的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键1的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键1的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey1Num(funcOneNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcOneNum = PersistConfig.findConfig().getKey1Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcOneNum + "/" + TcpPacketFactory.dataZero.substring(funcOneNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.FUNCTION_2_CALL_PHONE_NUM) {
@@ -1059,16 +1056,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcTwoNum = split[0];
-                    if (TextUtils.equals(funcTwoNum , "0")) {
-                        //TODO 取消功能键2的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键2的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键2的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey2Num(funcTwoNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcTwoNum = PersistConfig.findConfig().getKey2Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcTwoNum + "/" + TcpPacketFactory.dataZero.substring(funcTwoNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.FUNCTION_3_CALL_PHONE_NUM) {
@@ -1078,16 +1072,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcThreeNum = split[0];
-                    if (TextUtils.equals(funcThreeNum , "0")) {
-                        //TODO 取消功能键3的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键3的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键3的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey3Num(funcThreeNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcThreeNum = PersistConfig.findConfig().getKey3Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcThreeNum + "/" + TcpPacketFactory.dataZero.substring(funcThreeNum.length() + 1)));
             }
         } else if (address == TcpPacketFactory.FUNCTION_4_CALL_PHONE_NUM) {
             //功能键 4 拨打电话号码（可写）wd,00000044,18909910000/000000000000000000xxxx
@@ -1096,16 +1087,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcFourNum = split[0];
-                    if (TextUtils.equals(funcFourNum , "0")) {
-                        //TODO 取消功能键4的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键4的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键4的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey4Num(funcFourNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcFourNum = PersistConfig.findConfig().getKey4Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcFourNum + "/" + TcpPacketFactory.dataZero.substring(funcFourNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.DEVICE_AVAILABLE_SIZE) {
