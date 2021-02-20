@@ -109,6 +109,8 @@ interface IFlyscaleManager {
     String getAdapterState();
 
     String getAlarmLedState();
+
+    int getCurrentPhoneType();
 }
 
 

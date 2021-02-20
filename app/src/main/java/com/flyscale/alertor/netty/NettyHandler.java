@@ -685,8 +685,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         if (address == TcpPacketFactory.DEVICE_ID) {
             //设备出厂编号(只读) ra,00000009,cn-telcom/aren-aaluke-13-0000001xxxx
             if (cmd == CMD.READ) {
-                String companyName = "";  //9位
-                String MEID = "";         //22位
+                String companyName = PhoneManagerUtil.getFactory();  //9位
+                String MEID = PhoneManagerUtil.getMEID(BaseApplication.sContext);         //22位
                 if (companyName.length() > 9) {
                     DDLog.e(getClass(), "厂家名字不能超过9位");
                     return;
