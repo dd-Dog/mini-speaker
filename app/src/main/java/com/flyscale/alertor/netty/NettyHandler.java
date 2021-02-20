@@ -20,6 +20,7 @@ import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.HttpDownloadHelper;
+import com.flyscale.alertor.helper.LocationHelper;
 import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
@@ -863,11 +864,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //位置信息(只读) rd,0000002b,E119.327833/N39.961949/000000000xxxx
             if (cmd == CMD.READ) {
                 //参数1：经度
-                String lat = "";
+                String lon = LocationHelper.getLon();
                 //参数2：纬度
-                String lon = "";
+                String lat = LocationHelper.getLat();
                 //从设备中获取经纬度，发送给服务器
-                String location = lat + "/" + lon + "/";
+                String location = lon + "/" + lat + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         location + TcpPacketFactory.dataZero.substring(location.length())));
             }
