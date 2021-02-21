@@ -69,6 +69,14 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
 
+    //平台电话号码
+    String platformNum = "0";
+    //4个功能键对应的电话号码
+    String key1Num = "0";
+    String key2Num = "0";
+    String key3Num = "0";
+    String key4Num = "0";
+
     //DES随机密钥，只有登录成功后才能使用
     private String randomKey;
     private boolean login = false;
@@ -479,6 +487,46 @@ public class PersistConfig extends LitePalSupport {
         this.newPort = newPort;
     }
 
+    public String getPlatformNum() {
+        return platformNum;
+    }
+
+    public void setPlatformNum(String platformNum) {
+        this.platformNum = platformNum;
+    }
+
+    public String getKey1Num() {
+        return key1Num;
+    }
+
+    public void setKey1Num(String key1Num) {
+        this.key1Num = key1Num;
+    }
+
+    public String getKey2Num() {
+        return key2Num;
+    }
+
+    public void setKey2Num(String key2Num) {
+        this.key2Num = key2Num;
+    }
+
+    public String getKey3Num() {
+        return key3Num;
+    }
+
+    public void setKey3Num(String key3Num) {
+        this.key3Num = key3Num;
+    }
+
+    public String getKey4Num() {
+        return key4Num;
+    }
+
+    public void setKey4Num(String key4Num) {
+        this.key4Num = key4Num;
+    }
+
     public static PersistConfig findConfig() {
         PersistConfig persistConfig = LitePal.findFirst(PersistConfig.class);
         if (persistConfig == null) {
@@ -578,6 +626,41 @@ public class PersistConfig extends LitePalSupport {
         PersistConfig persistConfig = findConfig();
         persistConfig.setArrayList(list);
         persistConfig.save();
+    }
+
+    public static PersistConfig savePlatformNum(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPlatformNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveKey1Num(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setKey1Num(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveKey2Num(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setKey2Num(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveKey3Num(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setKey3Num(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveKey4Num(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setKey4Num(num);
+        persistConfig.save();
+        return persistConfig;
     }
 
     @Override

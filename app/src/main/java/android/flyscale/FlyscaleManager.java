@@ -637,6 +637,13 @@ public class FlyscaleManager {
         return "-1";
     }
 
+    public int getCurrentPhoneType() {
+        try {
+            return mService.getCurrentPhoneType();
+        } catch (RemoteException e) {
+            return -1;
+        }
+    }
 
 
 }

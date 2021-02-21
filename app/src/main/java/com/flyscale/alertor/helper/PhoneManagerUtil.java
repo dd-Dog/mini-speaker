@@ -206,4 +206,33 @@ public class PhoneManagerUtil {
 //        return "sp9280e_test";
         return Build.DISPLAY;
     }
+
+    /**
+     * 厂家
+     * @return
+     */
+    public static String getFactory() {
+        return "FlyScale";
+    }
+
+    @SuppressLint("MissingPermission")
+    public static String getMEID(Context context) {
+        String meidStr = "-1";
+        FlyscaleManager fm = (FlyscaleManager) context.getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
+        if (fm == null) {
+            DDLog.e("FlyscaleManager is null, get meid failed!");
+            return meidStr;
+        }
+        int phoneType = fm.getCurrentPhoneType();
+        TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+        if (phoneType == TelephonyManager.PHONE_TYPE_GSM) {
+            DDLog.e("show IMEI");
+        } else if (phoneType == TelephonyManager.PHONE_TYPE_CDMA) {
+            DDLog.e("show MEID");
+            meidStr = telephonyManager.getDeviceId();
+            return meidStr;
+        }
+        return meidStr;
+    }
+
 }

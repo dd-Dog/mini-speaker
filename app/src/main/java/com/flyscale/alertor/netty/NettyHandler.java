@@ -20,6 +20,7 @@ import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.HttpDownloadHelper;
+import com.flyscale.alertor.helper.LocationHelper;
 import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
@@ -685,8 +686,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         if (address == TcpPacketFactory.DEVICE_ID) {
             //设备出厂编号(只读) ra,00000009,cn-telcom/aren-aaluke-13-0000001xxxx
             if (cmd == CMD.READ) {
-                String companyName = "";  //9位
-                String MEID = "";         //22位
+                String companyName = PhoneManagerUtil.getFactory();  //9位
+                String MEID = PhoneManagerUtil.getMEID(BaseApplication.sContext);         //22位
                 if (companyName.length() > 9) {
                     DDLog.e(getClass(), "厂家名字不能超过9位");
                     return;
@@ -758,18 +759,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     httpDomianName = split[0];
                     // TODO 服务器下发的数据，修改设备中的下载模式参数2
-
+                    PersistConfig.saveHttpDownloadUrl(httpDomianName);
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取文件下载模式参数2
-                httpDomianName = "";
+                httpDomianName = PersistConfig.findConfig().getHttpDownloadUrl();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         httpDomianName+ "/" + TcpPacketFactory.dataZero.substring(httpDomianName.length() + 1)));
             }
         } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
             //硬件版本号(只读) ra,00000021,xj-6850-v2.19b/00000000000000000xxxx
             if (cmd == CMD.READ) {
-                String hardwareVersion = PhoneManagerUtil.getDeviceModel();
+                String hardwareVersion = PhoneManagerUtil.getPlatform();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         hardwareVersion + "/" + TcpPacketFactory.dataZero.substring(hardwareVersion.length() + 1)));
             }
@@ -821,11 +822,16 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     ip_1 = split[0];
                     //TODO 服务器下发的数据，修改设备中的平台服务器域名1
+                    String[] name1AndPort = ip_1.split(":");
+                    if (name1AndPort.length > 1) {
+                        PersistConfig.saveTcpHostNameRelease1(name1AndPort[0]);
+                        PersistConfig.saveTcpPortRelease(Integer.valueOf(name1AndPort[1]));
+                    }
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取平台服务器域名1
-                ip_1 = "";
+                ip_1 = PersistConfig.findConfig().getTcpHostNameRelease1() + ":" + PersistConfig.findConfig().getTcpPortRelease();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ip_1 + "/" + TcpPacketFactory.dataZero.substring(ip_1.length() + 1)));
             }
@@ -837,11 +843,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     ip_2 = split[0];
                     //TODO 服务器下发的数据，修改设备中的平台服务器域名2
-
+                    String[] name2AndPort = ip_2.split(":");
+                    if (name2AndPort.length >1) {
+                        PersistConfig.saveTcpHostNameRelease2(name2AndPort[0]);
+                        PersistConfig.saveTcpPortRelease(Integer.valueOf(name2AndPort[1]));
+                    }
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取平台服务器域名2
-                ip_2 = "";
+                ip_2 = PersistConfig.findConfig().getTcpHostNameRelease2() + ":" + PersistConfig.findConfig().getTcpPortRelease();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ip_2 + "/" + TcpPacketFactory.dataZero.substring(ip_2.length() + 1)));
             }
@@ -863,11 +873,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //位置信息(只读) rd,0000002b,E119.327833/N39.961949/000000000xxxx
             if (cmd == CMD.READ) {
                 //参数1：经度
-                String lat = "";
+                String lon = LocationHelper.getLon();
                 //参数2：纬度
-                String lon = "";
+                String lat = LocationHelper.getLat();
                 //从设备中获取经纬度，发送给服务器
-                String location = lat + "/" + lon + "/";
+                String location = lon + "/" + lat + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         location + TcpPacketFactory.dataZero.substring(location.length())));
             }
@@ -878,10 +888,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 ftpAddress = split[0];
                 //TODO 服务器下发最新FTP服务器IP，修改设备中的该数据
+                String[] ftpData = ftpAddress.split(":");
+                if (ftpData.length > 1) {
+                    PersistConfig.saveFtpHostNameRelease(ftpData[0]);
+                    PersistConfig.saveFtpHostPortRelease(Integer.valueOf(ftpData[1]));
+                }
 
             } else if (cmd == CMD.READ) {
                 //从设备中获取FTP服务器IP
-                ftpAddress = "";
+                ftpAddress = PersistConfig.findConfig().getFtpHostNameRelease() + ":" + PersistConfig.findConfig().getFtpHostPortRelease();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ftpAddress + "/" + TcpPacketFactory.dataZero.substring(ftpAddress.length() + 1)));
             }
@@ -901,12 +916,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     account = userAndPwd[0];
                     pwd = userAndPwd[1];
                     //TODO 服务器下发最新FTP服务器账号密码，修改设备中的该数据
+                    PersistConfig.saveFtpUsernameRelease(account);
+                    PersistConfig.saveFtpPasswordRelease(pwd);
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取FTP服务器账号密码
-                account = "";
-                pwd = "";
+                account = PersistConfig.findConfig().getFtpUsernameRelease();
+                pwd = PersistConfig.findConfig().getFtpPasswordRelease();
                 String accountAndPwd = account + "@" + pwd + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         accountAndPwd + TcpPacketFactory.dataZero.substring(accountAndPwd.length())));
@@ -1023,16 +1040,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcOneNum = split[0];
-                    if (TextUtils.equals(funcOneNum , "0")) {
-                        //TODO 取消功能键1的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键1的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键1的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey1Num(funcOneNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcOneNum = PersistConfig.findConfig().getKey1Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcOneNum + "/" + TcpPacketFactory.dataZero.substring(funcOneNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.FUNCTION_2_CALL_PHONE_NUM) {
@@ -1042,16 +1056,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcTwoNum = split[0];
-                    if (TextUtils.equals(funcTwoNum , "0")) {
-                        //TODO 取消功能键2的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键2的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键2的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey2Num(funcTwoNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcTwoNum = PersistConfig.findConfig().getKey2Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcTwoNum + "/" + TcpPacketFactory.dataZero.substring(funcTwoNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.FUNCTION_3_CALL_PHONE_NUM) {
@@ -1061,16 +1072,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcThreeNum = split[0];
-                    if (TextUtils.equals(funcThreeNum , "0")) {
-                        //TODO 取消功能键3的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键3的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键3的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey3Num(funcThreeNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcThreeNum = PersistConfig.findConfig().getKey3Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcThreeNum + "/" + TcpPacketFactory.dataZero.substring(funcThreeNum.length() + 1)));
             }
         } else if (address == TcpPacketFactory.FUNCTION_4_CALL_PHONE_NUM) {
             //功能键 4 拨打电话号码（可写）wd,00000044,18909910000/000000000000000000xxxx
@@ -1079,16 +1087,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     funcFourNum = split[0];
-                    if (TextUtils.equals(funcFourNum , "0")) {
-                        //TODO 取消功能键4的功能
-
-                        return;
-                    }
-                    //TODO 服务器最新下发的功能键4的号码，修改设备中的该数据
-
+                    //TODO 服务器最新下发的功能键4的号码，修改设备中的该数据(0:取消功能)
+                    PersistConfig.saveKey4Num(funcFourNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                funcFourNum = PersistConfig.findConfig().getKey4Num();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        funcFourNum + "/" + TcpPacketFactory.dataZero.substring(funcFourNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.DEVICE_AVAILABLE_SIZE) {
@@ -1110,8 +1115,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //平台查询终端系统当前时间（只读），查询指令：rd,00000046,000000000000000000000000000000xxxx
             if (cmd == CMD.READ) {
                 if (data.equals(TcpPacketFactory.dataZero)) {
-                    //时间格式为yyyymmddhhmiss
-                    String systemTime = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date(System.currentTimeMillis()));
+                    //时间格式为yyyyMMddHHmmss
+                    String systemTime = new SimpleDateFormat(DateHelper.yyyyMMddHHmmss).format(new Date(System.currentTimeMillis()));
                     //反馈指令：ra,00000046,20180103201059/000000000000000xxxx
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             systemTime + "/" + TcpPacketFactory.dataZero.substring(systemTime.length() + 1)));
@@ -1164,17 +1169,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
                     platformPhoneNum = split[0];
-                    if (TextUtils.equals(platformPhoneNum , "0")) {
-                        //TODO 取消功能
-
-                        return;
-                    }
-                    //TODO 服务器下发最新的一键报警平台电话号码，修改设备中的数据
-
-
+                    //TODO 服务器下发最新的一键报警平台电话号码，修改设备中的数据(0 取消功能)
+                    PersistConfig.savePlatformNum(platformPhoneNum);
                 }
             } else if (cmd == CMD.READ) {
-
+                platformPhoneNum = PersistConfig.findConfig().getPlatformNum();
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        platformPhoneNum + "/" + TcpPacketFactory.dataZero.substring(platformPhoneNum.length() + 1)));
             }
 
         } else if (address == TcpPacketFactory.ALARM_VOLUME) {
