@@ -7,6 +7,7 @@ import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.jni.NativeHelper;
 
 public class TcpPacket {
+    public static final String BLANK = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     /**
      * 报文第一部分	2字节长度命令码(rd:读数据;wd:写数据;ra:读响应，wa写响应，英文逗号结束
      * 报文第二部分	8字节长度，数据地址(00000000-ffffffff);英文逗号结束
@@ -28,6 +29,7 @@ public class TcpPacket {
 
     public static final byte[] SEPARATOR = {','};
 
+    private boolean isBlank;
 
     private byte[] tcpBytes;//TCP报文数据
     private byte[] encodedBytes;//加密数据
@@ -78,6 +80,15 @@ public class TcpPacket {
             System.out.println("解密失败！");
             return;
         }
+        //判断空白心跳
+        String decodedStr = new String(decodedBytes);
+        DDLog.i("decodedStr=" + decodedStr);
+        if (TextUtils.equals(decodedStr, BLANK)){
+            isBlank = true;
+            this.data = decodedStr;
+            return;
+        }
+        isBlank = false;
         //CRC校验
         //计算出校验码long类型
         try {
@@ -298,6 +309,7 @@ public class TcpPacket {
         System.arraycopy(endFlagBytes, 0, tcpBytes, encodedBytes.length, endFlagBytes.length);
         System.out.println("TCP数据：");
         System.out.println(DDLog.printArrayHex(tcpBytes));
+        isBlank = true;
         return this;
     }
 }
