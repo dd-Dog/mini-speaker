@@ -152,7 +152,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         if (evt instanceof IdleStateEvent) {
             if (((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE || ((IdleStateEvent) evt).state() == IdleState.ALL_IDLE) {
                 final long time = System.currentTimeMillis();
-                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, TcpPacketFactory.HEARTBEAT_DATA,
+                NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.HEARTBEAT_DATA,
                         PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
                                 DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
                                 PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
@@ -666,7 +666,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                NettyHelper.getInstance().send(TcpPacket.getInstance().encode("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"));
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(TcpPacket.BLANK));
             }
         }, 0, 20 * 1000);
     }
