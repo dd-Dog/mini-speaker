@@ -130,14 +130,7 @@ public class ClientInfoHelper {
         @SuppressLint("ServiceCast") AudioManager audioManager =
                 (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
         int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-        switch (current) {
-            case 10:
-                return "a";
-            case 11:
-                return "b";
-            default:
-                return String.valueOf(current);
-        }
+        return Integer.toHexString(current);
     }
 
     /**

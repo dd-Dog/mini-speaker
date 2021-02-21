@@ -152,7 +152,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE || ((IdleStateEvent) evt).state() == IdleState.ALL_IDLE) {
                 final long time = System.currentTimeMillis();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, TcpPacketFactory.HEARTBEAT_DATA,
-                        PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
+                        FillZeroUtil.getString(3, String.valueOf(PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext))) + "/" +
                                 DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
                                 PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
                                 (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
