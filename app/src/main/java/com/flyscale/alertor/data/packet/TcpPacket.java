@@ -1,5 +1,7 @@
 package com.flyscale.alertor.data.packet;
 
+import android.text.TextUtils;
+
 import com.flyscale.alertor.helper.CRC16Helper;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.jni.NativeHelper;
@@ -95,7 +97,7 @@ public class TcpPacket {
                 System.out.println("校验失败！");
                 return;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             DDLog.e("CRC校验失败");
             return;
@@ -132,6 +134,12 @@ public class TcpPacket {
      * @return
      */
     public TcpPacket encode(CMD cmd, long address, String data) {
+        DDLog.i("encode: cmd=" + cmd + ",address=" + address + ",data=" + data);
+        //数据长度判断
+        if (TextUtils.isEmpty(data) || data.length() > 32) {
+            DDLog.i("数据错误！");
+            return null;
+        }
         this.cmd = cmd;
         this.address = address;
         this.data = data;
@@ -266,10 +274,11 @@ public class TcpPacket {
                 ", data='" + data + '\'' +
                 '}';
     }
+
     /**
      * 加密数据，并生成TcpPacket对象，用于向服务器发送
      *
-     * @param blank   空白命令行
+     * @param blank 空白命令行
      * @return
      */
     public TcpPacket encode(String blank) {
