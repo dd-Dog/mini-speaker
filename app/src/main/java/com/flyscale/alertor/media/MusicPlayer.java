@@ -21,7 +21,7 @@ import io.netty.util.TimerTask;
 public class MusicPlayer {
     private final MediaPlayer mMediaPlayer;
     private static MusicPlayer mInstance;
-    private static final String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
+    public static final String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
     private static final String EMR_MEDIA_PATH = "/mnt/sdcard/flyscale/media/emr/";
 
     private final ArrayList<String> mNormalList;

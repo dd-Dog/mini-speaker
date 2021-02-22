@@ -8,7 +8,6 @@ import com.flyscale.alertor.helper.DateHelper;
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,29 +68,69 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
 
+
     /****************短链接参数***********************/
-    //链接类型(0短链接；1长链接)
-    String linkType = "1";
-    //短链接休眠时长（秒）
-    String shortLinkSleepTime = "10";
-    //短链接工作等待延迟（秒）
-    String shortLinkDelay = "10";
+    String linkType = "1";              //链接类型(0短链接；1长链接)
+    String shortLinkSleepTime = "10";   //短链接休眠时长（秒）
+    String shortLinkDelay = "10";       //短链接工作等待延迟（秒）
+
 
     /*************文件下载模式参数1(可读可写)*************/
-    //下载模式：0 ftp模式；1 http下载模式
-    String downloadMode = "1";
-    //http下载账户
-    String httpAccount = "ostar";
-    //http下载密码
-    String httpPwd = "ostar";
+    String downloadMode = "1";          //下载模式：0 ftp模式；1 http下载模式
+    String httpAccount = "ostar";       //http下载账户
+    String httpPwd = "ostar";           //http下载密码
 
-    //平台电话号码
+
+    /******************音量(可读可写) ******************/
+    //音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
+    String normalFmEnabled = "1";       //FM普通广播使能标志：1 使能，0 禁止
+    String insertFmEnabled = "1";       //FM插播广播使能标志：1 使能，0 禁止
+
+
+    /****************升级文件FTP目录*****************/
+    String ftpFotafilePath = "/china_telcom/3gdev";   //升级目录
+
+
+    /***************音频文件FTP目录******************/
+    String ftpAudioFilepath = "/china_telcom/dev1";   //音频文件FTP目录
+
+
+    /*************长链接心跳间隔(秒)*********/
+    String longLinkHeartbeat = "20";      //长连接心跳间隔(秒)
+    String longLinkSignDelay = "60";      //长连接登录延迟(秒)
+    //长链接短链接选择 (固定为0:短连接 ;固定为1:长连接)
+    //String linkType = "1";
+    String platformSmsNum = "0";          //平台短信号码
+
+
+    /**************拨打电话指令参数 *************/
+    String phoneNum = "0";        //拨打的电话号码
+    String callTime = "20";        //每次通话时长（秒）
+    String callDate = "202101010000";  //拨打电话的时间（年月日时分）
+    String times = "03";           //拨打失败后的重试次数
+
+
+    /*************平台电话号码*****************/
     String platformNum = "0";
-    //4个功能键对应的电话号码
+
+
+    /*********** 4个功能键对应的电话号码 ****************/
     String key1Num = "0";
     String key2Num = "0";
     String key3Num = "0";
     String key4Num = "0";
+
+
+    /**************终端个性化功能***************/
+    String emrPlayMode = "0";       //0 APP紧急语音单次播放; 1：APP紧急语音循环播放
+    String moveSwitch = "0";     //0防移开关启用; 1防移开关禁用
+    String alarmMode = "0";      // 0一键报警普通模式（十户联防号码呼入：用户按键接听）;
+                                // 1一键报警奎屯模式（十户联防号码呼入后：响3声报警音，再自动接听，播放完成报警信息后，用户挂断）
+                                //2：一键报警沙湾模式（十户联防号码呼入后：不响报警音，自动接听，播放完成报警信息后，用户挂断；）
+
+    String callEnable = "0";     //1就是只能拨打报警与快捷键; 0可以拨打所有电话
+    String channelSelect = "0";  //频选”参数 ：0 默认; 1 4G-800M优选;  2:4G-1800M优选
+    String wifiSwitch = "1";     //“WIFI开关”参数 ：0 开通; 1 关闭
 
     //DES随机密钥，只有登录成功后才能使用
     private String randomKey;
@@ -551,6 +590,94 @@ public class PersistConfig extends LitePalSupport {
         this.httpPwd = httpPwd;
     }
 
+    public String getNormalFmEnabled() {
+        return normalFmEnabled;
+    }
+
+    public void setNormalFmEnabled(String normalFmEnabled) {
+        this.normalFmEnabled = normalFmEnabled;
+    }
+
+    public String getInsertFmEnabled() {
+        return insertFmEnabled;
+    }
+
+    public void setInsertFmEnabled(String insertFmEnabled) {
+        this.insertFmEnabled = insertFmEnabled;
+    }
+
+    public String getFtpFotafilePath() {
+        return ftpFotafilePath;
+    }
+
+    public void setFtpFotafilePath(String ftpFotafilePath) {
+        this.ftpFotafilePath = ftpFotafilePath;
+    }
+
+    public String getFtpAudioFilepath() {
+        return ftpAudioFilepath;
+    }
+
+    public void setFtpAudioFilepath(String ftpAudioFilepath) {
+        this.ftpAudioFilepath = ftpAudioFilepath;
+    }
+
+    public String getLongLinkHeartbeat() {
+        return longLinkHeartbeat;
+    }
+
+    public void setLongLinkHeartbeat(String longLinkHeartbeat) {
+        this.longLinkHeartbeat = longLinkHeartbeat;
+    }
+
+    public String getLongLinkSignDelay() {
+        return longLinkSignDelay;
+    }
+
+    public void setLongLinkSignDelay(String longLinkSignDelay) {
+        this.longLinkSignDelay = longLinkSignDelay;
+    }
+
+    public String getPlatformSmsNum() {
+        return platformSmsNum;
+    }
+
+    public void setPlatformSmsNum(String platformSmsNum) {
+        this.platformSmsNum = platformSmsNum;
+    }
+
+    public String getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(String phoneNum) {
+        this.phoneNum = phoneNum;
+    }
+
+    public String getCallTime() {
+        return callTime;
+    }
+
+    public void setCallTime(String callTime) {
+        this.callTime = callTime;
+    }
+
+    public String getCallDate() {
+        return callDate;
+    }
+
+    public void setCallDate(String callDate) {
+        this.callDate = callDate;
+    }
+
+    public String getTimes() {
+        return times;
+    }
+
+    public void setTimes(String times) {
+        this.times = times;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -589,6 +716,54 @@ public class PersistConfig extends LitePalSupport {
 
     public void setKey4Num(String key4Num) {
         this.key4Num = key4Num;
+    }
+
+    public String getEmrPlayMode() {
+        return emrPlayMode;
+    }
+
+    public void setEmrPlayMode(String emrPlayMode) {
+        this.emrPlayMode = emrPlayMode;
+    }
+
+    public String getMoveSwitch() {
+        return moveSwitch;
+    }
+
+    public void setMoveSwitch(String moveSwitch) {
+        this.moveSwitch = moveSwitch;
+    }
+
+    public String getAlarmMode() {
+        return alarmMode;
+    }
+
+    public void setAlarmMode(String alarmMode) {
+        this.alarmMode = alarmMode;
+    }
+
+    public String getCallEnable() {
+        return callEnable;
+    }
+
+    public void setCallEnable(String callEnable) {
+        this.callEnable = callEnable;
+    }
+
+    public String getChannelSelect() {
+        return channelSelect;
+    }
+
+    public void setChannelSelect(String channelSelect) {
+        this.channelSelect = channelSelect;
+    }
+
+    public String getWifiSwitch() {
+        return wifiSwitch;
+    }
+
+    public void setWifiSwitch(String wifiSwitch) {
+        this.wifiSwitch = wifiSwitch;
     }
 
     public static PersistConfig findConfig() {
@@ -741,6 +916,83 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
+    public static PersistConfig saveNormalFmEnabled(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setNormalFmEnabled(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveInsertFmEnabled(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setInsertFmEnabled(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveFtpFotafilePath(String path) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFtpFotafilePath(path);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveFtpAudioFilepath(String path) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFtpAudioFilepath(path);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveLongLinkHeartbeat(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLongLinkHeartbeat(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveLongLinkSignDelay(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLongLinkSignDelay(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig savePlatformSmsNum(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPlatformSmsNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig savePhoneNum(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPhoneNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallTime(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCallTime(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallDate(String date) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCallDate(date);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallTimes(String times) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setTimes(times);
+        persistConfig.save();
+        return persistConfig;
+    }
+
     public static PersistConfig saveKey1Num(String num) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setKey1Num(num);
@@ -769,6 +1021,47 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
+    public static PersistConfig saveEmrPlayMode(String mode) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setEmrPlayMode(mode);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveMoveSwitch(String moveSwitch) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setMoveSwitch(moveSwitch);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveAlarmMode(String mode) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setAlarmMode(mode);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallEnabled(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCallEnable(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveChannelSelect(String channel) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setChannelSelect(channel);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveWifiSwitch(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setWifiSwitch(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
     @Override
     public String toString() {
         return "PersistConfig{" +

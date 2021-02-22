@@ -126,11 +126,42 @@ public class ClientInfoHelper {
      *获取媒体音量
      * @return
      */
-    public static String getVolume() {
+    public static String getMusicVolume() {
         @SuppressLint("ServiceCast") AudioManager audioManager =
                 (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
         int current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
         return Integer.toHexString(current);
+    }
+
+    /**
+     *设置媒体音量
+     * @return
+     */
+    public static void setMusicVolume(String volume) {
+        @SuppressLint("ServiceCast") AudioManager audioManager =
+                (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, Integer.valueOf(volume , 16), AudioManager.FLAG_PLAY_SOUND);
+    }
+
+    /**
+     *获取媒体音量
+     * @return
+     */
+    public static String getCallVolume() {
+        @SuppressLint("ServiceCast") AudioManager audioManager =
+                (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        int current = audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+        return Integer.toHexString(current);
+    }
+
+    /**
+     *设置媒体音量
+     * @return
+     */
+    public static void setCallVolume(String volume) {
+        @SuppressLint("ServiceCast") AudioManager audioManager =
+                (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL, Integer.valueOf(volume , 16), AudioManager.FLAG_PLAY_SOUND);
     }
 
     /**
@@ -143,6 +174,16 @@ public class ClientInfoHelper {
         long sizes = (long) dataFs.getFreeBlocks()*(long)dataFs.getBlockSize();
         long available = sizes;
         return available;
+    }
+
+    /**
+     * 获取总内存大小
+     * @return
+     */
+    public static long getTotalSize() {
+        File datapath = Environment.getDataDirectory();
+        StatFs dataFs = new StatFs(datapath.getPath());
+        return (long) dataFs.getBlockCount()*(long)dataFs.getBlockSize();
     }
 
 }
