@@ -165,7 +165,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
                                 (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
                                 36 + "/" +
-                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getVolume()
+                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getMusicVolume()
                 ));
             }
         }
@@ -670,16 +670,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         } else if (!file.getName().endsWith(".mp3") && !file.getName().endsWith(".MP3") &&
                                 !file.getName().endsWith(".amr") && !file.getName().endsWith(".AMR")){
                             state = "-33";//不可识别的文件
-                        } else if (MusicPlayer.getInstance().isPlaying()) {
-                            state = "0";
                         } else {
-                            state = "-32";
+                            state = "0";
                         }
 
                         //发送播放反馈
+                        final long time = System.currentTimeMillis();
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, cmd,
                                 FillZeroUtil.getString("JINJIMP3.AMR" + "/" + state + "/" +
-                                        DateHelper.longToString(DateHelper.yyMMddHHmmss) + "/", 32)));
+                                        DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/", 32)));
                     }
                 }
             });
@@ -695,7 +694,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext)  + "/" +
                         (float)(Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000)*10))/10 + "/" +
                         36 + "/" +
-                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getVolume()
+                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getMusicVolume()
         ));
         timer.schedule(new TimerTask() {
             @Override
