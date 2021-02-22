@@ -235,4 +235,12 @@ public class PhoneManagerUtil {
         return meidStr;
     }
 
+    /**
+     * 重启
+     *
+     */
+    public static void reboot(Context context , String reason) {
+        FlyscaleManager fm = (FlyscaleManager) context.getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
+        fm.reboot(reason);
+    }
 }

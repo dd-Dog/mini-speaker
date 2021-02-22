@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
@@ -1014,7 +1015,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (data.equals(TcpPacketFactory.dataZero)) {
                     //TODO 服务器写入全0数据，代表平台要求终端先复位重新启动（网络通讯模块也需要重新启动）
-
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+                    PhoneManagerUtil.reboot(BaseApplication.sContext , BaseApplication.sContext.getResources().getString( R.string.reset));
                 }
             } else if (cmd == CMD.READ) {
 
