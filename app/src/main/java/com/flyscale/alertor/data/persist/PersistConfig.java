@@ -100,6 +100,16 @@ public class PersistConfig extends LitePalSupport {
     //音频文件FTP目录
     String ftpAudioFilepath = "/china_telcom/dev1";
 
+    /*************长链接心跳间隔(秒)*********/
+    //长连接心跳间隔(秒)
+    String longLinkHeartbeat = "20";
+    //长连接登录延迟(秒)
+    String longLinkSignDelay = "60";
+    //长链接短链接选择 (固定为0:短连接 ;固定为1:长连接)
+    //String linkType = "1";
+    //平台短信号码
+    String platformSmsNum = "0";
+
     //平台电话号码
     String platformNum = "0";
     //4个功能键对应的电话号码
@@ -598,6 +608,30 @@ public class PersistConfig extends LitePalSupport {
         this.ftpAudioFilepath = ftpAudioFilepath;
     }
 
+    public String getLongLinkHeartbeat() {
+        return longLinkHeartbeat;
+    }
+
+    public void setLongLinkHeartbeat(String longLinkHeartbeat) {
+        this.longLinkHeartbeat = longLinkHeartbeat;
+    }
+
+    public String getLongLinkSignDelay() {
+        return longLinkSignDelay;
+    }
+
+    public void setLongLinkSignDelay(String longLinkSignDelay) {
+        this.longLinkSignDelay = longLinkSignDelay;
+    }
+
+    public String getPlatformSmsNum() {
+        return platformSmsNum;
+    }
+
+    public void setPlatformSmsNum(String platformSmsNum) {
+        this.platformSmsNum = platformSmsNum;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -812,6 +846,27 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveFtpAudioFilepath(String path) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setFtpAudioFilepath(path);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveLongLinkHeartbeat(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLongLinkHeartbeat(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveLongLinkSignDelay(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLongLinkSignDelay(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig savePlatformSmsNum(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPlatformSmsNum(num);
         persistConfig.save();
         return persistConfig;
     }

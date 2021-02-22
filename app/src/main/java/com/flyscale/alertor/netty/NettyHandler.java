@@ -994,15 +994,17 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     linkType = split[2];
                     platformSmsNum = split[3];
                     //TODO 服务器下发的最新参数，修改设备中的该参数
-
-
+                    PersistConfig.saveLongLinkHeartbeat(longLinkHeartbeat);
+                    PersistConfig.saveLongLinkSignDelay(longLinkSignDelay);
+                    PersistConfig.savePlatformSmsNum(platformSmsNum);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //获取设备中的长链接心跳参数
-                longLinkHeartbeat = "";
-                longLinkSignDelay = "";
-                linkType = "";
-                platformSmsNum = "";
+                longLinkHeartbeat = PersistConfig.findConfig().getLongLinkHeartbeat();
+                longLinkSignDelay = PersistConfig.findConfig().getLongLinkSignDelay();
+                linkType = "1";
+                platformSmsNum = PersistConfig.findConfig().getPlatformSmsNum();
                 String longLinkParam = longLinkHeartbeat + "/" + longLinkSignDelay + "/" + linkType + "/" + platformSmsNum + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         longLinkParam + TcpPacketFactory.dataZero.substring(longLinkParam.length())));
