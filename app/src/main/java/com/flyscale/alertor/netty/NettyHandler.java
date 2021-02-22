@@ -730,7 +730,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //文件下载模式参数1(可读可写) wd,0000000b,1/ostar/ikll*^AA/0000000000000000000xxxx
             //参数1：下载模式：0 ftp模式；1 http下载模式
             String mode = "";
-            //参数2：ttp下载账户
+            //参数2：http下载账户
             String httpAccount = "";
             //参数3：http下载密码
             String httpPwd = "";
@@ -740,13 +740,16 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     httpAccount = split[1];
                     httpPwd = split[2];
                     // TODO 服务器下发的数据，修改设备中的下载模式参数1
-
+                    PersistConfig.saveDownloadMode(mode);
+                    PersistConfig.saveHttpAccount(httpAccount);
+                    PersistConfig.saveHttpPwd(httpPwd);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             }else if (cmd == CMD.READ) {
                 //从设备中获取下载模式的参数
-                mode = "";
-                httpAccount = "";
-                httpPwd = "";
+                mode = PersistConfig.findConfig().getDownloadMode();
+                httpAccount = PersistConfig.findConfig().getHttpAccount();
+                httpPwd = PersistConfig.findConfig().getHttpPwd();
                 String fileDownloadModeParam = mode + "/" + httpAccount + "/" + httpPwd + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         fileDownloadModeParam + TcpPacketFactory.dataZero.substring(fileDownloadModeParam.length())));

@@ -77,6 +77,13 @@ public class PersistConfig extends LitePalSupport {
     //短链接工作等待延迟（秒）
     String shortLinkDelay = "10";
 
+    /*************文件下载模式参数1(可读可写)*************/
+    //下载模式：0 ftp模式；1 http下载模式
+    String downloadMode = "1";
+    //http下载账户
+    String httpAccount = "ostar";
+    //http下载密码
+    String httpPwd = "ostar";
 
     //平台电话号码
     String platformNum = "0";
@@ -520,6 +527,30 @@ public class PersistConfig extends LitePalSupport {
         this.shortLinkDelay = shortLinkDelay;
     }
 
+    public String getDownloadMode() {
+        return downloadMode;
+    }
+
+    public void setDownloadMode(String downloadMode) {
+        this.downloadMode = downloadMode;
+    }
+
+    public String getHttpAccount() {
+        return httpAccount;
+    }
+
+    public void setHttpAccount(String httpAccount) {
+        this.httpAccount = httpAccount;
+    }
+
+    public String getHttpPwd() {
+        return httpPwd;
+    }
+
+    public void setHttpPwd(String httpPwd) {
+        this.httpPwd = httpPwd;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -685,6 +716,27 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveShortLinkDelay(String time) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setShortLinkDelay(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveDownloadMode(String mode) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setDownloadMode(mode);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveHttpAccount(String account) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setHttpAccount(account);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveHttpPwd(String pwd) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setHttpPwd(pwd);
         persistConfig.save();
         return persistConfig;
     }
