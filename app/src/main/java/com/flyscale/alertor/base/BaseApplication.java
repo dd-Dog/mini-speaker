@@ -57,6 +57,6 @@ public class BaseApplication extends Application {
 //        }
         //初始化白名单
         PersistWhite.findList();
-	LitepalUtil.init();
+	FMLitepalUtil.init();
     }
 }
