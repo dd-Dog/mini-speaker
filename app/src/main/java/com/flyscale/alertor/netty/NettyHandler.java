@@ -712,14 +712,16 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     shortLinkSleepTime = split[1];
                     shortLinkDelay = split[2];
                     // TODO 服务器下发的数据，修改设备中的短链接参数
-
-
+                    PersistConfig.saveLinkType(linkType);
+                    PersistConfig.saveShortLinkSleepTime(shortLinkSleepTime);
+                    PersistConfig.saveShortLinkDelay(shortLinkDelay);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ){
                 //从设备中获取参数
-                linkType = "";
-                shortLinkSleepTime = "";
-                shortLinkDelay = "";
+                linkType = PersistConfig.findConfig().getLinkType();
+                shortLinkSleepTime = PersistConfig.findConfig().getShortLinkSleepTime();
+                shortLinkDelay = PersistConfig.findConfig().getShortLinkDelay();
                 String shortLinkParam = linkType + "/" + shortLinkSleepTime + "/" + shortLinkDelay + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         shortLinkParam + TcpPacketFactory.dataZero.substring(shortLinkParam.length())));

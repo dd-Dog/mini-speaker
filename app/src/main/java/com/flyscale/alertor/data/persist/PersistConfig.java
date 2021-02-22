@@ -69,6 +69,15 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
 
+    /****************短链接参数***********************/
+    //链接类型(0短链接；1长链接)
+    String linkType = "1";
+    //短链接休眠时长（秒）
+    String shortLinkSleepTime = "10";
+    //短链接工作等待延迟（秒）
+    String shortLinkDelay = "10";
+
+
     //平台电话号码
     String platformNum = "0";
     //4个功能键对应的电话号码
@@ -487,6 +496,30 @@ public class PersistConfig extends LitePalSupport {
         this.newPort = newPort;
     }
 
+    public String getLinkType() {
+        return linkType;
+    }
+
+    public void setLinkType(String linkType) {
+        this.linkType = linkType;
+    }
+
+    public String getShortLinkSleepTime() {
+        return shortLinkSleepTime;
+    }
+
+    public void setShortLinkSleepTime(String shortLinkSleepTime) {
+        this.shortLinkSleepTime = shortLinkSleepTime;
+    }
+
+    public String getShortLinkDelay() {
+        return shortLinkDelay;
+    }
+
+    public void setShortLinkDelay(String shortLinkDelay) {
+        this.shortLinkDelay = shortLinkDelay;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -631,6 +664,27 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig savePlatformNum(String num) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setPlatformNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveLinkType(String type) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLinkType(type);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveShortLinkSleepTime(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setShortLinkSleepTime(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveShortLinkDelay(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setShortLinkDelay(time);
         persistConfig.save();
         return persistConfig;
     }
