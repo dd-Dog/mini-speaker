@@ -1,13 +1,37 @@
 package com.flyscale.alertor.helper;
 
-import com.flyscale.alertor.data.packet.TcpPacketFactory;
+
+
+
 import com.flyscale.alertor.data.persist.FMLitepalBean;
 
+import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
+import java.util.ArrayList;
+import java.util.List;
 
 public class FMLitepalUtil extends LitePalSupport {
 
+    public static final ArrayList<Long> FM_SHOW_LIST = new ArrayList<Long>();
+
+    static {
+        for (long i = 0x00000100L; i <= 0x0000011FL; i++) {
+            FM_SHOW_LIST.add(i);
+        }
+    }
+
+    /**
+     * 判断address是否在所给范围内
+     * */
+    public static boolean isFmShow(long address){
+        for (long i = 0x00000100L; i <= 0x0000011FL; i++) {
+            if (address == i){
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      *
@@ -33,7 +57,7 @@ public class FMLitepalUtil extends LitePalSupport {
      * */
     public static int getCorrectLine(long address){
         for (int i=1; i <= 32; i++){
-            if (TcpPacketFactory.FM_SHOW_LIST.get(i-1) == address){
+            if (FM_SHOW_LIST.get(i-1) == address){
                 return i;
             }
         }
@@ -51,6 +75,8 @@ public class FMLitepalUtil extends LitePalSupport {
         litepalBean.setEndTime(getEndFMTime(data));
         litepalBean.setVolume(getVolume(data));
         litepalBean.updateAll("name = ?","FM" + getCorrectLine(address));
+        DateUtil.updataAlarmForFM(getCorrectLine(address),getWeeklyRecord(data),getFreq(data),
+                getStartFMTime(data),getEndFMTime(data),getVolume(data));
     }
 
 
@@ -106,4 +132,55 @@ public class FMLitepalUtil extends LitePalSupport {
         return volume;
     }
 
+    /**
+     * 获取数据库中的weeklyrecord
+     * */
+    public static String getWeeklyRecord(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","startDate").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean weekly:litepalBean){
+                return weekly.getStartDate();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的startTime
+     * */
+    public static String getStartTime(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","startTime").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean startTime:litepalBean){
+                return startTime.getStartDate();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的endTime
+     * */
+    public static String getEndTime(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","endTime").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean endTime:litepalBean){
+                return endTime.getStartDate();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的freq
+     * */
+    public static String getFreq(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","freq").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean freq:litepalBean){
+                return freq.getStartDate();
+            }
+        }
+        return null;
+    }
 }
