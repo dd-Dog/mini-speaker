@@ -9,12 +9,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.flyscale.alertor.R;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.data.packet.TcpPacketFactory;
+import com.flyscale.alertor.data.persist.PersistClock;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
@@ -35,7 +36,10 @@ import com.liulishuo.okdownload.core.listener.DownloadListener2;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,6 +47,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+
+import static com.flyscale.alertor.helper.ListHelper.removeDuplicate;
 
 /**
  * @author 高鹤泉
@@ -55,6 +61,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     String data;
     DownloadTask task;
     Timer timer = new Timer();
+    AlarmManagerUtil alarmManagerUtil;
 
 
     public NettyHandler() {
@@ -158,7 +165,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
                                 (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
                                 36 + "/" +
-                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getMusicVolume()
+                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getVolume()
                 ));
             }
         }
@@ -277,11 +284,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 /*7.3.3a 获取AMR格式音频文件大小*/
                 //ra,01000002,abcdefgh.amr/123456789/000000000xxxx
                 @SuppressLint("SdCardPath")
-                String filePath = "/mnt/sdcard/flyscale/music/" + data.split("/")[0];
+                String filePath = "/mnt/sdcard/flyscale/media/normal/" + data.split("/")[0];
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
-                        data.split("/")[0] + "/" +
-                                FillZeroUtil.getString(9, FileHelper.getFileSize(new File(filePath)) +
-                                "000000000")));
+                        FillZeroUtil.getString(data.split("/")[0] + "/" +
+                                FillZeroUtil.getString(9, String.valueOf(FileHelper.getFileSize(new File(filePath)))) +
+                                "/", 32)));
             } else if (TcpPacketFactory.MUSIC_SHOW_LIST.contains(address)) {
                 /*7.3.3b设置音频文件播放节目*/
                 /*
@@ -297,13 +304,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String endTime = data.split("/")[2];
                 String voice = data.split("/")[3];
                 boolean isPlay = data.split("/")[4].equals("1");
-                String week = data.split("/")[5];
-
-                if (address == TcpPacketFactory.CLEAR_ALL_MUSIC_SHOW) {
-                    /*清除所有音频节目列表*/
-                    DDLog.i("清除所有音频节目列表");
-                }
-                ShowProgram(fileName, startTime, endTime, voice, isPlay, week, address);
+                int week = Integer.parseInt(data.split("/")[5]);
+                String program = String.valueOf(address).substring(String.valueOf(address).length() - 1);
+                ShowProgram(fileName, startTime, endTime, voice, isPlay, week, address, program);
+            } else if (address == TcpPacketFactory.CLEAR_ALL_MUSIC_SHOW) {
+                /*清除所有音频节目列表*/
+                DDLog.i("清除所有音频节目列表");
+                alarmManagerUtil.cancelAlarm();
             } else if (address == TcpPacketFactory.DOWNLOAD_AMR) {
                 /*7.3.3bc 终端接收完AMR音频文件后反馈*/
                 DDLog.i("终端接收完AMR音频文件后反馈");
@@ -465,7 +472,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     }
 
     private void ShowProgram(String fileName, String startTime, String endTime, String voice, boolean isPlay,
-                             String week, Long address) {
+                             int week, Long address, String program) {
         /**
          * 根据指定的音频文件名，读写播放开始和结束时间
          * 输入格式：
@@ -485,15 +492,28 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
          */DDLog.i("地址=" + address);
          for (int i = 0; i < TcpPacketFactory.MUSIC_SHOW_LIST.size(); i++) {
              if (address.equals(TcpPacketFactory.MUSIC_SHOW_LIST.get(i))) {
-                 /**
-                  * 设置节目为i
-                  * 设置开始时间为startTime
-                  * 设置结束事假哪位endTime
-                  * 设置播放音量为voice
-                  * 设置是否播放前导音
-                  * 设置星期播放
-                  */
-                 AlarmManager am = (AlarmManager) BaseApplication.sContext.getSystemService(Service.ALARM_SERVICE);
+                 // TODO: 2021/2/20  将字符转换为二进制，显示周几
+                 String s = FillZeroUtil.getString(8, Integer.toBinaryString(week));
+                 StringBuffer buf = new StringBuffer(s);
+                 buf = buf.reverse();
+                 ArrayList<Integer> list = new ArrayList<>();
+                 for (int a = 0; a < buf.length(); a++) {
+                     int index = buf.indexOf("0", a) + 1;
+                     if (index != buf.length()) {
+                         list.add(index);
+                     }
+                 }
+                 removeDuplicate(list);
+                 // TODO: 2021/2/20 设置周几定时播放
+                 for (int j = 0; j < list.size(); j ++) {
+                     if (list.get(j) != null) {
+                         Log.i(TAG, "initView: " + list.get(j));
+                         Random random = new Random();
+                         PersistClock.saveAlarm(week, startTime, endTime, voice, isPlay, program);
+                         alarmManagerUtil.getAlarmManagerStart(random.nextInt(100) + j, list.get(j),
+                                 startTime, endTime, fileName, voice, isPlay, program);
+                     }
+                 }
              }
          }
 
@@ -544,12 +564,17 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (new File("/mnt/sdcard/flyscale/media/normal/" + fileName).exists()) {
                 FileHelper.deleteFile("/mnt/sdcard/flyscale/media/normal/" + fileName);
             }
-            String url = PersistConfig.findConfig().getHttpDownloadUrl() + "MP3C.amr";
-            HttpDownloadHelper.downloadFile(url, "/mnt/sdcard/flyscale/media/emr/" + fileName, fileName,
+            String url = PersistConfig.findConfig().getHttpDownloadUrl() + fileName;
+            HttpDownloadHelper.downloadFile(url, "/mnt/sdcard/flyscale/media/normal/" + fileName, fileName,
                     new DownloadListener2() {
                 @Override
-                public void taskStart(@NonNull DownloadTask task) {
-                    DDLog.i("下载开始" + task);
+                public void taskStart(@NonNull DownloadTask task1) {
+                    DDLog.i("下载开始" + task1);
+//                    if (task1.getInfo().isSameFrom(task)) {
+//                        DDLog.i("重复");
+//                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+//                                TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-1/00000000000000000000000000000"));
+//                    }
                 }
 
                 @Override
@@ -564,7 +589,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 TcpPacketFactory.EMR_AMR_FILE_OPERATION, "0/000000000000000000000000000000"));
                         // TODO: 2021/2/8 下载完成，设置播放列表
                         DDLog.i("下载完成，打印播放次数" + playTimes);
-
                     }
                 }
             });
@@ -574,7 +598,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     //下载文件
     private void DownLoadAmr(final String fileName, long size, final int playTimes, final String type) {
-        Log.i(TAG, "DownLoadAmr: 下载文件");
+        Log.i(TAG, "DownLoadAmr: 下载紧急文件");
         /**
          * 输入格式：
          * 如果终端可以下载，         返回 wa,01000000,0/000000000000000000000000000000xxxx
@@ -582,18 +606,22 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
          * 如果终端FTP下载失败，      返回 wa,01000000,-2/00000000000000000000000000000xxxx
          * 如果终端没有足够的空间，    返回 wa,01000000,-3/00000000000000000000000000000xxxx
          */
-        String url = PersistConfig.findConfig().getHttpDownloadUrl() + "/" + fileName;
+//        String url = PersistConfig.findConfig().getHttpDownloadUrl() + "/" + fileName;
+        String url = "http://192.168.1.104:8186/download/" + fileName;
+        @SuppressLint("SdCardPath") final String path = "/mnt/sdcard/flyscale/media/emr/";
         final long address;
         if ("mp3".equals(type)) {
             address = TcpPacketFactory.EMR_BROADCAST_MP3_FTP;
-        } else address = TcpPacketFactory.EMR_BROADCAST_AMR_FTP;
+        } else {
+            address = TcpPacketFactory.EMR_BROADCAST_AMR_FTP;
+        }
 
         if (size > ClientInfoHelper.getAvailableSize()) {
             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                     "-3/00000000000000000000000000000"));
         } else {
             DDLog.i("这里会下载i");
-            HttpDownloadHelper.downloadFile(url, fileName, fileName, new DownloadListener2() {
+            HttpDownloadHelper.downloadFile(url, path, "JINJIMP3.AMR", new DownloadListener2() {
                 @Override
                 public void taskStart(@NonNull DownloadTask task1) {
                     DDLog.i("开始下载" + task1.toString());
@@ -608,12 +636,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 @Override
                 public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
                     DDLog.i("下载结果" + cause);
-                    DDLog.i("realCause" + realCause);
                     if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
                         //下载失败
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                                 "-2/00000000000000000000000000000"));
                     } else if (cause.equals(EndCause.COMPLETED)) {
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                                "0/000000000000000000000000000000"));
                         /**
                          * 参数说明：
                          * 第一个参数为文件名，
@@ -625,27 +654,32 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                          * 第三个参数为播放时间YYMMDDHHMISS：
                          * 该报文如果终端和设备暂时没有连接到平台无法发送，那么必须保存在终端中，待终端再次上线后逐条补发给平台。
                          */
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
-                                "0/000000000000000000000000000000"));
+
+                        String state = null;
+                        long cmd;
                         if (address == TcpPacketFactory.EMR_BROADCAST_MP3_FTP) {
-                            DDLog.i("mp3下载完成，打印播放次数" + playTimes);
-                            // TODO: 2021/2/7  下载完成，设置播放列表----mp3
-                            MusicPlayer.getInstance().playTip("/data/app/abcdefgh.mp3", true, playTimes);
-                            if (MusicPlayer.mPlayCount == 0) {
-                                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                        TcpPacketFactory.EMR_BROADCAST_MP3, FillZeroUtil.getString(fileName + "/" + 0 + "/" +
-                                                DateHelper.longToString(DateHelper.yyMMddHHmmss) + "/", 32)));
-                            }
+                            cmd = TcpPacketFactory.EMR_BROADCAST_MP3;
                         } else {
-                            DDLog.i("amr下载完成，打印播放次数" + playTimes);
-                            // TODO: 2021/2/7  下载完成，设置播放列表----amr
-                            MusicPlayer.getInstance().playTip("/data/app/abcdefgh.mp3", true, playTimes);
-                            if (MusicPlayer.mPlayCount == 0) {
-                                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                                        TcpPacketFactory.EMR_BROADCAST_AMR, FillZeroUtil.getString(fileName + "/" + 0 + "/" +
-                                                DateHelper.longToString(DateHelper.yyMMddHHmmss) + "/", 32)));
-                            }
+                            cmd = TcpPacketFactory.EMR_BROADCAST_AMR;
                         }
+                        //播放紧急文件
+                        MusicPlayer.getInstance().playTip(path + "JINJIMP3.AMR", true, playTimes);
+                        File file = new File(path + "JINJIMP3.AMR");
+                        if (!file.exists()) {
+                            state = "-31";//文件不存在
+                        } else if (!file.getName().endsWith(".mp3") && !file.getName().endsWith(".MP3") &&
+                                !file.getName().endsWith(".amr") && !file.getName().endsWith(".AMR")){
+                            state = "-33";//不可识别的文件
+                        } else if (MusicPlayer.getInstance().isPlaying()) {
+                            state = "0";
+                        } else {
+                            state = "-32";
+                        }
+
+                        //发送播放反馈
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, cmd,
+                                FillZeroUtil.getString("JINJIMP3.AMR" + "/" + state + "/" +
+                                        DateHelper.longToString(DateHelper.yyMMddHHmmss) + "/", 32)));
                     }
                 }
             });
@@ -661,7 +695,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext)  + "/" +
                         (float)(Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000)*10))/10 + "/" +
                         36 + "/" +
-                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getMusicVolume()
+                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getVolume()
         ));
         timer.schedule(new TimerTask() {
             @Override
@@ -759,19 +793,19 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
             //文件下载模式参数2(可读可写) wd,0000000c,htp1.xjxlb.com:58003/0000000000xxxx
             //参数1：http下载域名端口
-            String httpDownloadUrl = "";
+            String httpDomianName = "";
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
-                    httpDownloadUrl = split[0];
+                    httpDomianName = split[0];
                     // TODO 服务器下发的数据，修改设备中的下载模式参数2
-                    PersistConfig.saveHttpDownloadUrl(httpDownloadUrl);
+                    PersistConfig.saveHttpDownloadUrl(httpDomianName);
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取文件下载模式参数2
-                httpDownloadUrl = PersistConfig.findConfig().getHttpDownloadUrl();
+                httpDomianName = PersistConfig.findConfig().getHttpDownloadUrl();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
-                        httpDownloadUrl+ "/" + TcpPacketFactory.dataZero.substring(httpDownloadUrl.length() + 1)));
+                        httpDomianName+ "/" + TcpPacketFactory.dataZero.substring(httpDomianName.length() + 1)));
             }
         } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
             //硬件版本号(只读) ra,00000021,xj-6850-v2.19b/00000000000000000xxxx
@@ -797,28 +831,25 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.VOLUME) {
             //音量(可读可写) wa,00000027,7/1/1/00000000000000000000000000xxxx
             // 参数1：音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
-            String musicVolume = "";
+            String volume = "";
             //参数2：FM普通广播使能标志：1 使能，0 禁止
-            String normalFmEnabled = "";
+            String normalFM = "";
             //参数3：FM插播广播使能标志：1 使能，0 禁止
-            String insertFmEnabled = "";
+            String insertFM = "";
             if (cmd == CMD.WRITE) {
                 if (split.length > 2) {
-                    musicVolume = split[0];
-                    normalFmEnabled = split[1];
-                    insertFmEnabled = split[2];
+                    volume = split[0];
+                    normalFM = split[1];
+                    insertFM = split[2];
                     //TODO 服务器下发的数据，修改设备中的音量参数
-                    ClientInfoHelper.setMusicVolume(musicVolume);
-                    PersistConfig.saveNormalFmEnabled(normalFmEnabled);
-                    PersistConfig.saveInsertFmEnabled(insertFmEnabled);
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取音量参数
-                musicVolume = ClientInfoHelper.getMusicVolume();
-                normalFmEnabled = PersistConfig.findConfig().getNormalFmEnabled();
-                insertFmEnabled = PersistConfig.findConfig().getInsertFmEnabled();
-                String volumeData = musicVolume +"/" + normalFmEnabled + "/" + insertFmEnabled + "/";
+                volume = "";
+                normalFM = "";
+                insertFM = "";
+                String volumeData = volume +"/" + normalFM + "/" + insertFM + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         volumeData + TcpPacketFactory.dataZero.substring(volumeData.length())));
             }
@@ -949,12 +980,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (fotaDir.length > 0) {
                     ftpFotafilePath = fotaDir[0];
                     //TODO 服务器下发的最新升级目录，修改本地设备中的该数据
-                    PersistConfig.saveFtpFotafilePath(ftpFotafilePath);
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取升级目录
-                ftpFotafilePath = PersistConfig.findConfig().getFtpFotafilePath();
+                ftpFotafilePath = "";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ftpFotafilePath + "," + TcpPacketFactory.dataZero.substring(ftpFotafilePath.length() + 1)));
             }
@@ -967,13 +997,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (audioDir.length > 0) {
                     ftpAudioFilepath = audioDir[0];
                     //TODO 服务器下发的最新FTP音频目录，修改设备中该数据
-                    PersistConfig.saveFtpAudioFilepath(ftpAudioFilepath);
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取音频文件FTP目录
-                ftpAudioFilepath = PersistConfig.findConfig().getFtpAudioFilepath();
+                ftpAudioFilepath = "";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ftpAudioFilepath + "," + TcpPacketFactory.dataZero.substring(ftpAudioFilepath.length() + 1)));
             }
@@ -994,17 +1022,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     linkType = split[2];
                     platformSmsNum = split[3];
                     //TODO 服务器下发的最新参数，修改设备中的该参数
-                    PersistConfig.saveLongLinkHeartbeat(longLinkHeartbeat);
-                    PersistConfig.saveLongLinkSignDelay(longLinkSignDelay);
-                    PersistConfig.savePlatformSmsNum(platformSmsNum);
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
+
                 }
             } else if (cmd == CMD.READ) {
                 //获取设备中的长链接心跳参数
-                longLinkHeartbeat = PersistConfig.findConfig().getLongLinkHeartbeat();
-                longLinkSignDelay = PersistConfig.findConfig().getLongLinkSignDelay();
-                linkType = "1";
-                platformSmsNum = PersistConfig.findConfig().getPlatformSmsNum();
+                longLinkHeartbeat = "";
+                longLinkSignDelay = "";
+                linkType = "";
+                platformSmsNum = "";
                 String longLinkParam = longLinkHeartbeat + "/" + longLinkSignDelay + "/" + linkType + "/" + platformSmsNum + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         longLinkParam + TcpPacketFactory.dataZero.substring(longLinkParam.length())));
@@ -1014,8 +1040,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (cmd == CMD.WRITE) {
                 if (data.equals(TcpPacketFactory.dataZero)) {
                     //TODO 服务器写入全0数据，代表平台要求终端先复位重新启动（网络通讯模块也需要重新启动）
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
-                    PhoneManagerUtil.reboot(BaseApplication.sContext , BaseApplication.sContext.getResources().getString( R.string.reset));
+
                 }
             } else if (cmd == CMD.READ) {
 
@@ -1038,18 +1063,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     callDate = split[2];
                     times = split[3];
                     //TODO 服务器最新下发数据，修改设备中的该参数
-                    PersistConfig.savePhoneNum(phoneNum);
-                    PersistConfig.saveCallTime(callTime);
-                    PersistConfig.saveCallDate(callDate);
-                    PersistConfig.saveCallTimes(times);
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
+
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取以下参数
-                phoneNum = PersistConfig.findConfig().getPhoneNum();
-                callTime = PersistConfig.findConfig().getCallTime();
-                callDate = PersistConfig.findConfig().getCallDate();
-                times = PersistConfig.findConfig().getTimes();
+                phoneNum = "";
+                callTime = "";
+                callDate = "";
+                times = "";
                 String callCommandParam = phoneNum + "/" + callTime + "/" + callDate + "/" +times + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         callCommandParam + TcpPacketFactory.dataZero.substring(callCommandParam.length())));
@@ -1125,11 +1147,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //平台获取终端可用存储空间大小（只读），查询指令：rd,00000045,000000000000000000000000000000xxxx
             if (cmd == CMD.READ) {
                 if (data.equals(TcpPacketFactory.dataZero)) {
+                    String[] memInfo = PhoneUtil.getRamInfo(BaseApplication.sContext);
                     //可用存储全部大小
-                    String totalMem = ClientInfoHelper.getTotalSize() + "";
+                    String totalMem = memInfo[0];
                     //可用存储空闲大小
-                    String availMem = ClientInfoHelper.getAvailableSize() + "";
-                    
+                    String availMem = memInfo[1];
+                    //反馈指令：ra,00000045,12345678901/12345678901/000000xxxx
                     String totalAndAvail = totalMem + "/" + availMem + "/";
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             totalAndAvail + TcpPacketFactory.dataZero.substring(totalAndAvail.length())));
@@ -1141,6 +1164,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (data.equals(TcpPacketFactory.dataZero)) {
                     //时间格式为yyyyMMddHHmmss
                     String systemTime = new SimpleDateFormat(DateHelper.yyyyMMddHHmmss).format(new Date(System.currentTimeMillis()));
+                    //反馈指令：ra,00000046,20180103201059/000000000000000xxxx
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             systemTime + "/" + TcpPacketFactory.dataZero.substring(systemTime.length() + 1)));
                 }
@@ -1148,7 +1172,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.DEVICE_PERSON_FUNCTION) {
             //终端个性化功能（可读可写）
             //第1个字符: 0 APP紧急语音单次播放; 1：APP紧急语音循环播放
-            String emrPlayMode = "";
+            String playMode = "";
             //第2个字符: 0防移开关启用; 1防移开关禁用
             String moveSwitch = "";
             //第3个字符:
@@ -1164,29 +1188,24 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             String wifiSwitch = "";
 
             if (cmd == CMD.WRITE) {
-                emrPlayMode = data.substring(0, 1);
+                playMode = data.substring(0, 1);
                 moveSwitch = data.substring(1, 2);
                 alarmMode = data.substring(2, 3);
                 callEnable = data.substring(3, 4);
                 channelSelect = data.substring(4, 5);
                 wifiSwitch = data.substring(5, 6);
                 //TODO 服务器下发的最新参数，修改设备中的该参数
-                PersistConfig.saveEmrPlayMode(emrPlayMode);
-                PersistConfig.saveMoveSwitch(moveSwitch);
-                PersistConfig.saveAlarmMode(alarmMode);
-                PersistConfig.saveCallEnabled(callEnable);
-                PersistConfig.saveChannelSelect(channelSelect);
-                PersistConfig.saveWifiSwitch(wifiSwitch);
-                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
+
             } else if (cmd == CMD.READ) {
                 //从设备中获取参数
-                emrPlayMode = PersistConfig.findConfig().getEmrPlayMode();
-                moveSwitch = PersistConfig.findConfig().getMoveSwitch();
-                alarmMode = PersistConfig.findConfig().getAlarmMode();
-                callEnable = PersistConfig.findConfig().getCallEnable();
-                channelSelect = PersistConfig.findConfig().getChannelSelect();
-                wifiSwitch = PersistConfig.findConfig().getWifiSwitch();
-                String devicePersonFunc = emrPlayMode + moveSwitch + alarmMode + callEnable + channelSelect + wifiSwitch;
+                playMode = "";
+                moveSwitch = "";
+                alarmMode = "";
+                callEnable = "";
+                channelSelect = "";
+                wifiSwitch = "";
+                String devicePersonFunc = playMode + moveSwitch + alarmMode + callEnable + channelSelect + wifiSwitch;
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         devicePersonFunc + TcpPacketFactory.dataZero.substring(devicePersonFunc.length())));
             }
@@ -1215,12 +1234,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     alarmVolume = split[0];
                     //TODO 服务器下发接警音量，修改设备中的数据
-                    ClientInfoHelper.setCallVolume(alarmVolume);
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取接警音量
-                alarmVolume = ClientInfoHelper.getCallVolume();
+                alarmVolume = "";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         alarmVolume + "/" + TcpPacketFactory.dataZero.substring(alarmVolume.length() + 1)));
             }
@@ -1232,11 +1250,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     fliesName = split[0];
                     //TODO 服务器下发要删除的文件名缩写，执行删除操作
-                    char[] names = fliesName.toCharArray();
-                    for (int i = 0 ; i < names.length ; i++) {
-                        FileHelper.deleteFile(MusicPlayer.MEDIA_PATH + "MP3" + names[i] + ".amr");
-                    }
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
                 }
             }
         } else if (address == TcpPacketFactory.DEVICE_SHORT_LINK_SLEEP) {

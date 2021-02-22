@@ -3,7 +3,9 @@ package com.flyscale.alertor.helper;
 import android.text.TextUtils;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ListHelper {
     /**
@@ -57,4 +59,16 @@ public class ListHelper {
         return null;
     }
 
+    /**
+     * 删除重复数据
+     * @param list
+     * @return
+     */
+    public static List<?> removeDuplicate(List<?> list) {
+        Set set = new LinkedHashSet<String>();
+        set.addAll(list);
+        list.clear();
+        list.addAll(set);
+        return list;
+    }
 }

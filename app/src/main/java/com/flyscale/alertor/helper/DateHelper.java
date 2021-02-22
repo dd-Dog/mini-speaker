@@ -1,9 +1,13 @@
 package com.flyscale.alertor.helper;
 
+import android.util.Log;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * @author 高鹤泉
@@ -66,6 +70,34 @@ public class DateHelper {
 
     public static String longToString(String pattern){
         return longToString(System.currentTimeMillis(),pattern);
+    }
+
+
+    /**
+     * 将时间转换成毫秒
+     * @param time
+     * @return
+     */
+    public static long transferTime(String time, int week) {
+        //得到日历实例，主要是为了下面的获取时间
+        Calendar mCalendar = Calendar.getInstance();
+        mCalendar.setTimeInMillis(System.currentTimeMillis());
+        //获取当前毫秒值
+        long systemTime = System.currentTimeMillis();
+        //是设置日历的时间，主要是让日历的年月日和当前同步
+        mCalendar.setTimeInMillis(System.currentTimeMillis());
+        // 这里时区需要设置一下，不然可能个别手机会有8个小时的时间差
+        mCalendar.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+        mCalendar.set(Calendar.DAY_OF_WEEK, week);
+        mCalendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, 2)));
+        mCalendar.set(Calendar.MINUTE, Integer.parseInt(time.substring(2, 4)));
+        mCalendar.set(Calendar.SECOND, Integer.parseInt(time.substring(4, 6)));
+        long selectTime = mCalendar.getTimeInMillis();
+        // 如果当前时间大于设置的时间，那么就从第二天的设定时间开始
+//        if(systemTime > selectTime) {
+//            mCalendar.add(Calendar.DAY_OF_MONTH, 1);
+//        }
+        return selectTime;
     }
 
 }

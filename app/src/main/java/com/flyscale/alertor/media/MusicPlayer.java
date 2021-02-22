@@ -5,9 +5,13 @@ import android.media.MediaPlayer;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.data.packet.CMD;
+import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.helper.DDLog;
+import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.helper.ThreadPool;
+import com.flyscale.alertor.netty.NettyHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +21,8 @@ import java.util.Timer;
 
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
+
+import static com.flyscale.alertor.helper.InternetUtil.TAG;
 
 public class MusicPlayer {
     private final MediaPlayer mMediaPlayer;
@@ -377,4 +383,66 @@ public class MusicPlayer {
         mMediaPlayer.reset();
     }
 
+    public void playBefore(final String path, boolean isPlay, final String endTime) {
+        DDLog.i("playBefore");
+        if (!isPlay) {
+            playNext(path, endTime);
+        } else {
+            try {
+                String QDY = path.substring(0, 38) + "QDY.AMR";
+                Log.i(TAG, "playBefore: " + QDY);
+                mMediaPlayer.setDataSource(QDY);
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                // 通过异步的方式装载媒体资源
+                mMediaPlayer.prepareAsync();
+                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mMediaPlayer.start();
+                    }
+                });
+                mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        playNext(path, endTime);
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void playNext(String path, String endTime) {
+        DDLog.i("playNext");
+        mMediaPlayer.reset();
+        try {
+            path = path.substring(0, 38) + ".AMR";
+            Log.i(TAG, "playNext: " + path);
+
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setDataSource(path);
+            mMediaPlayer.prepareAsync();
+            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mMediaPlayer.start();
+                }
+            });
+            mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    DDLog.i("播放完成");
+                    mPlayCount --;
+                    if (mPlayCount == 0) {
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, (0x00000200L + 1),
+                                FillZeroUtil.getString("0/", 32)));
+                    }
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
