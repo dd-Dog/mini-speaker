@@ -1234,7 +1234,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     fliesName = split[0];
                     //TODO 服务器下发要删除的文件名缩写，执行删除操作
-
+                    char[] names = fliesName.toCharArray();
+                    for (int i = 0 ; i < names.length ; i++) {
+                        FileHelper.deleteFile(MusicPlayer.MEDIA_PATH + "MP3" + names[i] + ".amr");
+                    }
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             }
         } else if (address == TcpPacketFactory.DEVICE_SHORT_LINK_SLEEP) {
