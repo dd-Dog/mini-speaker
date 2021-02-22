@@ -25,6 +25,7 @@ import com.flyscale.alertor.helper.HttpDownloadHelper;
 import com.flyscale.alertor.helper.LocationHelper;
 import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.MediaHelper;
+import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.UserActionHelper;
@@ -823,7 +824,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.EVDO_IP_ADDRESS) {
             //EVDO网络ip地址(只读) ra,00000026,192.168.111.123/0000000000000000xxxx
             if (cmd == CMD.READ) {
-                String evdoIP = "";
+                String evdoIP = NetHelper.getIpAddressString();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         evdoIP + "/" + TcpPacketFactory.dataZero.substring(evdoIP.length() + 1)));
             }
@@ -899,14 +900,15 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.BASE_STATION_INFORMATION) {
             //基站信息(只读) rd,0000002a,36d0/000b/b0c1/0000/60/000000000xxxx
             if (cmd == CMD.READ) {
-                //各个参数：SID/NID/0000/BID/signal_level
+                //各个参数：SID/NID/BID/000/signal_level
+                String[] cellInfo = NetHelper.getBaseData(BaseApplication.sContext).split(",");
                 //从设备中获取参数
-                String sid = "";
-                String nid = "";
-                String s = "";
-                String bid = "";
-                String singleLevel = "";
-                String baseStationInfo = sid + "/" + nid + "/" + s + "/" + bid + "/" + singleLevel + "/";
+                String sid = cellInfo[0];
+                String nid = cellInfo[1];
+                String bid = cellInfo[2];
+                String s = "0000";
+                String singleLevel = PhoneUtil.getMobileDbm() + "";
+                String baseStationInfo = sid + "/" + nid + "/" + bid + "/" + s + "/"  + singleLevel + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         baseStationInfo + TcpPacketFactory.dataZero.substring(baseStationInfo.length())));
             }
@@ -1150,8 +1152,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     //可用存储全部大小
                     String totalMem = memInfo[0];
                     //可用存储空闲大小
-                    String availMem = memInfo[1];
-                    //反馈指令：ra,00000045,12345678901/12345678901/000000xxxx
+                    String availMem = ClientInfoHelper.getAvailableSize() + "";
                     String totalAndAvail = totalMem + "/" + availMem + "/";
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             totalAndAvail + TcpPacketFactory.dataZero.substring(totalAndAvail.length())));

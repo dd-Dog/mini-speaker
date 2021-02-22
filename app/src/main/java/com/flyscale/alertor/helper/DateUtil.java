@@ -1,24 +1,18 @@
 package com.flyscale.alertor.helper;
 
-import android.content.SharedPreferences;
 import android.util.Log;
 
+
+import com.flyscale.alertor.base.BaseApplication;
+
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import static android.content.Context.MODE_PRIVATE;
-
 public class DateUtil {
 
-    public static boolean isMonOn = false;
-    public static boolean isTuesOn = false;
-    public static boolean isWedOn = false;
-    public static boolean isThurOn = false;
-    public static boolean isFriOn = false;
-    public static boolean isSatOn = false;
-    public static boolean isSunOn = false;
 
     private static String mYear;
     private static String mMonth;
@@ -29,11 +23,15 @@ public class DateUtil {
     private static String mSecond;
 
     private static SimpleDateFormat sf = null;
-    public static boolean[] isTodayOn = {false,false,false,false,false,false,false};
+    public static boolean[] isTodayOn = {false,true,false,true,false,false,false};
 
-    public static String freq = "";
-    public static String startTime = "";
-    public static String endTime = "";
+
+
+    public static final long INTERVAL_DAY = 86400000L;
+    public static final long INTERVAL_FIFTEEN_MINUTES = 900000L;
+    public static final long INTERVAL_HALF_DAY = 43200000L;
+    public static final long INTERVAL_HALF_HOUR = 1800000L;
+    public static final long INTERVAL_HOUR = 3600000L;
 
     /**
      * 根据二进制字符串判断FM开启日期
@@ -122,10 +120,10 @@ public class DateUtil {
     public static int timeCompare(String startTime, String endTime) {
         int i = 0;
         //注意：传过来的时间格式必须要和这里填入的时间格式相同
-        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         try {
-            Date date1 = dateFormat.parse(splicingString2(startTime));//开始时间
-            Date date2 = dateFormat.parse(splicingString2(endTime));//结束时间
+            Date date1 = dateFormat.parse(splicingString(startTime));//开始时间
+            Date date2 = dateFormat.parse(splicingString(endTime));//结束时间
             // 1 结束时间小于开始时间 2 开始时间与结束时间相同 3 结束时间大于开始时间
             if (date2.getTime() < date1.getTime()) {
                 //结束时间小于开始时间
@@ -138,7 +136,7 @@ public class DateUtil {
                 i = 3;
             }
         } catch (Exception e) {
-
+            Log.e("fengpj","时间未能正常对比");
         }
         return i;
     }
@@ -208,36 +206,113 @@ public class DateUtil {
         return 0;
     }
 
+    /**
+     *获取当前日期
+     */
     public static String getCurrentDate() {
         Date d = new Date();
         sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         return sf.format(d);
     }
 
-    public static void setData(String data){
-        freq = getFreq(data);
-        startTime = getStartFMTime(data);
-        endTime = getEndFMTime(data);
+
+
+    /**
+     * 获取当前时分秒
+     * HH:mm：ss
+     * */
+    public static String StringTimeHms(){
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        mHour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+        mMin = String.valueOf(c.get(Calendar.MINUTE));
+        mSecond = String.valueOf(c.get(Calendar.SECOND));
+        return mHour + mMin + mSecond;
+    }
+
+    /**
+     * 获取两个时间的差值
+     * HH:mm:ss
+     * */
+    public static long getTimeDiff(String currentTime,String startTime){
+        DateFormat df = new SimpleDateFormat("HH:mm:ss");
+        try
+        {
+            Date d1 = df.parse(splicingString(currentTime));
+            Date d2 = df.parse(splicingString(startTime));
+            long diff = d2.getTime() - d1.getTime();//这样得到的差值是毫秒级别
+            long days = diff / (1000 * 60 * 60 * 24);
+
+            long hours = (diff-days*(1000 * 60 * 60 * 24))/(1000* 60 * 60);
+            long minutes = (diff-days*(1000 * 60 * 60 * 24)-hours*(1000* 60 * 60))/(1000* 60);
+            //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
+            return diff;
+        }catch (Exception e) {
+
+        }
+        return 0;
+    }
+
+    /**
+     * 获取fm持续时间
+     * HH:mm:ss
+     * */
+    public static long getFMDuration(String startTime,String endTime){
+        DateFormat df = new SimpleDateFormat("HH:mm:ss");
+        try
+        {
+            Date d1 = df.parse(splicingString(startTime));
+            Date d2 = df.parse(splicingString(endTime));
+            long diff = d2.getTime() - d1.getTime();//这样得到的差值是毫秒级别
+            long days = diff / (1000 * 60 * 60 * 24);
+
+            long hours = (diff-days*(1000 * 60 * 60 * 24))/(1000* 60 * 60);
+            long minutes = (diff-days*(1000 * 60 * 60 * 24)-hours*(1000* 60 * 60))/(1000* 60);
+            //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
+            return diff;
+        }catch (Exception e) {
+
+        }
+        return 0;
     }
 
     /**
      * 设置FM定时启动闹钟
      * */
-    public static void setAlarmForFM(){
-        int timeCompare = timeCompare(StringTimeHm(),startTime);
-        if(timeCompare == 3){
-            int today = getDayOfWeek();
-            if(getFirstDay(today)!=0){
-                if (getFirstDay(today) == today){
-                    String time = getCurrentDate().substring(0,11) + splicingString(startTime);
+    public static void updataAlarmForFM(int id,String weeklyrecord,String freq,String startTime,
+                                        String endTime,String volumn){
+        if (timeCompare(StringTimeHms(),startTime) == 3){
+            Log.e("fengpj","广播"+id+"今日设置时间还未开始 时间差" + getTimeDiff(StringTimeHms(),startTime));
+            FMUtil.cancelFMAlarmManager(BaseApplication.sContext,id);
+            FMUtil.startFMAlarmManager(BaseApplication.sContext,id,getTimeDiff(StringTimeHms(),startTime),weeklyrecord,freq);
+        }else if(timeCompare(StringTimeHms(),startTime) == 1 && timeCompare(StringTimeHms(),endTime) == 3){
+            Log.e("fengpj","广播"+id+"今日设置时间已开始但是还未结束");
+            FMUtil.cancelFMAlarmManager(BaseApplication.sContext,id);
+            FMUtil.startFMAlarmManager(BaseApplication.sContext,id,0,weeklyrecord,freq);
+        }else if (timeCompare(StringTimeHms(),endTime) == 1){
+            Log.e("fengpj","广播"+id+"今日设置时间已过 不再设置 时间差" +(INTERVAL_DAY - getTimeDiff(startTime,StringTimeHms())) );
+            FMUtil.cancelFMAlarmManager(BaseApplication.sContext,id);
+            FMUtil.startFMAlarmManager(BaseApplication.sContext,id,INTERVAL_DAY - getTimeDiff(startTime,StringTimeHms()),weeklyrecord,freq);
+        }
+        Log.e("fengpj",id+"\n"+weeklyrecord+"\n"+freq+"\n"+startTime+"\n"+endTime+"\n"+volumn);
+    }
 
 
-                }else{
-
-                }
-            }
-        }else if(timeCompare == 2 || timeCompare == 3){
-
+    /**
+     * 设定重复闹钟
+     * */
+    public static void updataAlarmForFMRepeat(int id){
+        String freq = FMLitepalUtil.getFreq(id);
+        String weeklyrecord = FMLitepalUtil.getWeeklyRecord(id);
+        setDateFM(FMUtil.toBinary(Integer.valueOf(weeklyrecord).intValue()));
+        //Log.e("fengpj","" + FMUtil.toBinary(Integer.valueOf(weeklyrecord).intValue()));
+        Log.e("fengpj","id = " + id + "  isTodayOn = " + isTodayOn[getDayOfWeek()]);
+        if(isTodayOn[getDayOfWeek()]) {
+            FMUtil.cancelFMAlarmManager(BaseApplication.sContext, id);
+            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, 0, weeklyrecord,freq);
+        }else{
+            FMUtil.cancelFMAlarmManager(BaseApplication.sContext, id);
+            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, 0 + INTERVAL_DAY, weeklyrecord,freq);
         }
     }
 
