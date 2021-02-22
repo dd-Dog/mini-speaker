@@ -36,7 +36,6 @@ import com.liulishuo.okdownload.core.listener.DownloadListener2;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -159,7 +158,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
                                 (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
                                 36 + "/" +
-                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getVolume()
+                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getMusicVolume()
                 ));
             }
         }
@@ -662,7 +661,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext)  + "/" +
                         (float)(Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000)*10))/10 + "/" +
                         36 + "/" +
-                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getVolume()
+                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getMusicVolume()
         ));
         timer.schedule(new TimerTask() {
             @Override
@@ -809,14 +808,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     normalFmEnabled = split[1];
                     insertFmEnabled = split[2];
                     //TODO 服务器下发的数据，修改设备中的音量参数
-                    ClientInfoHelper.setVolume(musicVolume);
+                    ClientInfoHelper.setMusicVolume(musicVolume);
                     PersistConfig.saveNormalFmEnabled(normalFmEnabled);
                     PersistConfig.saveInsertFmEnabled(insertFmEnabled);
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取音量参数
-                musicVolume = ClientInfoHelper.getVolume();
+                musicVolume = ClientInfoHelper.getMusicVolume();
                 normalFmEnabled = PersistConfig.findConfig().getNormalFmEnabled();
                 insertFmEnabled = PersistConfig.findConfig().getInsertFmEnabled();
                 String volumeData = musicVolume +"/" + normalFmEnabled + "/" + insertFmEnabled + "/";
@@ -1218,11 +1217,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (split.length > 0) {
                     alarmVolume = split[0];
                     //TODO 服务器下发接警音量，修改设备中的数据
-
+                    ClientInfoHelper.setCallVolume(alarmVolume);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取接警音量
-                alarmVolume = "";
+                alarmVolume = ClientInfoHelper.getCallVolume();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         alarmVolume + "/" + TcpPacketFactory.dataZero.substring(alarmVolume.length() + 1)));
             }
