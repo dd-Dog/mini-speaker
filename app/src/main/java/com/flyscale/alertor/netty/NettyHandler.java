@@ -949,11 +949,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (fotaDir.length > 0) {
                     ftpFotafilePath = fotaDir[0];
                     //TODO 服务器下发的最新升级目录，修改本地设备中的该数据
-
+                    PersistConfig.saveFtpFotafilePath(ftpFotafilePath);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取升级目录
-                ftpFotafilePath = "";
+                ftpFotafilePath = PersistConfig.findConfig().getFtpFotafilePath();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ftpFotafilePath + "," + TcpPacketFactory.dataZero.substring(ftpFotafilePath.length() + 1)));
             }
@@ -966,11 +967,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (audioDir.length > 0) {
                     ftpAudioFilepath = audioDir[0];
                     //TODO 服务器下发的最新FTP音频目录，修改设备中该数据
+                    PersistConfig.saveFtpAudioFilepath(ftpAudioFilepath);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
 
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取音频文件FTP目录
-                ftpAudioFilepath = "";
+                ftpAudioFilepath = PersistConfig.findConfig().getFtpAudioFilepath();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         ftpAudioFilepath + "," + TcpPacketFactory.dataZero.substring(ftpAudioFilepath.length() + 1)));
             }

@@ -92,6 +92,14 @@ public class PersistConfig extends LitePalSupport {
     //FM插播广播使能标志：1 使能，0 禁止
     String insertFmEnabled = "1";
 
+    /****************升级文件FTP目录*****************/
+    //升级目录
+    String ftpFotafilePath = "/china_telcom/3gdev";
+
+    /***************音频文件FTP目录******************/
+    //音频文件FTP目录
+    String ftpAudioFilepath = "/china_telcom/dev1";
+
     //平台电话号码
     String platformNum = "0";
     //4个功能键对应的电话号码
@@ -574,6 +582,22 @@ public class PersistConfig extends LitePalSupport {
         this.insertFmEnabled = insertFmEnabled;
     }
 
+    public String getFtpFotafilePath() {
+        return ftpFotafilePath;
+    }
+
+    public void setFtpFotafilePath(String ftpFotafilePath) {
+        this.ftpFotafilePath = ftpFotafilePath;
+    }
+
+    public String getFtpAudioFilepath() {
+        return ftpAudioFilepath;
+    }
+
+    public void setFtpAudioFilepath(String ftpAudioFilepath) {
+        this.ftpAudioFilepath = ftpAudioFilepath;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -774,6 +798,20 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveInsertFmEnabled(String enabled) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setInsertFmEnabled(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveFtpFotafilePath(String path) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFtpFotafilePath(path);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveFtpAudioFilepath(String path) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFtpAudioFilepath(path);
         persistConfig.save();
         return persistConfig;
     }
