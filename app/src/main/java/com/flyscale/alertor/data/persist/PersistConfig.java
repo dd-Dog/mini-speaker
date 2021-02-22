@@ -85,6 +85,13 @@ public class PersistConfig extends LitePalSupport {
     //http下载密码
     String httpPwd = "ostar";
 
+    /******************音量(可读可写) ******************/
+    //音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
+    //FM普通广播使能标志：1 使能，0 禁止
+    String normalFmEnabled = "1";
+    //FM插播广播使能标志：1 使能，0 禁止
+    String insertFmEnabled = "1";
+
     //平台电话号码
     String platformNum = "0";
     //4个功能键对应的电话号码
@@ -551,6 +558,22 @@ public class PersistConfig extends LitePalSupport {
         this.httpPwd = httpPwd;
     }
 
+    public String getNormalFmEnabled() {
+        return normalFmEnabled;
+    }
+
+    public void setNormalFmEnabled(String normalFmEnabled) {
+        this.normalFmEnabled = normalFmEnabled;
+    }
+
+    public String getInsertFmEnabled() {
+        return insertFmEnabled;
+    }
+
+    public void setInsertFmEnabled(String insertFmEnabled) {
+        this.insertFmEnabled = insertFmEnabled;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -737,6 +760,20 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveHttpPwd(String pwd) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setHttpPwd(pwd);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveNormalFmEnabled(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setNormalFmEnabled(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveInsertFmEnabled(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setInsertFmEnabled(enabled);
         persistConfig.save();
         return persistConfig;
     }

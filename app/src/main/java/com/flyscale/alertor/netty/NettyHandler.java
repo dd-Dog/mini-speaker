@@ -759,19 +759,19 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.FILE_DOWNLOAD_MODE_PARAM_2) {
             //文件下载模式参数2(可读可写) wd,0000000c,htp1.xjxlb.com:58003/0000000000xxxx
             //参数1：http下载域名端口
-            String httpDomianName = "";
+            String httpDownloadUrl = "";
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
-                    httpDomianName = split[0];
+                    httpDownloadUrl = split[0];
                     // TODO 服务器下发的数据，修改设备中的下载模式参数2
-                    PersistConfig.saveHttpDownloadUrl(httpDomianName);
+                    PersistConfig.saveHttpDownloadUrl(httpDownloadUrl);
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取文件下载模式参数2
-                httpDomianName = PersistConfig.findConfig().getHttpDownloadUrl();
+                httpDownloadUrl = PersistConfig.findConfig().getHttpDownloadUrl();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
-                        httpDomianName+ "/" + TcpPacketFactory.dataZero.substring(httpDomianName.length() + 1)));
+                        httpDownloadUrl+ "/" + TcpPacketFactory.dataZero.substring(httpDownloadUrl.length() + 1)));
             }
         } else if (address == TcpPacketFactory.HARDWARE_VERSION) {
             //硬件版本号(只读) ra,00000021,xj-6850-v2.19b/00000000000000000xxxx
@@ -797,25 +797,28 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.VOLUME) {
             //音量(可读可写) wa,00000027,7/1/1/00000000000000000000000000xxxx
             // 参数1：音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
-            String volume = "";
+            String musicVolume = "";
             //参数2：FM普通广播使能标志：1 使能，0 禁止
-            String normalFM = "";
+            String normalFmEnabled = "";
             //参数3：FM插播广播使能标志：1 使能，0 禁止
-            String insertFM = "";
+            String insertFmEnabled = "";
             if (cmd == CMD.WRITE) {
                 if (split.length > 2) {
-                    volume = split[0];
-                    normalFM = split[1];
-                    insertFM = split[2];
+                    musicVolume = split[0];
+                    normalFmEnabled = split[1];
+                    insertFmEnabled = split[2];
                     //TODO 服务器下发的数据，修改设备中的音量参数
-
+                    ClientInfoHelper.setVolume(musicVolume);
+                    PersistConfig.saveNormalFmEnabled(normalFmEnabled);
+                    PersistConfig.saveInsertFmEnabled(insertFmEnabled);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取音量参数
-                volume = "";
-                normalFM = "";
-                insertFM = "";
-                String volumeData = volume +"/" + normalFM + "/" + insertFM + "/";
+                musicVolume = ClientInfoHelper.getVolume();
+                normalFmEnabled = PersistConfig.findConfig().getNormalFmEnabled();
+                insertFmEnabled = PersistConfig.findConfig().getInsertFmEnabled();
+                String volumeData = musicVolume +"/" + normalFmEnabled + "/" + insertFmEnabled + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         volumeData + TcpPacketFactory.dataZero.substring(volumeData.length())));
             }

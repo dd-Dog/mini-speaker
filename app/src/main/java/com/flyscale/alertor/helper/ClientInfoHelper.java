@@ -134,6 +134,16 @@ public class ClientInfoHelper {
     }
 
     /**
+     *设置媒体音量
+     * @return
+     */
+    public static void setVolume(String volume) {
+        @SuppressLint("ServiceCast") AudioManager audioManager =
+                (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, Integer.valueOf(volume , 16), AudioManager.FLAG_PLAY_SOUND);
+    }
+
+    /**
      * 获取剩余内存大小
      * @return
      */
