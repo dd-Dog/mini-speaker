@@ -69,46 +69,47 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostIPRelease = "202.100.190.107";
     int tcpPortRelease = 58005;
 
+
     /****************短链接参数***********************/
-    //链接类型(0短链接；1长链接)
-    String linkType = "1";
-    //短链接休眠时长（秒）
-    String shortLinkSleepTime = "10";
-    //短链接工作等待延迟（秒）
-    String shortLinkDelay = "10";
+    String linkType = "1";              //链接类型(0短链接；1长链接)
+    String shortLinkSleepTime = "10";   //短链接休眠时长（秒）
+    String shortLinkDelay = "10";       //短链接工作等待延迟（秒）
+
 
     /*************文件下载模式参数1(可读可写)*************/
-    //下载模式：0 ftp模式；1 http下载模式
-    String downloadMode = "1";
-    //http下载账户
-    String httpAccount = "ostar";
-    //http下载密码
-    String httpPwd = "ostar";
+    String downloadMode = "1";          //下载模式：0 ftp模式；1 http下载模式
+    String httpAccount = "ostar";       //http下载账户
+    String httpPwd = "ostar";           //http下载密码
+
 
     /******************音量(可读可写) ******************/
     //音量0-b分12档（0挡为最低档没有声音，其余挡位逐渐加大）
-    //FM普通广播使能标志：1 使能，0 禁止
-    String normalFmEnabled = "1";
-    //FM插播广播使能标志：1 使能，0 禁止
-    String insertFmEnabled = "1";
+    String normalFmEnabled = "1";       //FM普通广播使能标志：1 使能，0 禁止
+    String insertFmEnabled = "1";       //FM插播广播使能标志：1 使能，0 禁止
+
 
     /****************升级文件FTP目录*****************/
-    //升级目录
-    String ftpFotafilePath = "/china_telcom/3gdev";
+    String ftpFotafilePath = "/china_telcom/3gdev";   //升级目录
+
 
     /***************音频文件FTP目录******************/
-    //音频文件FTP目录
-    String ftpAudioFilepath = "/china_telcom/dev1";
+    String ftpAudioFilepath = "/china_telcom/dev1";   //音频文件FTP目录
+
 
     /*************长链接心跳间隔(秒)*********/
-    //长连接心跳间隔(秒)
-    String longLinkHeartbeat = "20";
-    //长连接登录延迟(秒)
-    String longLinkSignDelay = "60";
+    String longLinkHeartbeat = "20";      //长连接心跳间隔(秒)
+    String longLinkSignDelay = "60";      //长连接登录延迟(秒)
     //长链接短链接选择 (固定为0:短连接 ;固定为1:长连接)
     //String linkType = "1";
-    //平台短信号码
-    String platformSmsNum = "0";
+    String platformSmsNum = "0";          //平台短信号码
+
+
+    /**************拨打电话指令参数 *************/
+    String phoneNum = "0";        //拨打的电话号码
+    String callTime = "20";        //每次通话时长（秒）
+    String callDate = "202101010000";  //拨打电话的时间（年月日时分）
+    String times = "03";           //拨打失败后的重试次数
+
 
     //平台电话号码
     String platformNum = "0";
@@ -632,6 +633,38 @@ public class PersistConfig extends LitePalSupport {
         this.platformSmsNum = platformSmsNum;
     }
 
+    public String getPhoneNum() {
+        return phoneNum;
+    }
+
+    public void setPhoneNum(String phoneNum) {
+        this.phoneNum = phoneNum;
+    }
+
+    public String getCallTime() {
+        return callTime;
+    }
+
+    public void setCallTime(String callTime) {
+        this.callTime = callTime;
+    }
+
+    public String getCallDate() {
+        return callDate;
+    }
+
+    public void setCallDate(String callDate) {
+        this.callDate = callDate;
+    }
+
+    public String getTimes() {
+        return times;
+    }
+
+    public void setTimes(String times) {
+        this.times = times;
+    }
+
     public String getPlatformNum() {
         return platformNum;
     }
@@ -867,6 +900,34 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig savePlatformSmsNum(String num) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setPlatformSmsNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig savePhoneNum(String num) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPhoneNum(num);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallTime(String time) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCallTime(time);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallDate(String date) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCallDate(date);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallTimes(String times) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setTimes(times);
         persistConfig.save();
         return persistConfig;
     }

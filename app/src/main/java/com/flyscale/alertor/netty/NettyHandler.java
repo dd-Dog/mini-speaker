@@ -1039,15 +1039,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     callDate = split[2];
                     times = split[3];
                     //TODO 服务器最新下发数据，修改设备中的该参数
-
-
+                    PersistConfig.savePhoneNum(phoneNum);
+                    PersistConfig.saveCallTime(callTime);
+                    PersistConfig.saveCallDate(callDate);
+                    PersistConfig.saveCallTimes(times);
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
                 //从设备中获取以下参数
-                phoneNum = "";
-                callTime = "";
-                callDate = "";
-                times = "";
+                phoneNum = PersistConfig.findConfig().getPhoneNum();
+                callTime = PersistConfig.findConfig().getCallTime();
+                callDate = PersistConfig.findConfig().getCallDate();
+                times = PersistConfig.findConfig().getTimes();
                 String callCommandParam = phoneNum + "/" + callTime + "/" + callDate + "/" +times + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         callCommandParam + TcpPacketFactory.dataZero.substring(callCommandParam.length())));
