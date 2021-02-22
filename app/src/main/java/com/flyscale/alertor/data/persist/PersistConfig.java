@@ -8,7 +8,6 @@ import com.flyscale.alertor.helper.DateHelper;
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -111,13 +110,27 @@ public class PersistConfig extends LitePalSupport {
     String times = "03";           //拨打失败后的重试次数
 
 
-    //平台电话号码
+    /*************平台电话号码*****************/
     String platformNum = "0";
-    //4个功能键对应的电话号码
+
+
+    /*********** 4个功能键对应的电话号码 ****************/
     String key1Num = "0";
     String key2Num = "0";
     String key3Num = "0";
     String key4Num = "0";
+
+
+    /**************终端个性化功能***************/
+    String emrPlayMode = "0";       //0 APP紧急语音单次播放; 1：APP紧急语音循环播放
+    String moveSwitch = "0";     //0防移开关启用; 1防移开关禁用
+    String alarmMode = "0";      // 0一键报警普通模式（十户联防号码呼入：用户按键接听）;
+                                // 1一键报警奎屯模式（十户联防号码呼入后：响3声报警音，再自动接听，播放完成报警信息后，用户挂断）
+                                //2：一键报警沙湾模式（十户联防号码呼入后：不响报警音，自动接听，播放完成报警信息后，用户挂断；）
+
+    String callEnable = "0";     //1就是只能拨打报警与快捷键; 0可以拨打所有电话
+    String channelSelect = "0";  //频选”参数 ：0 默认; 1 4G-800M优选;  2:4G-1800M优选
+    String wifiSwitch = "1";     //“WIFI开关”参数 ：0 开通; 1 关闭
 
     //DES随机密钥，只有登录成功后才能使用
     private String randomKey;
@@ -705,6 +718,54 @@ public class PersistConfig extends LitePalSupport {
         this.key4Num = key4Num;
     }
 
+    public String getEmrPlayMode() {
+        return emrPlayMode;
+    }
+
+    public void setEmrPlayMode(String emrPlayMode) {
+        this.emrPlayMode = emrPlayMode;
+    }
+
+    public String getMoveSwitch() {
+        return moveSwitch;
+    }
+
+    public void setMoveSwitch(String moveSwitch) {
+        this.moveSwitch = moveSwitch;
+    }
+
+    public String getAlarmMode() {
+        return alarmMode;
+    }
+
+    public void setAlarmMode(String alarmMode) {
+        this.alarmMode = alarmMode;
+    }
+
+    public String getCallEnable() {
+        return callEnable;
+    }
+
+    public void setCallEnable(String callEnable) {
+        this.callEnable = callEnable;
+    }
+
+    public String getChannelSelect() {
+        return channelSelect;
+    }
+
+    public void setChannelSelect(String channelSelect) {
+        this.channelSelect = channelSelect;
+    }
+
+    public String getWifiSwitch() {
+        return wifiSwitch;
+    }
+
+    public void setWifiSwitch(String wifiSwitch) {
+        this.wifiSwitch = wifiSwitch;
+    }
+
     public static PersistConfig findConfig() {
         PersistConfig persistConfig = LitePal.findFirst(PersistConfig.class);
         if (persistConfig == null) {
@@ -960,6 +1021,47 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
+    public static PersistConfig saveEmrPlayMode(String mode) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setEmrPlayMode(mode);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveMoveSwitch(String moveSwitch) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setMoveSwitch(moveSwitch);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveAlarmMode(String mode) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setAlarmMode(mode);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCallEnabled(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCallEnable(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveChannelSelect(String channel) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setChannelSelect(channel);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveWifiSwitch(String enabled) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setWifiSwitch(enabled);
+        persistConfig.save();
+        return persistConfig;
+    }
     @Override
     public String toString() {
         return "PersistConfig{" +

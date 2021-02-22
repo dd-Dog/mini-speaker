@@ -1151,7 +1151,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.DEVICE_PERSON_FUNCTION) {
             //终端个性化功能（可读可写）
             //第1个字符: 0 APP紧急语音单次播放; 1：APP紧急语音循环播放
-            String playMode = "";
+            String emrPlayMode = "";
             //第2个字符: 0防移开关启用; 1防移开关禁用
             String moveSwitch = "";
             //第3个字符:
@@ -1167,24 +1167,29 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             String wifiSwitch = "";
 
             if (cmd == CMD.WRITE) {
-                playMode = data.substring(0, 1);
+                emrPlayMode = data.substring(0, 1);
                 moveSwitch = data.substring(1, 2);
                 alarmMode = data.substring(2, 3);
                 callEnable = data.substring(3, 4);
                 channelSelect = data.substring(4, 5);
                 wifiSwitch = data.substring(5, 6);
                 //TODO 服务器下发的最新参数，修改设备中的该参数
-
-
+                PersistConfig.saveEmrPlayMode(emrPlayMode);
+                PersistConfig.saveMoveSwitch(moveSwitch);
+                PersistConfig.saveAlarmMode(alarmMode);
+                PersistConfig.saveCallEnabled(callEnable);
+                PersistConfig.saveChannelSelect(channelSelect);
+                PersistConfig.saveWifiSwitch(wifiSwitch);
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
             } else if (cmd == CMD.READ) {
                 //从设备中获取参数
-                playMode = "";
-                moveSwitch = "";
-                alarmMode = "";
-                callEnable = "";
-                channelSelect = "";
-                wifiSwitch = "";
-                String devicePersonFunc = playMode + moveSwitch + alarmMode + callEnable + channelSelect + wifiSwitch;
+                emrPlayMode = PersistConfig.findConfig().getEmrPlayMode();
+                moveSwitch = PersistConfig.findConfig().getMoveSwitch();
+                alarmMode = PersistConfig.findConfig().getAlarmMode();
+                callEnable = PersistConfig.findConfig().getCallEnable();
+                channelSelect = PersistConfig.findConfig().getChannelSelect();
+                wifiSwitch = PersistConfig.findConfig().getWifiSwitch();
+                String devicePersonFunc = emrPlayMode + moveSwitch + alarmMode + callEnable + channelSelect + wifiSwitch;
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         devicePersonFunc + TcpPacketFactory.dataZero.substring(devicePersonFunc.length())));
             }
