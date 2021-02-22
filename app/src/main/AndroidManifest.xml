@@ -79,6 +79,10 @@
                 <action android:name="flyscale.privkey.TOGGLE_USB_CONFIG"/>
                 <action android:name="flyscale.privkey.SENSOR_LEARN.down"/>
                 <action android:name="flyscale.privkey.SENSOR_LEARN.up"/>
+                <action android:name="flyscale.privkey.FUNCTION_KEY1.down"/>
+                <action android:name="flyscale.privkey.FUNCTION_KEY2.down"/>
+                <action android:name="flyscale.privkey.FUNCTION_KEY3.down"/>
+                <action android:name="flyscale.privkey.FUNCTION_KEY4.down"/>
             </intent-filter>
         </receiver>
         <!--   按键广播     -->

@@ -20,4 +20,10 @@ public interface BRConstant {
     //学习键按下
     String ACTION_STUDY_DOWN = "flyscale.privkey.SENSOR_LEARN.down";
     String ACTION_STUDY_UP = "flyscale.privkey.SENSOR_LEARN.up";
+
+    //功能键1--4按下
+    String ACTION_FUNCTION_KEY1_DOWN = "flyscale.privkey.FUNCTION_KEY1.down";
+    String ACTION_FUNCTION_KEY2_DOWN = "flyscale.privkey.FUNCTION_KEY2.down";
+    String ACTION_FUNCTION_KEY3_DOWN = "flyscale.privkey.FUNCTION_KEY3.down";
+    String ACTION_FUNCTION_KEY4_DOWN = "flyscale.privkey.FUNCTION_KEY4.down";
 }
