@@ -104,6 +104,16 @@
             </intent-filter>
         </receiver>
 
+	<receiver android:name=".receivers.FMReceiver">
+            <intent-filter>
+                <action android:name="com.android.flyscale.FM_INFORMATION"/>
+                <action android:name="FLYSCALE_FM_INFORMATION"/>
+                <action android:name="FLYSCALE_FM_CALLBACK_INFORMATION"/>
+                <action android:name="FLYSCALE_ALARMMANAGER_FM_START"/>
+                <action android:name="FLYSCALE_ALARMMANAGER_FM_STOP"/>
+            </intent-filter>
+        </receiver>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

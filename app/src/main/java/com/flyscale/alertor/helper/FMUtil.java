@@ -1,7 +1,10 @@
 package com.flyscale.alertor.helper;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 public class FMUtil {
 
@@ -12,6 +15,14 @@ public class FMUtil {
     public static int count = 0;
 
     public FMUtil() {
+    }
+
+    /**
+     * 十进制转二进制
+     * */
+    public static String toBinary(int date){
+        String binary = Integer.toBinaryString(date);
+        return binary;
     }
 
 
@@ -94,5 +105,43 @@ public class FMUtil {
         FMUtil.count = count;
     }
 
+    /**
+     * 设定fm启动闹钟
+     * */
+    public static void startFMAlarmManager(Context context,int fmId,long time,String weekly,String freq){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent("FLYSCALE_ALARMMANAGER_FM_START");
+        intent.putExtra("fmId",fmId);
+        intent.putExtra("weekly",weekly);
+        intent.putExtra("freq",freq);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pendingIntent);
+        Log.e("fengpj","定时启动设置"+fmId + "当前时间" + System.currentTimeMillis() + "设置时间" +(System.currentTimeMillis() + time) );
+    }
 
+    /**
+     * 设定fm停止闹钟
+     * */
+    public static void stopFMAlarmManager(Context context,int fmId,long time){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent("FLYSCALE_ALARMMANAGER_FM_STOP");
+        intent.putExtra("fmId",fmId);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pendingIntent);
+        Log.e("fengpj","定时启动设置"+fmId + "当前时间" + System.currentTimeMillis() + "设置时间" +(System.currentTimeMillis() + time) );
+    }
+
+    /**
+     * 取消fm闹钟提醒
+     */
+    public static void cancelFMAlarmManager(Context context,int fmId)
+    {
+        // 取消AlarmManager的定时服务
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent=new Intent("FLYSCALE_ALARMMANAGER_FM_START");// 和设定闹钟时的action要一样
+        // 这里PendingIntent的requestCode、intent和flag要和设定闹钟时一样
+        PendingIntent pi=PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.cancel(pi);
+        Log.e("fengpj","取消定时设置"+fmId);
+    }
 }
