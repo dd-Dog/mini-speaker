@@ -24,6 +24,7 @@ import com.flyscale.alertor.helper.HttpDownloadHelper;
 import com.flyscale.alertor.helper.LocationHelper;
 import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.MediaHelper;
+import com.flyscale.alertor.helper.NetHelper;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.UserActionHelper;
@@ -790,7 +791,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.EVDO_IP_ADDRESS) {
             //EVDO网络ip地址(只读) ra,00000026,192.168.111.123/0000000000000000xxxx
             if (cmd == CMD.READ) {
-                String evdoIP = "";
+                String evdoIP = NetHelper.getIpAddressString();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         evdoIP + "/" + TcpPacketFactory.dataZero.substring(evdoIP.length() + 1)));
             }
@@ -1129,7 +1130,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     String totalMem = ClientInfoHelper.getTotalSize() + "";
                     //可用存储空闲大小
                     String availMem = ClientInfoHelper.getAvailableSize() + "";
-                    
+
                     String totalAndAvail = totalMem + "/" + availMem + "/";
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             totalAndAvail + TcpPacketFactory.dataZero.substring(totalAndAvail.length())));
