@@ -176,4 +176,14 @@ public class ClientInfoHelper {
         return available;
     }
 
+    /**
+     * 获取总内存大小
+     * @return
+     */
+    public static long getTotalSize() {
+        File datapath = Environment.getDataDirectory();
+        StatFs dataFs = new StatFs(datapath.getPath());
+        return (long) dataFs.getBlockCount()*(long)dataFs.getBlockSize();
+    }
+
 }

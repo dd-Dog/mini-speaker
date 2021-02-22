@@ -1125,12 +1125,11 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //平台获取终端可用存储空间大小（只读），查询指令：rd,00000045,000000000000000000000000000000xxxx
             if (cmd == CMD.READ) {
                 if (data.equals(TcpPacketFactory.dataZero)) {
-                    String[] memInfo = PhoneUtil.getRamInfo(BaseApplication.sContext);
                     //可用存储全部大小
-                    String totalMem = memInfo[0];
+                    String totalMem = ClientInfoHelper.getTotalSize() + "";
                     //可用存储空闲大小
-                    String availMem = memInfo[1];
-                    //反馈指令：ra,00000045,12345678901/12345678901/000000xxxx
+                    String availMem = ClientInfoHelper.getAvailableSize() + "";
+                    
                     String totalAndAvail = totalMem + "/" + availMem + "/";
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             totalAndAvail + TcpPacketFactory.dataZero.substring(totalAndAvail.length())));
@@ -1142,7 +1141,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (data.equals(TcpPacketFactory.dataZero)) {
                     //时间格式为yyyyMMddHHmmss
                     String systemTime = new SimpleDateFormat(DateHelper.yyyyMMddHHmmss).format(new Date(System.currentTimeMillis()));
-                    //反馈指令：ra,00000046,20180103201059/000000000000000xxxx
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                             systemTime + "/" + TcpPacketFactory.dataZero.substring(systemTime.length() + 1)));
                 }
