@@ -400,7 +400,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         String fileName = split[0];
                         long fileSize = Long.parseLong(split[1]);
                         //立刻反馈
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                                 fileName + "/" + TcpPacketFactory.dataZero.substring(fileName.length() + 1)));
                         if (fileSize > 0) {
                             //文件大小不为0，表示下载该文件
@@ -429,7 +429,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         String fileName = split[0];
                         long fileSize = Long.parseLong(split[1]);
                         //立刻反馈
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                                 fileName + "/" + TcpPacketFactory.dataZero.substring(fileName.length() + 1)));
                         if (fileSize > 0) {
                             //文件大小不为0，表示下载该文件
@@ -473,10 +473,28 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             } else if (address == TcpPacketFactory.BACKUP1) {
                 /*7.3.8下传文件备份指令*/
                 DDLog.i("下传文件备份指令");
+                /**
+                 * 参数说明
+                 * 输入格式：
+                 * wd,02000001,20180226190845073_15311228/00000xxxx
+                 * 行地址为02000001，字段1为业务流水号。
+                 */
+                if (tcpPacket.getCmd() == CMD.WRITE) {
+                    String[] split = data.split("/");
+                    String num = split[0];
+                    //备份文件
+                    /*7.3.9 终端备份文件系统结束后反馈*/
+                    /**
+                     * 参数说明
+                     * wa,02000002,0/20180226190845073_15311228/000xxxx
+                     * 参数1：备份结果（0备份成功 ；-70备份失败）
+                     * 参数2：业务流水号
+                     */
+                    DDLog.i("终端备份文件系统结束后反馈");
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                            TcpPacketFactory.BACKUP2, "0/" + num + "/" + TcpPacketFactory.dataZero.substring(num.length() + 3)));
 
-            } else if (address == TcpPacketFactory.BACKUP2) {
-                /*7.3.9 终端备份文件系统结束后反馈*/
-                DDLog.i("终端备份文件系统结束后反馈");
+                }
 
             } else {
                 //系统变量
