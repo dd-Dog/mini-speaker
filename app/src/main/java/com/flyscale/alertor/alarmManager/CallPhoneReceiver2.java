@@ -10,8 +10,12 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.receivers.BRConstant;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author 高鹤泉
@@ -39,7 +43,7 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
     String TAG = "CallPhoneReceiver2";
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(final Context context, Intent intent) {
         String action = intent.getAction();
         Log.i(TAG, "onReceive: action = " + action);
         if(TextUtils.equals(action,"android.intent.action.NEW_OUTGOING_CALL")){
@@ -75,7 +79,17 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
                 if(CallAlarmInstance.getInstance().getStatus() == CallAlarmInstance.STATUS_ALARMING){
                     if(TextUtils.equals(mSendNum,PersistConfig.findConfig().getAlarmNum())
                             || TextUtils.equals(mSendNum,PersistConfig.findConfig().getSpecialNum())){
+                        DDLog.w("语音报警成功！");
                         CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_SUCCESS);
+                        //电话接通，定时10秒后主动挂断
+                        Timer timer = new Timer();
+                        timer.schedule(new TimerTask() {
+                            @Override
+                            public void run() {
+                                //挂断电话
+                                PhoneUtil.endCall(context);
+                            }
+                        }, 10* 1000);
                     }
                 }
             }
