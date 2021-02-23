@@ -1,5 +1,7 @@
 package com.flyscale.alertor;
 
+import android.annotation.SuppressLint;
+
 public class Constants {
 
     public class BatteryInfo {
@@ -14,4 +16,11 @@ public class Constants {
     public class TrampSwitch {
         public static final String TRAMP_SWITCH = "TrampSwitch";
     }
+
+    public class FilePath {
+        public static final String FILE_NORMAL = "/mnt/sdcard/flyscale/media/normal/";
+        public static final String FILE_EMR = "/mnt/sdcard/flyscale/media/emr/";
+        public static final String FILE_COMMON = "/mnt/sdcard/flyscale/common/";
+    }
+
 }

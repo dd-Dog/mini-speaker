@@ -8,6 +8,7 @@ import android.util.Log;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.helper.DDLog;
+import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.helper.ThreadPool;
@@ -175,12 +176,21 @@ public class MusicPlayer {
         }
         try {
             final Timer timer = new Timer();
+            Log.i(TAG, "playTip: " + path);
+            mMediaPlayer.reset();
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 //            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
             // 通过异步的方式装载媒体资源
             mMediaPlayer.prepareAsync();
-            mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
+            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    if (mPlayCount != 0) {
+                        mp.start();
+                    }
+                }
+            });
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(final MediaPlayer mp) {
@@ -383,14 +393,17 @@ public class MusicPlayer {
         mMediaPlayer.reset();
     }
 
-    public void playBefore(final String path, boolean isPlay, final String endTime) {
-        DDLog.i("playBefore");
+    public void playBefore(final String path, boolean isPlay, final String endTime, final long address) {
+        DDLog.i("playBefore" + isPlay);
         if (!isPlay) {
-            playNext(path, endTime);
+            Log.i(TAG, "playBefore: 不播放前导音" + path);
+            playNext(path, endTime, address);
         } else {
             try {
+                Log.i(TAG, "playBefore: 播放前导音" + path);
                 String QDY = path.substring(0, 38) + "QDY.AMR";
                 Log.i(TAG, "playBefore: " + QDY);
+                mMediaPlayer.reset();
                 mMediaPlayer.setDataSource(QDY);
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 // 通过异步的方式装载媒体资源
@@ -404,7 +417,7 @@ public class MusicPlayer {
                 mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        playNext(path, endTime);
+                        playNext(path, endTime, address);
                     }
                 });
             } catch (IOException e) {
@@ -413,31 +426,85 @@ public class MusicPlayer {
         }
     }
 
-    private void playNext(String path, String endTime) {
+    private void playNext(String path, String endTime, final long address) {
         DDLog.i("playNext");
         mMediaPlayer.reset();
+        mPlayCount = 1;
         try {
             path = path.substring(0, 38) + ".AMR";
             Log.i(TAG, "playNext: " + path);
+            if (new File(path).exists()) {
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mMediaPlayer.setDataSource(path);
+                mMediaPlayer.prepareAsync();
+                mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mMediaPlayer.start();
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
+                                FillZeroUtil.getString("0/", 32)));
+                    }
+                });
+                final String finalPath = path;
+                final long times = System.currentTimeMillis();
+                mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        DDLog.i("播放完成");
+                        mPlayCount --;
+                        if (mPlayCount == 0) {
+                            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
+                                    FillZeroUtil.getString(finalPath.substring(34) + "/" + Long.toHexString(address) +
+                                            1 + "/" +DateHelper.longToString(times, DateHelper.yyMMddHHmmss), 32)));
+                        }
+                        mp.start();
+                    }
+                });
+            } else {
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
+                        FillZeroUtil.getString("-100/", 32)));
+            }
 
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void playNormal(String path, int playTimes) {
+        try {
+            mPlayCount = playTimes;
+            mMediaPlayer.reset();
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.prepareAsync();
-            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+            final Timer timer = new Timer();
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    mMediaPlayer.start();
+                    if (mPlayCount != 0) {
+                        mMediaPlayer.start();
+                    }
                 }
             });
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
-                public void onCompletion(MediaPlayer mp) {
-                    DDLog.i("播放完成");
+                public void onCompletion(final MediaPlayer mp) {
                     mPlayCount --;
-                    if (mPlayCount == 0) {
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, (0x00000200L + 1),
-                                FillZeroUtil.getString("0/", 32)));
+                    if (mPlayCount > 0) {
+                        DDLog.i("播放次数" + mPlayCount);
+                        if (mPlayCount == 1) {
+                            mp.start();
+                            DDLog.i("播放完成" + mPlayCount);
+                        } else if (mPlayCount > 1){
+                            mp.start();
+                            timer.schedule(new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    DDLog.i("播放完成" + mPlayCount);
+                                }
+                            }, 1000);
+                        }
                     }
                 }
             });

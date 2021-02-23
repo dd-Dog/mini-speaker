@@ -114,6 +114,13 @@
             </intent-filter>
         </receiver>
 
+<!--        定时任务广播-->
+        <receiver android:name=".receivers.TimingPlanReceiver">
+            <intent-filter>
+                <action android:name="FLYSCALE_MUSIC_STOP"/>
+            </intent-filter>
+        </receiver>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -2,6 +2,7 @@ package com.flyscale.alertor.helper;
 
 import android.util.Log;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -98,6 +99,40 @@ public class DateHelper {
 //            mCalendar.add(Calendar.DAY_OF_MONTH, 1);
 //        }
         return selectTime;
+    }
+
+    public static long getFMDuration(String startTime,String endTime){
+        DateFormat df = new SimpleDateFormat("HHmmss");
+        try
+        {
+            Date d1 = df.parse(splicingString(startTime));
+            Date d2 = df.parse(splicingString(endTime));
+            long diff = d2.getTime() - d1.getTime();//这样得到的差值是毫秒级别
+            long days = diff / (1000 * 60 * 60 * 24);
+
+            long hours = (diff-days*(1000 * 60 * 60 * 24))/(1000* 60 * 60);
+            long minutes = (diff-days*(1000 * 60 * 60 * 24)-hours*(1000* 60 * 60))/(1000* 60);
+            //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
+            return diff;
+        }catch (Exception e) {
+
+        }
+        return 0;
+    }
+    public static String splicingString(String string){
+        String hour = string.substring(0,2);
+        String min = string.substring(2,4);
+        String second = string.substring(4);
+        String time = hour + min + second;
+        return  time;
+    }
+
+    public static String StringTimeHms(){
+        final Calendar c = Calendar.getInstance();
+        String mHour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+        String mMin = String.valueOf(c.get(Calendar.MINUTE));
+        String mSecond = String.valueOf(c.get(Calendar.SECOND));
+        return mHour + mMin + mSecond;
     }
 
 }

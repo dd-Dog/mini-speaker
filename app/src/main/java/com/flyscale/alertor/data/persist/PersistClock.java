@@ -12,8 +12,21 @@ import java.util.List;
 public class PersistClock extends LitePalSupport {
 
     public int week;
-    String startTime, endTime, voice, program;
+    String startTime, endTime, voice;
+    long address;
     boolean before;
+
+    public long getAddress() {
+        return address;
+    }
+
+    public void setAddress(long address) {
+        this.address = address;
+    }
+
+    public boolean isBefore() {
+        return before;
+    }
 
     public void setWeek(int week) {
         this.week = week;
@@ -33,14 +46,6 @@ public class PersistClock extends LitePalSupport {
 
     public void setVoice(String voice) {
         this.voice = voice;
-    }
-
-    public void setProgram(String program) {
-        this.program = program;
-    }
-
-    public String getProgram() {
-        return program;
     }
 
     public int getWeek() {
@@ -69,7 +74,7 @@ public class PersistClock extends LitePalSupport {
      * @return
      */
     public static PersistClock saveAlarm(int week, String startTime, String endTime, String voice, boolean before,
-                                         String program) {
+                                         long address) {
         PersistClock persistClock = new PersistClock();
         //避免插入重复数据
         List<PersistClock> songs = LitePal.where("week = ? and startTime = ? and endTime = ? and voice = ? ",
@@ -85,7 +90,7 @@ public class PersistClock extends LitePalSupport {
         persistClock.setEndTime(endTime);
         persistClock.setVoice(voice);
         persistClock.setBefore(before);
-        persistClock.setProgram(program);
+        persistClock.setAddress(address);
         persistClock.save();
         return persistClock;
     }

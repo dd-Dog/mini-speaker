@@ -7,12 +7,13 @@ import android.media.AudioManager;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.flyscale.alertor.data.packet.CMD;
-import com.flyscale.alertor.data.packet.TcpPacket;
+import com.flyscale.alertor.Constants;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
-import com.flyscale.alertor.helper.FillZeroUtil;
+import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.media.MusicPlayer;
-import com.flyscale.alertor.netty.NettyHelper;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static android.media.AudioManager.FLAG_SHOW_UI;
 import static android.media.AudioManager.STREAM_MUSIC;
@@ -27,41 +28,49 @@ public class TimingPlanReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals("FLYSCALE_MUSIC_STOP")) {
+            MusicPlayer.getInstance().reset(true);
+            return;
+        }
+        Log.i(TAG, "onReceive: 开始定时任务...");
         if (TextUtils.isEmpty(String.valueOf(intent.getIntExtra("week", 0)))) {
             return;
         }
-        String start = intent.getStringExtra("start");
+        final String start = intent.getStringExtra("start");
         String end = intent.getStringExtra("end");
         String fileName = intent.getStringExtra("fileName");
         String voice = intent.getStringExtra("voice");
         boolean beforePlay = intent.getBooleanExtra("beforePlay", true);
         int week = intent.getIntExtra("week", 0);
         int requestCode = intent.getIntExtra("requestCode", 0);
-        String program = intent.getStringExtra("program");
+        long address = intent.getLongExtra("address", 0);
         Log.i(TAG, "onReceive: 今天是周" + week);
         // TODO: 2021/2/20 这里写具体实现
 
+        Log.i(TAG, "onReceive: address=" + address);
         //设置音量
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         am.setStreamVolume(STREAM_MUSIC, Integer.parseInt(voice), FLAG_SHOW_UI);
 
         //播放文件
         Log.i(TAG, "onReceive: 播放文件, end时间结束");
-        String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
-        MusicPlayer.getInstance().playBefore(MEDIA_PATH + fileName, beforePlay, end);
+        String path = Constants.FilePath.FILE_NORMAL;
+        Log.i(TAG, "onReceive: 播放" + (path + fileName));
+        MusicPlayer.getInstance().playBefore(path + fileName, beforePlay, end, address);
 
-        if (true) {
-            //播放正常
-            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, 0x00000200L + Integer.parseInt(program),
-                    FillZeroUtil.getString("0/", 32)));
-        } else {
-            //播放错误
-            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, 0x00000200L + Integer.parseInt(program),
-                    FillZeroUtil.getString("-100/", 32)));
-        }
+        String time = DateHelper.StringTimeHms();
+        long persist = DateHelper.getFMDuration(time, end);
 
+//        Intent intent1 = new Intent("FLYSCALE_MUSIC_STOP");
+//        Timer timer = new Timer();
+//        timer.schedule(new TimerTask() {
+//            @Override
+//            public void run() {
+//
+//            }
+//        }, persist);
         AlarmManagerUtil.getInstance(context).AlarmManagerWorkOnOthers(requestCode, week, start, end, fileName, voice
-                , beforePlay, program);
+                , beforePlay, address);
     }
 
 }
