@@ -55,12 +55,14 @@ public class FMLitepalUtil extends LitePalSupport {
         }
         List<String> isSetUp = FMLitepalUtil.getIsSetUpId();
 
-        for (String a:isSetUp){
-            Log.e("fengpj","重新设置已经修改过的行  == " +a);
-            int id = Integer.parseInt(a);
-            String data = getData(id);
-            DateUtil.updataAlarmForFM(id,getWeeklyRecord(data),getFreq(data),
-                    getStartFMTime(data),getEndFMTime(data),getVolume(data));
+	if (!isSetUp.isEmpty()){
+            for (String a:isSetUp){
+                Log.e("fengpj","重新设置已经修改过的行  == " +a);
+                int id = Integer.parseInt(a);
+                String data = getData(id);
+                DateUtil.updataAlarmForFM(id,getWeeklyRecord(data),getFreq(data),
+                        getStartFMTime(data),getEndFMTime(data),getVolume(data));
+            }
         }
     }
 
