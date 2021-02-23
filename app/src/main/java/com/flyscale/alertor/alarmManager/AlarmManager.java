@@ -32,23 +32,23 @@ public class AlarmManager {
     /**
      * 报警
      */
-    public static void pollingAlarm(int type, final boolean is110){
-        if(isIpAlarmFirst()){
+    public static void pollingAlarm(int type, final boolean is110) {
+        if (isIpAlarmFirst()) {
             //ip优先
-            if(isNetConnect() && isServiceConnect()){
+            if (isNetConnect() && isServiceConnect()) {
                 //网络和服务器连接正常
                 IpAlarmInstance.getInstance().polling(type);
-            }else {
-                if(!isNetConnect()){
+            } else {
+                if (!isNetConnect()) {
                     //网络连接失败
-                    MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
+                    MediaHelper.play(MediaHelper.NET_CONNECT_FAIL, true);
                 }
-                if(!isServiceConnect()){
+                if (!isServiceConnect()) {
                     //服务器连接失败
-                    MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
+                    MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL, true);
                 }
             }
-        }else {
+        } else {
             //语音优先
             CallAlarmInstance.getInstance().polling(is110);
         }
@@ -57,51 +57,51 @@ public class AlarmManager {
     /**
      * 按下报警键 有可能报警 也有可能接警
      */
-    public static void pressAlarmKey(){
-        if(UserActionHelper.isFastClick()){
+    public static void pressAlarmKey() {
+        if (UserActionHelper.isFastClick()) {
             Log.i(TAG, "pressAlarmKey: fast");
             return;
         }
         Log.i(TAG, "pressAlarmKey: init");
         //来电
-        if(CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE){
-            if(PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)){
-                if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+        if (CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE) {
+            if (PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)) {
+                if (PhoneUtil.isOffhook(BaseApplication.sContext)) {
                     PhoneUtil.endCall(BaseApplication.sContext);
                     Log.i(TAG, "pressAlarmKey: 接警中 主动挂断电话");
-                }else {
+                } else {
                     PhoneUtil.answerCall(BaseApplication.sContext);
                     Log.i(TAG, "pressAlarmKey: 接警成功");
                 }
             }
-        }else {//去电或者闲置
+        } else {//去电或者闲置
             int ipStatus = IpAlarmInstance.getInstance().getStatus();
             int callStatus = CallAlarmInstance.getInstance().getStatus();
-            if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
+            if (ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS) {
                 //1.正在ip报警
                 Log.i(TAG, "pressAlarmKey: 正在ip报警");
                 IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
-            }else if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
+            } else if (callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS) {
                 //2.正在语音报警
                 Log.i(TAG, "pressAlarmKey: 正在语音报警");
                 CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
-            }else if(AlarmMediaPlayer.getInstance().isPlayReceive()){
+            } else if (AlarmMediaPlayer.getInstance().isPlayReceive()) {
                 Log.i(TAG, "pressAlarmKey: 正在播放接警信息");
                 AlarmMediaPlayer.getInstance().stopAll();
                 finishAlarmBlink();
-            }else if(AlarmMediaPlayer.getInstance().isWaitPlayReceive){
+            } else if (AlarmMediaPlayer.getInstance().isWaitPlayReceive) {
                 Log.i(TAG, "pressAlarmKey: 正在等待播放 接警信息");
                 AlarmMediaPlayer.getInstance().playReceiveNow();
-            }else if(AlarmMediaPlayer.getInstance().isPlaySomeone()){
+            } else if (AlarmMediaPlayer.getInstance().isPlaySomeone()) {
                 //以上情况 已经包含了这种情况 所以此条件应该不会出现
                 //暂时想到的可能性为
                 //1.接警文件异常，此时会声光报警
                 Log.i(TAG, "pressAlarmKey: loop -- success -- receive 其中一个正在播放");
                 AlarmMediaPlayer.getInstance().stopAll();
                 finishAlarmBlink();
-            }else {
+            } else {
                 Log.i(TAG, "pressAlarmKey: 去报警");
-                pollingAlarm(BaseData.TYPE_ALARM_U,false);
+                pollingAlarm(BaseData.TYPE_ALARM_U, false);
             }
         }
     }
@@ -109,43 +109,50 @@ public class AlarmManager {
     /**
      * 按下110按键 有可能报警
      */
-    public static void press110Key(){
-        if(UserActionHelper.isFastClick()){
+    public static void press110Key() {
+        if (UserActionHelper.isFastClick()) {
             return;
         }
         int callStatus = CallAlarmInstance.getInstance().getStatus();
-        if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
+        if (callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS) {
             CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
-        }else {
+        } else if (callStatus == CallAlarmInstance.STATUS_RECV_ALARMING) {
+            //收到语音报警，这时按下表示接听电话
+            CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_SUCCESS);
+            //停止声光
+            AlarmManager.finishAlarmBlink();
+            //接听电话
+            PhoneUtil.answerCall(BaseApplication.sContext);
+        } else {
             finishLastAlarmOrReceive();
-            CallAlarmInstance.getInstance().polling(true);
+            CallAlarmInstance.getInstance().polling(false);
         }
     }
 
     /**
      * 结束上一次报警或者接警
      */
-    public static void finishLastAlarmOrReceive(){
+    public static void finishLastAlarmOrReceive() {
         int ipStatus = IpAlarmInstance.getInstance().getStatus();
         int callStatus = CallAlarmInstance.getInstance().getStatus();
-        if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
+        if (ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS) {
             IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
             Log.i(TAG, "finishLastAlarmOrReceive: ipStatus ");
         }
-        if(callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
+        if (callStatus == CallAlarmInstance.STATUS_ALARMING || callStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS) {
             CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
             Log.i(TAG, "finishLastAlarmOrReceive: callStatus ");
         }
-        if(AlarmMediaPlayer.getInstance().isPlaySomeone() || AlarmMediaPlayer.getInstance().isWaitPlayReceive){
+        if (AlarmMediaPlayer.getInstance().isPlaySomeone() || AlarmMediaPlayer.getInstance().isWaitPlayReceive) {
             Log.i(TAG, "finishLastAlarmOrReceive: AlarmMediaPlayer");
             AlarmMediaPlayer.getInstance().stopAll();
         }
-        if(PhoneUtil.isOffhook(BaseApplication.sContext)){
+        if (PhoneUtil.isOffhook(BaseApplication.sContext)) {
             Log.i(TAG, "finishLastAlarmOrReceive: Offhook");
             PhoneUtil.endCall(BaseApplication.sContext);
         }
-        if(CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE){
-            if(PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)){
+        if (CallPhoneReceiver2.sPhoneState == CallPhoneReceiver2.STATE_RECEIVE) {
+            if (PersistConfig.findConfig().isAcceptOtherNum() || PersistWhite.isContains(CallPhoneReceiver2.mReceiveNum)) {
                 Log.i(TAG, "finishLastAlarmOrReceive: 来电中 不一定接通了");
                 PhoneUtil.endCall(BaseApplication.sContext);
             }
@@ -154,15 +161,16 @@ public class AlarmManager {
 
     /**
      * 开始声光警报
+     *
      * @param isReceive
      */
-    public static void startAlarmBlink(boolean isReceive){
-        boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
+    public static void startAlarmBlink(boolean isReceive) {
+        boolean isMute = /*BaseApplication.sFlyscaleManager.getMuteState().equals("1")*/false;
         Log.i(TAG, "startAlarmBlink: isMute(静默) ---> " + isMute);
-        if(isReceive){
+        if (isReceive) {
             isMute = false;
         }
-        if(isMute){
+        if (isMute) {
             //静默
             setSilentMode();
             return;
@@ -175,20 +183,20 @@ public class AlarmManager {
     /**
      * 关闭声光警报
      */
-    public static void finishAlarmBlink(){
+    public static void finishAlarmBlink() {
         setVoiceMode();
         AlarmMediaPlayer.getInstance().stopLoopAlarm();
         boolean alarmLedOn = LedInstance.getInstance().isAlarmOnStatus();
         Log.i(TAG, "finishAlarmBlink: 报警灯默认的开关状态 ---> " + alarmLedOn);
-        if(alarmLedOn){
+        if (alarmLedOn) {
             LedInstance.getInstance().cancelBlinkShowAlarmLed();
-        }else {
+        } else {
             LedInstance.getInstance().cancelBlinkOffAlarmLed();
         }
     }
 
     //静音模式
-    public static void setSilentMode(){
+    public static void setSilentMode() {
 //        Log.i(TAG, "setSilentMode: ");
 //        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
 //        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,0,AudioManager.FLAG_PLAY_SOUND);
@@ -203,7 +211,7 @@ public class AlarmManager {
     /**
      * 非静音模式
      */
-    public static void setVoiceMode(){
+    public static void setVoiceMode() {
 //        Log.i(TAG, "setVoiceMode: ");
 //        AudioManager audioManager = (AudioManager) BaseApplication.sContext.getSystemService(Context.AUDIO_SERVICE);
 ////        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,audioManager.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL),AudioManager.FLAG_PLAY_SOUND);
@@ -214,11 +222,12 @@ public class AlarmManager {
 
     /**
      * 网络连接
+     *
      * @return
      */
-    public static boolean isNetConnect(){
+    public static boolean isNetConnect() {
         //报警时，如果网络没有连通，要提示“网络连接失败”。
-        if(!NetHelper.isNetworkConnected(BaseApplication.sContext)){
+        if (!NetHelper.isNetworkConnected(BaseApplication.sContext)) {
 //            MediaHelper.play(MediaHelper.NET_CONNECT_FAIL,true);
             return false;
         }
@@ -227,11 +236,12 @@ public class AlarmManager {
 
     /**
      * 服务器连接
+     *
      * @return
      */
-    public static boolean isServiceConnect(){
+    public static boolean isServiceConnect() {
         //报警时，如果没有连接到服务器，要提示“连接服务器失败”。
-        if(!NettyHelper.getInstance().isConnect()){
+        if (!NettyHelper.getInstance().isConnect()) {
             Log.i(TAG, "isServiceConnect: 服务器连接失败");
 //            MediaHelper.play(MediaHelper.SERVER_CONNECT_FAIL,true);
             return false;
@@ -242,25 +252,28 @@ public class AlarmManager {
 
     /**
      * 是否正在声音报警
+     *
      * @return
      */
-    public static boolean isSoundAlarming(){
+    public static boolean isSoundAlarming() {
         return AlarmMediaPlayer.getInstance().isPlayLoopAlarm();
     }
 
     /**
      * 是否正在闪灯报警
+     *
      * @return
      */
-    public static boolean isLightAlarming(){
+    public static boolean isLightAlarming() {
         return LedInstance.getInstance().isBlinkAlarmFlag();
     }
 
     /**
      * 是否IP报警优先
+     *
      * @return
      */
-    public static boolean isIpAlarmFirst(){
+    public static boolean isIpAlarmFirst() {
         return PersistConfig.findConfig().isIpAlarmFirst();
     }
 }

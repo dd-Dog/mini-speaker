@@ -55,6 +55,14 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
             mReceiveNum = intent.getStringExtra("number");
             mSendNum = "";
             sPhoneState = STATE_RECEIVE;
+            //语音接警
+            if(TextUtils.equals(mReceiveNum, PersistConfig.findConfig().getAlarmNum())){
+                //声光响起
+                AlarmManager.startAlarmBlink(false);
+                CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_RECV_ALARMING);
+            }else {
+                DDLog.i("其它非报警电话号码");
+            }
         }
         if(action.equals("com.android.phone.FLYSCALE_PHONE_STATE")){
             //电话状态
