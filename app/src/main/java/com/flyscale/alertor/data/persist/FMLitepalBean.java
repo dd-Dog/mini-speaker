@@ -20,6 +20,24 @@ public class FMLitepalBean extends LitePalSupport {
     String startTime = "00:00";
     String endTime = "00:00";
     String volume = "0";
+    String isSetUp = "false";
+    String data = "";
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) {
+        this.data = data;
+    }
+
+    public String getIsSetUp() {
+        return isSetUp;
+    }
+
+    public void setIsSetUp(String isSetUp) {
+        this.isSetUp = isSetUp;
+    }
 
     public String getVolume() {
         return volume;

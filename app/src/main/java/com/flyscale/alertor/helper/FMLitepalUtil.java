@@ -3,6 +3,8 @@ package com.flyscale.alertor.helper;
 
 
 
+import android.util.Log;
+
 import com.flyscale.alertor.data.persist.FMLitepalBean;
 
 import org.litepal.LitePal;
@@ -47,8 +49,20 @@ public class FMLitepalUtil extends LitePalSupport {
                 litepalBean.setStartTime("00:00");
                 litepalBean.setEndTime("00:00");
                 litepalBean.setVolume("0");
+                litepalBean.setIsSetUp("false");
                 litepalBean.save();
                 n++;
+        }
+        List<String> isSetUp = FMLitepalUtil.getIsSetUpId();
+
+	if (!isSetUp.isEmpty()){
+            for (String a:isSetUp){
+                Log.e("fengpj","重新设置已经修改过的行  == " +a);
+                int id = Integer.parseInt(a);
+                String data = getData(id);
+                DateUtil.updataAlarmForFM(id,getWeeklyRecord(data),getFreq(data),
+                        getStartFMTime(data),getEndFMTime(data),getVolume(data));
+            }
         }
     }
 
@@ -74,9 +88,31 @@ public class FMLitepalUtil extends LitePalSupport {
         litepalBean.setStartTime(getStartFMTime(data));
         litepalBean.setEndTime(getEndFMTime(data));
         litepalBean.setVolume(getVolume(data));
+        litepalBean.setIsSetUp("true");
+        litepalBean.setData(data);
         litepalBean.updateAll("name = ?","FM" + getCorrectLine(address));
         DateUtil.updataAlarmForFM(getCorrectLine(address),getWeeklyRecord(data),getFreq(data),
                 getStartFMTime(data),getEndFMTime(data),getVolume(data));
+    }
+
+    /**
+     * 判断指定行FM信息是否更新
+     * */
+    public static boolean isUpdataSuccess(long address,String data){
+        int id = getCorrectLine(address);
+        String freq = getFreq(data);
+        String weeklyRecord = getWeeklyRecord(data);
+        String startTime = getStartFMTime(data);
+        String endTime = getEndFMTime(data);
+        String volume = getVolume(data);
+        if(freq.equals(getFreq(id))
+        && weeklyRecord.equals(getWeeklyRecord(id))
+        && startTime.equals(getStartTime(id))
+        && endTime.equals(getEndTime(id))
+        && volume.equals(getVolume(id))){
+            return true;
+        }
+        return false;
     }
 
 
@@ -152,7 +188,7 @@ public class FMLitepalUtil extends LitePalSupport {
         List<FMLitepalBean> litepalBean= LitePal.select("name","startTime").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
         if(litepalBean.size() > 0){
             for (FMLitepalBean startTime:litepalBean){
-                return startTime.getStartDate();
+                return startTime.getStartTime();
             }
         }
         return null;
@@ -165,7 +201,7 @@ public class FMLitepalUtil extends LitePalSupport {
         List<FMLitepalBean> litepalBean= LitePal.select("name","endTime").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
         if(litepalBean.size() > 0){
             for (FMLitepalBean endTime:litepalBean){
-                return endTime.getStartDate();
+                return endTime.getEndTime();
             }
         }
         return null;
@@ -178,7 +214,74 @@ public class FMLitepalUtil extends LitePalSupport {
         List<FMLitepalBean> litepalBean= LitePal.select("name","freq").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
         if(litepalBean.size() > 0){
             for (FMLitepalBean freq:litepalBean){
-                return freq.getStartDate();
+                return freq.getFreq();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的volume
+     * */
+    public static String getVolume(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","volume").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean volume:litepalBean){
+                return volume.getVolume();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的name id
+     * */
+    public static String getNameId(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","name").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean name:litepalBean){
+                return name.getName().substring(2);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的isSetUp
+     * */
+    public static String getIsSetUp(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","isSetUp").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean name:litepalBean){
+                return name.getIsSetUp();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取isSrtUp 为true的fmid
+     * */
+    public static List<String> getIsSetUpId(){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","isSetUp").where("isSetUp = ?","true").find(FMLitepalBean.class);
+        List<String> isSetUpList =new ArrayList<String>();
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean name:litepalBean){
+                isSetUpList.add(name.getName().substring(2));
+            }
+            return isSetUpList;
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的data
+     * */
+    public static String getData(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","data").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean data:litepalBean){
+                return data.getData();
             }
         }
         return null;

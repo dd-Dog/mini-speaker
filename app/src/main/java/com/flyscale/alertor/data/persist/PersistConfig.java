@@ -20,6 +20,8 @@ public class PersistConfig extends LitePalSupport {
     String ip = "bltst2.xjxlb.com";
     @Deprecated
     int port = 50074;
+    //通用文件路径
+    public static final String COMMON_FILE_PATH = "/mnt/sdcard/flyscale/common/";
     String alarmNum = "099116886119";
     String specialNum = "110";
     //是否接受其他号码呼入
