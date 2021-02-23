@@ -398,7 +398,31 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             } else if (address == TcpPacketFactory.GET_COMMON_FILE_INFO) {
                 /*7.3.7b 获取通用文件大小及校验码*/
                 DDLog.i("获取通用文件大小和校验码");
-
+                /**
+                 * 参数说明
+                 * 平台下发输入格式：
+                 * rd,02000007,abcdefgh.txt/0000000000000000000xxxx
+                 * 终端返回输出格式：
+                 * ra,02000007,abcdefgh.txt/123456789/000000000xxxx
+                 * 第一个参数：文件名
+                 * 第二个参数：文件大小
+                 *
+                 */
+                if (tcpPacket.getCmd() == CMD.READ) {
+                    String[] split = data.split("/");
+                    String fileName = split[0];
+                    String filePath = PersistConfig.COMMON_FILE_PATH + fileName;
+                    //判断文件是否存在
+                    if (FileHelper.fileIsExists(filePath)) {
+                        String fileSize = FileHelper.getFileOrFilesSize(filePath , FileHelper.SIZETYPE_B);
+                        String nameAndSize = fileName + "/" + fileSize + "/";
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                                nameAndSize + TcpPacketFactory.dataZero.substring(nameAndSize.length())));
+                    } else {
+                        DDLog.i("文件不存在");
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address, TcpPacketFactory.dataZero));
+                    }
+                }
 
             } else if (address == TcpPacketFactory.BACKUP1) {
                 /*7.3.8下传文件备份指令*/
