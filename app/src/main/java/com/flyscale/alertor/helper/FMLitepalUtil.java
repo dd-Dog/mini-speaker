@@ -152,7 +152,7 @@ public class FMLitepalUtil extends LitePalSupport {
         List<FMLitepalBean> litepalBean= LitePal.select("name","startTime").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
         if(litepalBean.size() > 0){
             for (FMLitepalBean startTime:litepalBean){
-                return startTime.getStartDate();
+                return startTime.getStartTime();
             }
         }
         return null;
@@ -165,7 +165,7 @@ public class FMLitepalUtil extends LitePalSupport {
         List<FMLitepalBean> litepalBean= LitePal.select("name","endTime").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
         if(litepalBean.size() > 0){
             for (FMLitepalBean endTime:litepalBean){
-                return endTime.getStartDate();
+                return endTime.getEndTime();
             }
         }
         return null;
@@ -178,7 +178,7 @@ public class FMLitepalUtil extends LitePalSupport {
         List<FMLitepalBean> litepalBean= LitePal.select("name","freq").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
         if(litepalBean.size() > 0){
             for (FMLitepalBean freq:litepalBean){
-                return freq.getStartDate();
+                return freq.getFreq();
             }
         }
         return null;

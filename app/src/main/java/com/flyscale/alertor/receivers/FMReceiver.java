@@ -36,10 +36,10 @@ public class FMReceiver extends BroadcastReceiver {
             Float freq = Float.parseFloat(intent.getStringExtra("freq"));
             DateUtil.updataAlarmForFMRepeat(fmid);
             Log.e("fengpj","定时器到时" + fmid + " 周期" + weekly);
-            if(DateUtil.isTodayOn[DateUtil.getDayOfWeek()]){
+            if(DateUtil.isTodayOn()){
                 FMUtil.startFM(context);
                 FMUtil.adjustFM(context,freq);
-                String startTime = FMLitepalUtil.getStartTime(fmid);
+                String startTime = DateUtil.StringTimeHms();
                 String endTime = FMLitepalUtil.getEndTime(fmid);
                 long time = DateUtil.getFMDuration(startTime,endTime);
                 FMUtil.stopFMAlarmManager(context,fmid,time);

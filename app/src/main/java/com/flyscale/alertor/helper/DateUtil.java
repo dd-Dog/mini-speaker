@@ -38,6 +38,7 @@ public class DateUtil {
      *
      * */
     public static void setDateFM(String binary){
+        Log.e("fengpj","当前广播开启周期 = " + binary);
         int length = binary.length();
         for (int i=0;i<7;i++){
             isTodayOn[i] = binary.substring(length-i-1,length-i).equals("0");
@@ -112,7 +113,7 @@ public class DateUtil {
 
     /**
      * 判断2个时间大小
-     * yyyy-MM-dd HH:mm 格式（自己可以修改成想要的时间格式）
+     * yyyy-MM-dd HH:mm:ss 格式（自己可以修改成想要的时间格式）
      * @param startTime
      * @param endTime
      * @return
@@ -120,6 +121,7 @@ public class DateUtil {
     public static int timeCompare(String startTime, String endTime) {
         int i = 0;
         //注意：传过来的时间格式必须要和这里填入的时间格式相同
+        Log.e("fengpj","startTime = " + startTime + "  endTime = " + endTime);
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
         try {
             Date date1 = dateFormat.parse(splicingString(startTime));//开始时间
@@ -225,9 +227,22 @@ public class DateUtil {
         final Calendar c = Calendar.getInstance();
         c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         mHour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+        mHour = completionString(mHour);
         mMin = String.valueOf(c.get(Calendar.MINUTE));
+        mMin = completionString(mMin);
         mSecond = String.valueOf(c.get(Calendar.SECOND));
+        mSecond = completionString(mSecond);
         return mHour + mMin + mSecond;
+    }
+
+    /**
+     * 补全时间字符
+     * */
+    private static String completionString(String string){
+        if (string.length() == 1){
+            string = "0"+string;
+        }
+        return string;
     }
 
     /**
@@ -259,6 +274,7 @@ public class DateUtil {
      * */
     public static long getFMDuration(String startTime,String endTime){
         DateFormat df = new SimpleDateFormat("HH:mm:ss");
+        Log.e("fengpj","getFMDuration startTime = " + startTime + " endTime = " +endTime);
         try
         {
             Date d1 = df.parse(splicingString(startTime));
@@ -271,9 +287,28 @@ public class DateUtil {
             //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
             return diff;
         }catch (Exception e) {
-
+            Log.e("fengpj","未能正确获得FM持续时间");
         }
         return 0;
+    }
+
+    /**
+     * 判断隔天fm是否开启
+     * */
+    public  static boolean isTomorrowOn(){
+        int date = getDayOfWeek();
+        if(date == 6){
+            date = 0;
+        }
+        return isTodayOn[date];
+    }
+
+    /**
+     * 判断今天fm是否开启
+     * */
+    public  static boolean isTodayOn(){
+        int date = getDayOfWeek()-1;
+        return isTodayOn[date];
     }
 
     /**
@@ -306,14 +341,14 @@ public class DateUtil {
         String weeklyrecord = FMLitepalUtil.getWeeklyRecord(id);
         setDateFM(FMUtil.toBinary(Integer.valueOf(weeklyrecord).intValue()));
         //Log.e("fengpj","" + FMUtil.toBinary(Integer.valueOf(weeklyrecord).intValue()));
-        Log.e("fengpj","id = " + id + "  isTodayOn = " + isTodayOn[getDayOfWeek()]);
-        if(isTodayOn[getDayOfWeek()]) {
+        Log.e("fengpj","id = " + id + "  isTodayOn = " + isTodayOn());
+        //if(isTomorrowOn())
             FMUtil.cancelFMAlarmManager(BaseApplication.sContext, id);
-            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, 0, weeklyrecord,freq);
-        }else{
-            FMUtil.cancelFMAlarmManager(BaseApplication.sContext, id);
-            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, 0 + INTERVAL_DAY, weeklyrecord,freq);
-        }
+            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, INTERVAL_DAY - getTimeDiff(FMLitepalUtil.getStartTime(id),StringTimeHms()), weeklyrecord,freq);
+//        }else{
+//            FMUtil.cancelFMAlarmManager(BaseApplication.sContext, id);
+//            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, 0 + INTERVAL_DAY, weeklyrecord,freq);
+//        }
     }
 
 }
