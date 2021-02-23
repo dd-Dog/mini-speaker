@@ -355,18 +355,23 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 DDLog.i("下传升级文件");
                 /**
                  * 参数说明
-                 * 数据中1-12字节为文件名，14-23字节为文件大小
+                 * 输入格式：
+                 * wd,02000000,abcdefgh.gz/0123456789/020000/00xxxx
                  * 参数1：文件名
-                 * 参数2：文件大小（字节）
+                 * 参数2：文件大小（字节,限制在10240000以内）
                  */
                 String[] split = data.split("/");
                 if (tcpPacket.getCmd() == CMD.WRITE) {
                     String fotaName = split[0];
-                    String fotaFileSize = split[1];
+                    long fotaFileSize = Long.parseLong(split[1]);
                     //TODO 下载升级文件，下载完成后立刻升级
+                    if (fotaFileSize > 10240000) {
+                        //超过大小限制
+                        DDLog.i("超过大小限制10240000");
+                    }
 
-
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+                    //下载升级文件并升级
+                    downLoadCommonFile(fotaName , fotaFileSize, address);
 
                 }
             } else if (address == TcpPacketFactory.UPDATE_SYSTEM) {
@@ -374,10 +379,24 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 DDLog.i("终端接收完升级文件后反馈");
                 /**
                  * 参数说明
-                 * 第一个参数为文件名，
-                 * 第二个参数为成功接收的文件大小
+                 * wd,01000004,abcdefgh.amr/1234567890/00000000xxxx
+                 * 平台响应报文：
+                 * wa,01000004,abcdefgh.amr/0000000000000000000xxxx
+                 * 参数1：文件名
+                 * 参数2：文件大小
                  */
-
+                if (tcpPacket.getCmd() == CMD.WRITE) {
+                    String[] split = data.split("/");
+                    if (split.length > 1) {
+                        String fotaName = split[0];
+                        long fotaFileSize = Long.parseLong(split[1]);
+                        //立刻反馈
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                                fotaName + "/" + TcpPacketFactory.dataZero.substring(fotaName.length() + 1)));
+                        //下载升级文件，但是不升级
+                        downLoadCommonFile(fotaName , fotaFileSize, address);
+                    }
+                }
 
             } else if (address == TcpPacketFactory.COMMON_FILE_OPERATION_FTP) {
                 /*7.3.6通用文件下载和删除*/
@@ -643,9 +662,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                             address, "-6/" + TcpPacketFactory.dataZero.substring(3)));
                 } else if (cause.equals(EndCause.COMPLETED)) {
                     DDLog.i("下载通用文件成功");
-                    //下载成功（原因值 0）
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                            address, "0/" + TcpPacketFactory.dataZero.substring(2)));
+                    if (address == TcpPacketFactory.DOWNLOAD_UPDATE_PATCH) {
+                        //TODO 下载完成并升级
+
+                    } else {
+                        //下载成功（原因值 0）
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                                address, "0/" + TcpPacketFactory.dataZero.substring(2)));
+                    }
                 }
             }
         });
