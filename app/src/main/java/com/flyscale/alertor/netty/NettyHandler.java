@@ -371,7 +371,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     }
 
                     //下载升级文件并升级
-                    downLoadCommonFile(fotaName , fotaFileSize, address);
+                    downLoadCommonFile(fotaName, fotaFileSize, address);
 
                 }
             } else if (address == TcpPacketFactory.UPDATE_SYSTEM) {
@@ -394,7 +394,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                                 fotaName + "/" + TcpPacketFactory.dataZero.substring(fotaName.length() + 1)));
                         //下载升级文件，但是不升级
-                        downLoadCommonFile(fotaName , fotaFileSize, address);
+                        downLoadCommonFile(fotaName, fotaFileSize, address);
                     }
                 }
 
@@ -423,7 +423,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 fileName + "/" + TcpPacketFactory.dataZero.substring(fileName.length() + 1)));
                         if (fileSize > 0) {
                             //文件大小不为0，表示下载该文件
-                            downLoadCommonFile(fileName , fileSize, address);
+                            downLoadCommonFile(fileName, fileSize, address);
                         } else {
                             //大小为0，表示删除该文件
                             FileHelper.deleteFile(PersistConfig.COMMON_FILE_PATH + fileName);
@@ -452,7 +452,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 fileName + "/" + TcpPacketFactory.dataZero.substring(fileName.length() + 1)));
                         if (fileSize > 0) {
                             //文件大小不为0，表示下载该文件
-                            downLoadCommonFile(fileName , fileSize, address);
+                            downLoadCommonFile(fileName, fileSize, address);
                         }
                     }
                 }
@@ -477,7 +477,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     String filePath = PersistConfig.COMMON_FILE_PATH + fileName;
                     //判断文件是否存在
                     if (FileHelper.fileIsExists(filePath)) {
-                        String fileSize = FileHelper.getFileOrFilesSize(filePath , FileHelper.SIZETYPE_B);
+                        String fileSize = FileHelper.getFileOrFilesSize(filePath, FileHelper.SIZETYPE_B);
                         String nameAndSize = fileName + "/" + fileSize + "/";
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                                 nameAndSize + TcpPacketFactory.dataZero.substring(nameAndSize.length())));
@@ -502,19 +502,28 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     String[] split = data.split("/");
                     String num = split[0];
                     //备份文件
-                    /*7.3.9 终端备份文件系统结束后反馈*/
-                    /**
-                     * 参数说明
-                     * wa,02000002,0/20180226190845073_15311228/000xxxx
-                     * 参数1：备份结果（0备份成功 ；-70备份失败）
-                     * 参数2：业务流水号
-                     */
-                    DDLog.i("终端备份文件系统结束后反馈");
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                            TcpPacketFactory.BACKUP2, "0/" + num + "/" + TcpPacketFactory.dataZero.substring(num.length() + 3)));
+                            address, "0/" + num + "/" + TcpPacketFactory.dataZero.substring(num.length() + 3)));
 
                 }
+            } else if (address == TcpPacketFactory.BACKUP2) {
+                /*7.3.9 终端备份文件系统结束后反馈*/
+                DDLog.i("终端备份文件系统结束后反馈");
+                /**
+                 * 参数说明
+                 * wa,02000002,0/20180226190845073_15311228/000xxxx
+                 * 参数1：备份结果（0备份成功 ；-70备份失败）
+                 * 参数2：业务流水号
+                 */
+                if (tcpPacket.getCmd() == CMD.WRITE) {
+                    String[] split = data.split("/");
+                    String num = split[0];
+                    //备份文件
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                            address, "0/" + num + "/" + TcpPacketFactory.dataZero.substring(num.length() + 3)));
 
+                }
+                
             } else {
                 //系统变量
                 SystemVariable(address, tcpPacket);
