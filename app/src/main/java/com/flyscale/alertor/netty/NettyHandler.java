@@ -415,6 +415,29 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             } else if (address == TcpPacketFactory.COMMON_FILE_OPERATION) {
                 /*7.3.7 通用文件下载反馈*/
                 DDLog.i("通用文件下载反馈");
+                /**
+                 * 参数说明
+                 *wd,02000006,abcdefgh.txt/1234567890/00000000xxxx
+                 * 平台响应报文：
+                 * wa,02000006,abcdefgh.txt/0000000000000000000xxxx
+                 * 第一个参数：文件名
+                 * 第二个参数：文件大小
+                 */
+                if (tcpPacket.getCmd() == CMD.WRITE) {
+                    String[] split = data.split("/");
+                    if (split.length > 1) {
+                        String fileName = split[0];
+                        long fileSize = Long.parseLong(split[1]);
+                        //立刻反馈
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                                fileName + "/" + TcpPacketFactory.dataZero.substring(fileName.length() + 1)));
+                        if (fileSize > 0) {
+                            //文件大小不为0，表示下载该文件
+                            downLoadCommonFile(fileName , fileSize, address);
+                        }
+                    }
+                }
+
 
             } else if (address == TcpPacketFactory.GET_COMMON_FILE_INFO) {
                 /*7.3.7b 获取通用文件大小及校验码*/
@@ -441,7 +464,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 nameAndSize + TcpPacketFactory.dataZero.substring(nameAndSize.length())));
                     } else {
                         DDLog.i("文件不存在");
-                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address, TcpPacketFactory.dataZero));
+                        //文件不存在（原因值 -5）
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER,
+                                address, "-5/" + TcpPacketFactory.dataZero.substring(3)));
                     }
                 }
 
