@@ -382,6 +382,35 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             } else if (address == TcpPacketFactory.COMMON_FILE_OPERATION_FTP) {
                 /*7.3.6通用文件下载和删除*/
                 DDLog.i("通用文件下载和删除");
+                /**
+                 * 平台下发报文：
+                 * wd,02000005,abcdefgh.txt/0123456789/3C1d/0000xxxx
+                 * 终端立刻反馈报文
+                 * wa,02000005,abcdefgh.txt/00000000000000000000xxxx
+                 *
+                 * 参数说明：
+                 * 参数1：文件名
+                 * 参数2：文件大小 （0表示删除文件）
+                 * 参数3：校验码（作废了）
+                 */
+
+                if (tcpPacket.getCmd() == CMD.WRITE) {
+                    String[] split = data.split("/");
+                    if (split.length > 1) {
+                        String fileName = split[0];
+                        long fileSize = Long.parseLong(split[1]);
+                        //立刻反馈
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                                fileName + "/" + TcpPacketFactory.dataZero.substring(fileName.length() + 1)));
+                        if (fileSize > 0) {
+                            //文件大小不为0，表示下载该文件
+                            downLoadCommonFile(fileName , fileSize, address);
+                        } else {
+                            //大小为0，表示删除该文件
+                            FileHelper.deleteFile(PersistConfig.COMMON_FILE_PATH + fileName);
+                        }
+                    }
+                }
 
             } else if (address == TcpPacketFactory.COMMON_FILE_OPERATION) {
                 /*7.3.7 通用文件下载反馈*/
@@ -536,6 +565,47 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 }
             });
         }*/
+    }
+
+    /**
+     * 下载通用文件
+     * @param fileName 文件名
+     * @param size     文件大小
+     * @param address  行地址
+     */
+    private void downLoadCommonFile(String fileName, long size , final long address) {
+        if (ClientInfoHelper.getAvailableSize() < size) {
+            DDLog.i("磁盘空间不足，取消下载");
+            //空间不足（原因值 -7）
+            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                    address, "-7/" + TcpPacketFactory.dataZero.substring(3)));
+            return;
+        }
+        //先删除后下载
+        FileHelper.deleteFile(PersistConfig.COMMON_FILE_PATH + fileName);
+        String url = PersistConfig.findConfig().getHttpDownloadUrl() + fileName;
+        HttpDownloadHelper.downloadFile(url, PersistConfig.COMMON_FILE_PATH, fileName, new DownloadListener2() {
+            @Override
+            public void taskStart(@NonNull DownloadTask task) {
+                DDLog.i("开始下载通用文件... , " + task);
+            }
+
+            @Override
+            public void taskEnd(@NonNull DownloadTask task, @NonNull EndCause cause, @Nullable Exception realCause) {
+                DDLog.i("下载通用文件结束...");
+                if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
+                    DDLog.i("下载通用文件失败 ,  cause == " + cause);
+                    //下载失败(原因值 -6)
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                            address, "-6/" + TcpPacketFactory.dataZero.substring(3)));
+                } else if (cause.equals(EndCause.COMPLETED)) {
+                    DDLog.i("下载通用文件成功");
+                    //下载成功（原因值 0）
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                            address, "0/" + TcpPacketFactory.dataZero.substring(2)));
+                }
+            }
+        });
     }
 
     private void ShowProgram(String fileName, String startTime, String endTime, String voice, boolean isPlay,
