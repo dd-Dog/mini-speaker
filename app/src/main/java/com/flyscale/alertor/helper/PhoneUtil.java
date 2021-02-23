@@ -3,10 +3,12 @@ package com.flyscale.alertor.helper;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
+import android.provider.CallLog;
 import android.provider.CallLog.Calls;
 import android.telephony.CellInfo;
 import android.telephony.CellInfoCdma;
@@ -25,6 +27,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.android.internal.telephony.ITelephony;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -329,5 +332,30 @@ public class PhoneUtil {
             }
         }
         return dbm;
+    }
+
+    /**
+     * 判断对方是否接听电话 根据通话时长判断
+     * CallLog.Calls.TYPE
+     * //来电:1,拨出:2,未接:3
+     * public static final int INCOMING_TYPE = 1;
+     * public static final int OUTGOING_TYPE = 2;
+     * public static final int MISSED_TYPE = 3;
+     * @param context
+     * @param number
+     * @return
+     */
+    public static long getCallDuration(Context context, String number) {
+        ContentResolver cr = context.getContentResolver();
+        final Cursor cursor = cr.query(CallLog.Calls.CONTENT_URI,
+                new String[]{CallLog.Calls.NUMBER,CallLog.Calls.TYPE,CallLog.Calls.DURATION},
+                CallLog.Calls.NUMBER +"=? and "+CallLog.Calls.TYPE +"= ?",
+                new String[]{number , "2"},CallLog.Calls.DATE + " desc");
+        while(cursor.moveToNext()){
+            int durationIndex = cursor.getColumnIndex(CallLog.Calls.DURATION);
+            long durationTime = cursor.getLong(durationIndex);
+            return durationTime;
+        }
+        return -1;
     }
 }

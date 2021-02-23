@@ -24,6 +24,7 @@ public class CallAlarmInstance {
     public static final int STATUS_ALARMING = 11;//正在报警
     public static final int STATUS_ALARM_SUCCESS = 12;//报警成功
     public static final int STATUS_ALARM_FINISH = 14;//报警结束
+    public static final int STATUS_RECV_ALARMING = 15;//正在报警
     int mStatus = STATUS_NONE;
     //是否摘机
     boolean isOffhook = false;
@@ -43,58 +44,59 @@ public class CallAlarmInstance {
 
     public void setStatus(int status) {
         mStatus = status;
-        if(mStatus == STATUS_ALARM_FINISH){
+        if (mStatus == STATUS_ALARM_FINISH) {
             PhoneUtil.endCall(BaseApplication.sContext);
             AlarmManager.finishAlarmBlink();
-            if(mTimerTaskHelper != null){
+            if (mTimerTaskHelper != null) {
                 mTimerTaskHelper.stop();
             }
-            if(UserActionHelper.isMute()){
+            if (UserActionHelper.isMute()) {
                 LedInstance.getInstance().blinkChargeLed();
             }
-        }else if(mStatus == STATUS_ALARM_SUCCESS){
-            mTimerTaskHelper.stop();
-            AlarmManager.finishAlarmBlink();
+        } else if (mStatus == STATUS_ALARM_SUCCESS) {
+            if (mTimerTaskHelper != null)
+                mTimerTaskHelper.stop();
+//            AlarmManager.finishAlarmBlink();
         }
     }
 
-    public void polling(boolean is110){
-        if(UserActionHelper.isMute() && !is110){
+    public void polling(boolean is110) {
+        if (UserActionHelper.isMute() && !is110) {
             return;
         }
         Log.i(TAG, "polling: 语音报警 -- 是否110 -- " + is110);
         int ipStatus = IpAlarmInstance.getInstance().getStatus();
-        if(ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS){
+        if (ipStatus == IpAlarmInstance.STATUS_ALARMING || ipStatus == IpAlarmInstance.STATUS_ALARM_SUCCESS) {
             Log.i(TAG, "polling: ip报警还没有结束");
             IpAlarmInstance.getInstance().setStatus(IpAlarmInstance.STATUS_ALARM_FINISH);
         }
         AlarmManager.startAlarmBlink(false);
         final String sendNumber;
-        if(is110){
+        if (is110) {
             sendNumber = PersistConfig.findConfig().getSpecialNum();
-        }else {
+        } else {
             sendNumber = PersistConfig.findConfig().getAlarmNum();
         }
         mStatus = STATUS_ALARMING;
         mTimerTaskHelper = new TimerTaskHelper(new TimerTask() {
             @Override
             public void run() {
-                if(mStatus == STATUS_ALARM_SUCCESS){
+                if (mStatus == STATUS_ALARM_SUCCESS) {
                     mTimerTaskHelper.stop();
-                }else {
+                } else {
                     isOffhook = PhoneUtil.isOffhook(BaseApplication.sContext);
-                    if(isOffhook){
+                    if (isOffhook) {
                         //摘机状态 主动挂断
                         PhoneUtil.endCall(BaseApplication.sContext);
-                        while (isOffhook){
+                        while (isOffhook) {
                             //死循环查询 直到挂断
                             isOffhook = PhoneUtil.isOffhook(BaseApplication.sContext);
                         }
                     }
-                    PhoneUtil.call(BaseApplication.sContext,sendNumber);
+                    PhoneUtil.call(BaseApplication.sContext, sendNumber);
                 }
             }
-        },DEFAULT_PERIOD);
+        }, DEFAULT_PERIOD);
         mTimerTaskHelper.start(0);
     }
 }
