@@ -194,8 +194,8 @@ public class NettyHelper {
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
                 ByteBuf delimiter = Unpooled.copiedBuffer(new byte[]{0x0d, 0x0a});
-                //10s未发送数据，回调userEventTriggered
-                pipeline.addLast(sIdleStateHandler, new IdleStateHandler(0, 10, 0, TimeUnit.SECONDS));
+                //20s未发送数据，回调userEventTriggered
+                pipeline.addLast(sIdleStateHandler, new IdleStateHandler(0, 20, 0, TimeUnit.SECONDS));
 //                pipeline.addLast(mSslContext.newHandler(ch.alloc()));
                 //缓冲区2M大小
                 pipeline.addLast(new DelimiterBasedFrameDecoder(2097152, false, delimiter));

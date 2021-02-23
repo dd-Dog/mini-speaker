@@ -159,15 +159,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         super.userEventTriggered(ctx, evt);
         if (evt instanceof IdleStateEvent) {
             if (((IdleStateEvent) evt).state() == IdleState.WRITER_IDLE || ((IdleStateEvent) evt).state() == IdleState.ALL_IDLE) {
-                final long time = System.currentTimeMillis();
-                NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.HEARTBEAT_DATA,
-                        PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
-                                DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
-                                PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
-                                (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
-                                36 + "/" +
-                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getMusicVolume()
-                ));
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(TcpPacket.BLANK));
             }
         }
     }
@@ -686,23 +678,22 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         }
     }
 
-    //发送心跳，定时发送空白心跳
+    //定时发送心跳
     private void LoginSuccess() {
-        final long time = System.currentTimeMillis();
-        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, TcpPacketFactory.HEARTBEAT_DATA,
-                PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
-                        DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
-                        PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext)  + "/" +
-                        (float)(Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000)*10))/10 + "/" +
-                        36 + "/" +
-                        PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/"  + ClientInfoHelper.getMusicVolume()
-        ));
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(TcpPacket.BLANK));
+                final long time = System.currentTimeMillis();
+                NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.HEARTBEAT_DATA,
+                        PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
+                                DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
+                                PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
+                                (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
+                                36 + "/" +
+                                PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getMusicVolume()
+                ));
             }
-        }, 0, 20 * 1000);
+        }, 0, 5 * 60 * 1000);
     }
 
     //系统变量
