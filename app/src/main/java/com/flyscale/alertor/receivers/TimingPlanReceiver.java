@@ -12,7 +12,6 @@ import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.media.MusicPlayer;
-import com.flyscale.alertor.media.Player;
 import com.flyscale.alertor.netty.NettyHelper;
 
 import static android.media.AudioManager.FLAG_SHOW_UI;
