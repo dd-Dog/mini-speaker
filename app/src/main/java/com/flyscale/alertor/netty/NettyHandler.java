@@ -350,6 +350,56 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 }
 //                int beforePlay = Integer.parseInt(data.split("/")[2]);
 //                int result = Integer.parseInt(data.split("/")[3]);
+            } else if (address == TcpPacketFactory.DOWNLOAD_UPDATE_PATCH) {
+                /*7.3.4下传升级文件*/
+                DDLog.i("下传升级文件");
+                /**
+                 * 参数说明
+                 * 数据中1-12字节为文件名，14-23字节为文件大小
+                 * 参数1：文件名
+                 * 参数2：文件大小（字节）
+                 */
+                String[] split = data.split("/");
+                if (tcpPacket.getCmd() == CMD.WRITE) {
+                    String fotaName = split[0];
+                    String fotaFileSize = split[1];
+                    //TODO 下载升级文件，下载完成后立刻升级
+
+
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+
+                }
+            } else if (address == TcpPacketFactory.UPDATE_SYSTEM) {
+                /*7.3.5 终端接收完升级文件后反馈*/
+                DDLog.i("终端接收完升级文件后反馈");
+                /**
+                 * 参数说明
+                 * 第一个参数为文件名，
+                 * 第二个参数为成功接收的文件大小
+                 */
+
+
+            } else if (address == TcpPacketFactory.COMMON_FILE_OPERATION_FTP) {
+                /*7.3.6通用文件下载和删除*/
+                DDLog.i("通用文件下载和删除");
+
+            } else if (address == TcpPacketFactory.COMMON_FILE_OPERATION) {
+                /*7.3.7 通用文件下载反馈*/
+                DDLog.i("通用文件下载反馈");
+
+            } else if (address == TcpPacketFactory.GET_COMMON_FILE_INFO) {
+                /*7.3.7b 获取通用文件大小及校验码*/
+                DDLog.i("获取通用文件大小和校验码");
+
+
+            } else if (address == TcpPacketFactory.BACKUP1) {
+                /*7.3.8下传文件备份指令*/
+                DDLog.i("下传文件备份指令");
+
+            } else if (address == TcpPacketFactory.BACKUP2) {
+                /*7.3.9 终端备份文件系统结束后反馈*/
+                DDLog.i("终端备份文件系统结束后反馈");
+
             } else {
                 //系统变量
                 SystemVariable(address, tcpPacket);
@@ -1141,7 +1191,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 if (data.equals(TcpPacketFactory.dataZero)) {
                     String[] memInfo = PhoneUtil.getRamInfo(BaseApplication.sContext);
                     //可用存储全部大小
-                    String totalMem = memInfo[0];
+                    String totalMem = ClientInfoHelper.getTotalSize() +"";
                     //可用存储空闲大小
                     String availMem = ClientInfoHelper.getAvailableSize() + "";
                     String totalAndAvail = totalMem + "/" + availMem + "/";
