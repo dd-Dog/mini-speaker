@@ -50,12 +50,13 @@ public class FMLitepalUtil extends LitePalSupport {
                 litepalBean.setEndTime("00:00");
                 litepalBean.setVolume("0");
                 litepalBean.setIsSetUp("false");
+                litepalBean.setAddress("");
+                litepalBean.setData("");
                 litepalBean.save();
                 n++;
         }
         List<String> isSetUp = FMLitepalUtil.getIsSetUpId();
-
-	if (!isSetUp.isEmpty()){
+        if (isSetUp != null){
             for (String a:isSetUp){
                 Log.e("fengpj","重新设置已经修改过的行  == " +a);
                 int id = Integer.parseInt(a);
@@ -64,6 +65,7 @@ public class FMLitepalUtil extends LitePalSupport {
                         getStartFMTime(data),getEndFMTime(data),getVolume(data));
             }
         }
+
     }
 
     /**
@@ -90,6 +92,7 @@ public class FMLitepalUtil extends LitePalSupport {
         litepalBean.setVolume(getVolume(data));
         litepalBean.setIsSetUp("true");
         litepalBean.setData(data);
+        litepalBean.setAddress(""+address);
         litepalBean.updateAll("name = ?","FM" + getCorrectLine(address));
         DateUtil.updataAlarmForFM(getCorrectLine(address),getWeeklyRecord(data),getFreq(data),
                 getStartFMTime(data),getEndFMTime(data),getVolume(data));
@@ -282,6 +285,19 @@ public class FMLitepalUtil extends LitePalSupport {
         if(litepalBean.size() > 0){
             for (FMLitepalBean data:litepalBean){
                 return data.getData();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 获取数据库中的address
+     * */
+    public static String getAddress(int fmId){
+        List<FMLitepalBean> litepalBean= LitePal.select("name","address").where("name = ?","FM"+fmId).find(FMLitepalBean.class);
+        if(litepalBean.size() > 0){
+            for (FMLitepalBean address:litepalBean){
+                return address.getAddress();
             }
         }
         return null;

@@ -8,6 +8,9 @@ import android.util.Log;
 import com.flyscale.alertor.helper.DateUtil;
 import com.flyscale.alertor.helper.FMLitepalUtil;
 import com.flyscale.alertor.helper.FMUtil;
+import com.flyscale.alertor.jni.NativeHelper;
+import com.flyscale.alertor.netty.NettyHandler;
+import com.flyscale.alertor.netty.NettyHelper;
 
 
 public class FMReceiver extends BroadcastReceiver {
@@ -39,13 +42,18 @@ public class FMReceiver extends BroadcastReceiver {
             if(DateUtil.isTodayOn()){
                 FMUtil.startFM(context);
                 FMUtil.adjustFM(context,freq);
+                FMUtil.fmCallBack(fmid,"0","0");
                 String startTime = DateUtil.StringTimeHms();
                 String endTime = FMLitepalUtil.getEndTime(fmid);
                 long time = DateUtil.getFMDuration(startTime,endTime);
                 FMUtil.stopFMAlarmManager(context,fmid,time);
             }
         }else if(action.equals("FLYSCALE_ALARMMANAGER_FM_STOP")){
+            int fmid = intent.getIntExtra("fmId",0);
             FMUtil.stopFM(context);
+            if (NettyHelper.getInstance().isConnect()){
+                FMUtil.fmCallBack(fmid,"1","0");
+            }
         }
     }
 }

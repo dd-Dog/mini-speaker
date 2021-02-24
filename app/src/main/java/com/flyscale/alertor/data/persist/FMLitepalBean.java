@@ -21,7 +21,16 @@ public class FMLitepalBean extends LitePalSupport {
     String endTime = "00:00";
     String volume = "0";
     String isSetUp = "false";
+    String address = "";
     String data = "";
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public String getData() {
         return data;
