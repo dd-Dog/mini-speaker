@@ -14,6 +14,7 @@ import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.receivers.BRConstant;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -36,9 +37,9 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
     public static final int CONFERENCED = 10;   /* Call part of a conference call */
 
     public static final int STATE_SEND = 1;
-    public static final int STATE_RECEIVE =2;
+    public static final int STATE_RECEIVE = 2;
     public static final int STATE_NONE = -1;
-    static String mSendNum = "",mReceiveNum = "";
+    static String mSendNum = "", mReceiveNum = "";
     public static int sPhoneState = STATE_NONE;
     String TAG = "CallPhoneReceiver2";
 
@@ -46,47 +47,57 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         String action = intent.getAction();
         Log.i(TAG, "onReceive: action = " + action);
-        if(TextUtils.equals(action,"android.intent.action.NEW_OUTGOING_CALL")){
+        if (TextUtils.equals(action, "android.intent.action.NEW_OUTGOING_CALL")) {
             //拨打电话
             mSendNum = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
             mReceiveNum = "";
             sPhoneState = STATE_SEND;
-        }else if(action.equals(BRConstant.ACTION_PHONE_INCOME)){
+        } else if (action.equals(BRConstant.ACTION_PHONE_INCOME)) {
             mReceiveNum = intent.getStringExtra("number");
             mSendNum = "";
             sPhoneState = STATE_RECEIVE;
             //语音接警
-            if(TextUtils.equals(mReceiveNum, PersistConfig.findConfig().getAlarmNum())){
+            if (TextUtils.equals(mReceiveNum, PersistConfig.findConfig().getAlarmNum())) {
                 //声光响起
                 AlarmManager.startAlarmBlink(false);
                 CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_RECV_ALARMING);
-            }else {
+            } else {
+                List<PersistWhite> list = PersistWhite.findList();
+                boolean exist = false;
+                for (PersistWhite pw : list) {
+                    if (pw.getReceiveNum().equals(mReceiveNum)) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist)
+                    PhoneUtil.endCall(context);
                 DDLog.i("其它非报警电话号码");
             }
         }
-        if(action.equals("com.android.phone.FLYSCALE_PHONE_STATE")){
+        if (action.equals("com.android.phone.FLYSCALE_PHONE_STATE")) {
             //电话状态
             int state = intent.getIntExtra("phone_state", 0);
-            if(state == INCOMING || state == CALL_WAITING){
+            if (state == INCOMING || state == CALL_WAITING) {
                 //呼入
                 ifEndCall();
-            }else if(state == DIALING){
+            } else if (state == DIALING) {
                 //呼出
-            }else if(state == DISCONNECTED){
+            } else if (state == DISCONNECTED) {
                 //断开
                 int callAlarmStatus = CallAlarmInstance.getInstance().getStatus();
                 //如果通话成功（即报警成功）则报警结束
-                if(callAlarmStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS){
+                if (callAlarmStatus == CallAlarmInstance.STATUS_ALARM_SUCCESS) {
                     CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_FINISH);
                 }
                 sPhoneState = STATE_NONE;
                 mSendNum = "";
                 mReceiveNum = "";
-            }else if(state == ACTIVE){
+            } else if (state == ACTIVE) {
                 //接通
-                if(CallAlarmInstance.getInstance().getStatus() == CallAlarmInstance.STATUS_ALARMING){
-                    if(TextUtils.equals(mSendNum,PersistConfig.findConfig().getAlarmNum())
-                            || TextUtils.equals(mSendNum,PersistConfig.findConfig().getSpecialNum())){
+                if (CallAlarmInstance.getInstance().getStatus() == CallAlarmInstance.STATUS_ALARMING) {
+                    if (TextUtils.equals(mSendNum, PersistConfig.findConfig().getAlarmNum())
+                            || TextUtils.equals(mSendNum, PersistConfig.findConfig().getSpecialNum())) {
                         DDLog.w("语音报警成功！");
                         CallAlarmInstance.getInstance().setStatus(CallAlarmInstance.STATUS_ALARM_SUCCESS);
                         //电话接通，定时10秒后主动挂断
@@ -97,7 +108,7 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
                                 //挂断电话
                                 PhoneUtil.endCall(context);
                             }
-                        }, 10* 1000);
+                        }, 10 * 1000);
                     }
                 }
             }
@@ -105,26 +116,25 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
     }
 
 
-
     /**
      * 不接受普通号码呼入  并且白名单不包含这个号码 直接挂断
      */
-    public void ifEndCall(){
-        if(!PersistConfig.findConfig().isAcceptOtherNum() && !PersistWhite.isContains(mReceiveNum)){
+    public void ifEndCall() {
+        if (!PersistConfig.findConfig().isAcceptOtherNum() && !PersistWhite.isContains(mReceiveNum)) {
             PhoneUtil.endCall(BaseApplication.sContext);
         }
     }
 
-    public void register(){
+    public void register() {
         IntentFilter filter = new IntentFilter();
         filter.addAction("com.android.phone.FLYSCALE_PHONE_STATE");
         filter.addAction("android.intent.action.NEW_OUTGOING_CALL");
         filter.addAction("android.intent.action.PHONE_STATE");
         filter.addAction(BRConstant.ACTION_PHONE_INCOME);
-        BaseApplication.sContext.registerReceiver(this,filter);
+        BaseApplication.sContext.registerReceiver(this, filter);
     }
 
-    public void unRegister(){
+    public void unRegister() {
         BaseApplication.sContext.unregisterReceiver(this);
     }
 }
