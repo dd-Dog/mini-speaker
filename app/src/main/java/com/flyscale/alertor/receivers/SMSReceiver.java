@@ -102,7 +102,7 @@ public class SMSReceiver extends BroadcastReceiver {
                         }
                     } else if (TextUtils.equals(array[1], "XG")) {
                         for (int i = 2; i < array.length; i++) {
-                            if (i>=4) break;//一次最多修改两组号码
+                            if (i >= 4) break;//一次最多修改两组号码
                             String[] arr = array[i].split("#");
                             if (arr.length == 2) {
                                 PersistWhite.saveNum(arr[0], arr[1]);
@@ -132,15 +132,44 @@ public class SMSReceiver extends BroadcastReceiver {
                     }
 
                 }
-            } else if(content !=null && content.startsWith("PTHM9876")){
+            } else if (content != null && content.startsWith("PTHM9876")) {
                 String[] split = content.trim().split("\\*");
-                if (split.length == 2){
+                if (split.length == 2) {
                     PersistConfig.saveAlarmNum(split[1]);
                     DDLog.i("修改报警号码成功:" + PersistConfig.findConfig().getAlarmNum());
-                }else {
+                } else {
                     DDLog.i("格式不正确！");
                 }
-            }else {
+            } else if (content != null && content.startsWith("JCHM9876")) {
+                //JCHM9876*10000 JCHM9876*1#10000
+                String[] split = content.trim().split("\\*");
+                if (split.length == 2){
+                    String[] arr = split[1].split("#");
+                    if (arr.length == 2){
+                        int key = Integer.parseInt(arr[0]);
+                        switch (key){
+                            case 1:
+                                PersistConfig.saveKey1Num(arr[1]);
+                                DDLog.i("修改快捷键1成功：" + PersistConfig.findConfig().getKey1Num());
+                                break;
+                            case 2:
+                                PersistConfig.saveKey2Num(arr[1]);
+                                DDLog.i("修改快捷键2成功：" + PersistConfig.findConfig().getKey2Num());
+                                break;
+                            case 3:
+                                PersistConfig.saveKey3Num(arr[1]);
+                                DDLog.i("修改快捷键3成功：" + PersistConfig.findConfig().getKey3Num());
+                                break;
+                            case 4:
+                                PersistConfig.saveKey4Num(arr[1]);
+                                DDLog.i("修改快捷键4成功：" + PersistConfig.findConfig().getKey4Num());
+                                break;
+                        }
+
+                    }
+                }
+
+            } else {
                 DDLog.i("格式错误！");
             }
 
