@@ -6,7 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.flyscale.alertor.data.packet.CMD;
+import com.flyscale.alertor.data.packet.TcpPacket;
+import com.flyscale.alertor.data.packet.TcpPacketFactory;
+import com.flyscale.alertor.netty.NettyHelper;
+
+import java.util.ArrayList;
+
 public class FMUtil {
+
 
     public static float freq = 0f;
     public static boolean isFmOn = false;
@@ -143,5 +151,36 @@ public class FMUtil {
         PendingIntent pi=PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         alarmManager.cancel(pi);
         Log.e("fengpj","取消定时设置"+fmId);
+    }
+
+    /**
+     * 平台设置码
+     *wd,00000100,127000/094.900/080000/090000/100xxxx
+     * wd,00000101,001000/105.300/090000/100000/000xxxx
+     * 播放fm向平台发送回调
+     * wd,01000085,100/094.900/0/0/0190605121011000xxxx
+     * 平台响应报文：
+     * wa,01000085,00000000000000000000000000000000xxxx
+     * 参数说明：
+     * 第一个参数：1-3：FM地址码
+     * 第二个参数：5-11：FM频率
+     * 第三个参数：13：为播放前后标志：0播放前；1播放后
+     * 第四个参数为成功播放结果代码：
+     * 0	播放成功
+     * -51	FM电路损坏
+     * -52	FM信号差
+     * -53	没有FM信号
+     * 第五个参数为播放时的系统时间，该参数紧跟在第四个参数后面，没有/分隔符，格式为YYMMDDHHMISS：
+     * 该报文如果终端和设备暂时没有连接到平台无法发送，那么必须保存在终端中，待终端再次上线后逐条补发给平台。
+     * */
+    public static void fmCallBack(int id,String isfinish,String playresult){
+        String data = FMLitepalUtil.getData(id);
+        String addressCode =Integer.toHexString(Integer.parseInt(FMLitepalUtil.getAddress(id)));
+        String freq = FMLitepalUtil.getFreq(id);
+        String isFinish = isfinish;
+        String playResult = playresult;
+        String time = DateUtil.StringTimeYmdhms();
+        String result = addressCode + "/" + freq + "/" + isFinish + "/" + playResult + "/" + time;
+        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, TcpPacketFactory.PLAY_FM, result + TcpPacketFactory.dataZero.substring(result.length())));
     }
 }

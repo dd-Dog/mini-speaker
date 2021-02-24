@@ -81,7 +81,9 @@ public class DateUtil {
         final Calendar c = Calendar.getInstance();
         c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
         mHour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+        mHour = completionString(mHour);
         mMin = String.valueOf(c.get(Calendar.MINUTE));
+        mMin = completionString(mMin);
         return mHour + ":" + mMin;
     }
 
@@ -233,6 +235,27 @@ public class DateUtil {
         mSecond = String.valueOf(c.get(Calendar.SECOND));
         mSecond = completionString(mSecond);
         return mHour + mMin + mSecond;
+    }
+
+    /**
+     * 获取当前具体时间
+     * YY:MM:DD HH:mm：ss
+     * */
+    public static String StringTimeYmdhms(){
+        final Calendar c = Calendar.getInstance();
+        c.setTimeZone(TimeZone.getTimeZone("GMT+8:00"));
+        mYear = String.valueOf(c.get(Calendar.YEAR));
+        mMonth = String.valueOf(c.get(Calendar.MONTH) + 1);
+        mMonth = completionString(mMonth);
+        mDay = String.valueOf(c.get(Calendar.DAY_OF_MONTH));
+        mDay = completionString(mDay);
+        mHour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
+        mHour = completionString(mHour);
+        mMin = String.valueOf(c.get(Calendar.MINUTE));
+        mMin = completionString(mMin);
+        mSecond = String.valueOf(c.get(Calendar.SECOND));
+        mSecond = completionString(mSecond);
+        return mYear + mMonth + mDay + mHour + mMin + mSecond;
     }
 
     /**
