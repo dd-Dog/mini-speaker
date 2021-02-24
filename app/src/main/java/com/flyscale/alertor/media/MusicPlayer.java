@@ -393,45 +393,50 @@ public class MusicPlayer {
         mMediaPlayer.reset();
     }
 
-    public void playBefore(final String path, boolean isPlay, final String endTime, final long address) {
+    public void playBefore(final String path, boolean isPlay, final long address) {
         DDLog.i("playBefore" + isPlay);
         if (!isPlay) {
             Log.i(TAG, "playBefore: 不播放前导音" + path);
-            playNext(path, endTime, address);
+            playNext(path, address);
         } else {
             try {
                 Log.i(TAG, "playBefore: 播放前导音" + path);
                 String QDY = path.substring(0, 38) + "QDY.AMR";
                 Log.i(TAG, "playBefore: " + QDY);
-                mMediaPlayer.reset();
-                mMediaPlayer.setDataSource(QDY);
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                // 通过异步的方式装载媒体资源
-                mMediaPlayer.prepareAsync();
-                mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mMediaPlayer.start();
-                    }
-                });
-                mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        playNext(path, endTime, address);
-                    }
-                });
+                //如果前导音文件不存在，直接播放学习文件
+                if (new File(QDY).exists()) {
+                    mMediaPlayer.reset();
+                    mMediaPlayer.setDataSource(QDY);
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    // 通过异步的方式装载媒体资源
+                    mMediaPlayer.prepareAsync();
+                    mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            mMediaPlayer.start();
+                        }
+                    });
+                    mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            playNext(path, address);
+                        }
+                    });
+                } else {
+                    playNext(path, address);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void playNext(String path, String endTime, final long address) {
+    private void playNext(String path, final long address) {
         DDLog.i("playNext");
         mMediaPlayer.reset();
         mPlayCount = 1;
         try {
-            path = path.substring(0, 38) + ".AMR";
+//            path = path.substring(0, 38) + ".AMR";
             Log.i(TAG, "playNext: " + path);
             if (new File(path).exists()) {
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);

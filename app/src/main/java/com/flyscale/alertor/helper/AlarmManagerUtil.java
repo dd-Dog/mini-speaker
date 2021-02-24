@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
@@ -18,8 +19,6 @@ public class AlarmManagerUtil {
 
     private AlarmManager alarmManager;
     private Context mContext;
-//    private static final long TIME_INTERVAL = 7 * 24 * 60 * 60;//闹钟执行任务的时间间隔
-    private static final long TIME_INTERVAL = 5 * 60 * 1000;//测试时间
 
     PendingIntent pendingIntent;
 
@@ -54,14 +53,33 @@ public class AlarmManagerUtil {
         intent.putExtra("beforePlay", beforePlay);
         intent.putExtra("address", address);
         pendingIntent = PendingIntent.getBroadcast(mContext, requestCode, intent, 0);
-//        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() +
-//                DateHelper.transferTime(startTime, week), pendingIntent);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), pendingIntent);//测试时间
+
+        String time = DateHelper.StringTimeHms();
+        long persist = DateHelper.getFMDuration(time, endTime);
+        long begin = DateHelper.getFMDuration(startTime, time);
+        long times = 0;
+
+        Log.i("TAG", "getAlarmManagerStart: 当前时间" + time);
+        Log.i("TAG", "getAlarmManagerStart: 结束时间" + endTime);
+        if (begin > 0 && persist < 0) {
+            //直接开始下一个定时
+            times = DateHelper.transferTime(startTime, week);
+            Log.i("TAG", "getAlarmManagerStart: 下一个时间" + times);
+        } else if (begin > 0 && persist > 0) {
+            //中途插入
+            Log.i("TAG", "getAlarmManagerStart: 中途插入的" + times);
+        } else if (begin < 0 && persist >  0) {
+            //还没到时间
+            times = DateHelper.getFMDuration(time, startTime);
+            Log.i("TAG", "getAlarmManagerStart: 还没到时间" + times);
+        }
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + times, pendingIntent);
     }
 
     @SuppressLint("NewApi")
     public void AlarmManagerWorkOnOthers(int requestCode, int week, String startTime, String endTime, String fileName,
                                          String voice, boolean beforePlay, long address) {
+        Log.i("TAG", "AlarmManagerWorkOnOthers: 执行重复定时任务");
         alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(mContext, TimingPlanReceiver.class);
         intent.putExtra("week", week);
@@ -73,13 +91,26 @@ public class AlarmManagerUtil {
         intent.putExtra("beforePlay", beforePlay);
         intent.putExtra("address", address);
         pendingIntent = PendingIntent.getBroadcast(mContext, requestCode, intent, 0);
-//        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + DateHelper.transferTime(startTime, week)
-//                + TIME_INTERVAL, pendingIntent);
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
-                + TIME_INTERVAL, pendingIntent);//测试时间
+
+        long times = DateHelper.transferTime(startTime, week);
+        Log.i("TAG", "AlarmManagerWorkOnOthers: 间隔时间=" + times);
+
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + times,
+                pendingIntent);
     }
 
     public void cancelAlarm() {
         alarmManager.cancel(pendingIntent);
+    }
+
+    public void cancelMusic(long persist) {
+        if (persist > 0) {
+            alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(mContext, TimingPlanReceiver.class);
+            intent.putExtra("cancel", 1);
+            pendingIntent = PendingIntent.getBroadcast(mContext, 6515649, intent, 0);
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
+                    + persist, pendingIntent);
+        }
     }
 }
