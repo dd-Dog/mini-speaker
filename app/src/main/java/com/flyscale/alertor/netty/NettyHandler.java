@@ -17,6 +17,7 @@ import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.data.persist.PersistClock;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistPacket;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DDLog;
@@ -37,10 +38,13 @@ import com.liulishuo.okdownload.DownloadTask;
 import com.liulishuo.okdownload.core.cause.EndCause;
 import com.liulishuo.okdownload.core.listener.DownloadListener2;
 
+import org.litepal.LitePal;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Timer;
@@ -62,7 +66,6 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     String TAG = "NettyHandler";
     String data;
-    DownloadTask task;
     Timer timer = new Timer();
     AlarmManagerUtil alarmManagerUtil;
 
@@ -298,7 +301,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String startTime = data.split("/")[1];
                 String endTime = data.split("/")[2];
                 String voice = data.split("/")[3];
-                boolean isPlay = data.split("/")[4].equals("0");
+                boolean isPlay = data.split("/")[4].equals("1");
                 int week = Integer.parseInt(data.split("/")[5].substring(0, 3));
                 Log.i(TAG, "channelRead0: isplay=" + isPlay);
                 ShowProgram(fileName, startTime, endTime, voice, isPlay, week, address);
@@ -938,6 +941,16 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 ));
             }
         }, 0, 5 * 60 * 1000);
+        List<PersistPacket> list =
+                LitePal.select("cmd", "address", "data").find(PersistPacket.class);
+        for (int i = 0; i < list.size(); i++) {
+            CMD cmd = CMD.getCMD(list.get(i).getCmd());
+            long address = list.get(i).getAddress();
+            String data = list.get(i).getData();
+            if (address != 0) {
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(cmd, address, data));
+            }
+        }
     }
 
     //系统变量

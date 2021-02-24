@@ -9,11 +9,14 @@ import com.flyscale.alertor.data.base.BaseData;
 import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.data.persist.PersistPacket;
 import com.flyscale.alertor.data.up.UChangeClientCa;
 import com.flyscale.alertor.data.up.UChangeIP;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FotaHelper;
+
+import org.litepal.LitePal;
 
 import java.io.File;
 import java.io.IOException;
@@ -374,10 +377,33 @@ public class NettyHelper {
      */
     public void send(TcpPacket tcpPacket) {
         if (tcpPacket != null) {
+            long address = tcpPacket.getAddress();
+            String cmd;
+            if (address != 0) {
+                cmd = tcpPacket.getCmd().getValue();
+            } else {
+                cmd = "";
+            }
+            String data = tcpPacket.getData();
             if (isConnect()) {
                 mChannel.writeAndFlush(tcpPacket);
+                List<PersistPacket> list =
+                        LitePal.select("cmd", "address", "data").find(PersistPacket.class);
+                if (!list.isEmpty()) {
+                    for (int i = 0; i < list.size(); i++) {
+                        if (list.get(i).getCmd().equals(cmd) && list.get(i).getAddress() == address &&
+                                list.get(i).getData().equals(data) && !cmd.equals("")) {
+                            // TODO: 2021/2/24 发送完成后删除本条记录
+                            LitePal.deleteAll(PersistPacket.class, "cmd  = ? and address = ? and data = ?",
+                                    cmd, String.valueOf(address), data);
+                        }
+                    }
+                }
             } else {
                 Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
+                if (address != 0) {
+                    PersistPacket.savePacket(cmd, address, data);
+                }
             }
         } else {
             DDLog.e("send: 发送消息失败 消息为空！");
