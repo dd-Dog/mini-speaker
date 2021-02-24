@@ -12,7 +12,10 @@ import android.util.Log;
 import com.flyscale.alertor.BuildConfig;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.netty.NettyHelper;
+
+import java.util.List;
 
 /**
  * @author bianjb
@@ -53,17 +56,17 @@ public class SMSReceiver extends BroadcastReceiver {
 
     /**
      * 1. 短信格式：
-     *    修改报警号码：          IPALARMNUM=2,19185963003;          --  1代表修改小按钮报警电话，2代表平台报警电话
-     *    修改IP和语音报警优先级：IPALARMYUY=1;                      --  1为语音报警优先，0为IP报警优先
-     *    修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
-     *    添加删除白名单：        IPALARMWLM=0,2,15710089835,112;    --  0是增加，2是两个,
-     * 						   IPALARMWLM=1,1,15710089835;        --  1是删除，1代表1个号码
-     *    修改白名单开关：        IPALARMWLS=0;                      --  0是关，1是开Re
-     *
-     *    flyscale  fota开关   FLYSCALEFOTA=1;
-     *    本地存储的数据         FLYSCALEPERSISTDATA=1;
-     *
-     *    注意：短信必须以分号结尾，所有字符需在英文输入法下编辑
+     * 修改报警号码：          IPALARMNUM=2,19185963003;          --  1代表修改小按钮报警电话，2代表平台报警电话
+     * 修改IP和语音报警优先级：IPALARMYUY=1;                      --  1为语音报警优先，0为IP报警优先
+     * 修改报警灯常亮时间：    IPALARMLED=08:30,20:30;            --  设为00:00,00:00 表示常亮
+     * 添加删除白名单：        IPALARMWLM=0,2,15710089835,112;    --  0是增加，2是两个,
+     * IPALARMWLM=1,1,15710089835;        --  1是删除，1代表1个号码
+     * 修改白名单开关：        IPALARMWLS=0;                      --  0是关，1是开Re
+     * <p>
+     * flyscale  fota开关   FLYSCALEFOTA=1;
+     * 本地存储的数据         FLYSCALEPERSISTDATA=1;
+     * <p>
+     * 注意：短信必须以分号结尾，所有字符需在英文输入法下编辑
      *
      * @param sender
      * @param content
@@ -73,70 +76,68 @@ public class SMSReceiver extends BroadcastReceiver {
         //支持任意手机号发短信修改 所以不需要判断手机号
         Log.i(TAG, "handleSMS: " + content);
         try {
-            String[] array = TextUtils.split(content.trim(), ";");
-            for (String item : array) {
-                String[] arrayItem = TextUtils.split(item, "=");
-                if (arrayItem != null && arrayItem.length >= 2) {
-                    String key = arrayItem[0];
-                    String value = arrayItem[1];
-                    if (key.equals("IPALARMNUM")) {
-                        String[] numArray = TextUtils.split(value, ",");
-                        String number = numArray[0];
-                        String mobile = numArray[1];
-                        if (number.equals("1")) {
-                            PersistConfig.saveSpecialNum(mobile);
-                        } else if (number.equals("2")) {
-                            PersistConfig.saveAlarmNum(mobile);
-                        }
-                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMNUM=OK",null,null);
-                    } else if (key.equals("IPALARMYUY")) {
-                        if (value.equals("1")) {
-                            PersistConfig.saveIsIpAlarmFirst(false);
-                        } else if (value.equals("0")) {
-                            PersistConfig.saveIsIpAlarmFirst(true);
-                        }
-                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMYUY=OK",null,null);
-                    } else if (key.equals("IPALARMLED")) {
-                        String[] ledArray = TextUtils.split(value, ",");
-                        String start = ledArray[0];
-                        String end = ledArray[1];
-                        PersistConfig.saveAlarmLedTime(start, end);
-                        AlarmLedReceiver.sendRepeatAlarmBroadcast(start, end);
-                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMLED=OK",null,null);
-                    } else if (key.equals("IPALARMWLM")) {
-                        String[] wlmArray = TextUtils.split(value, ",");
-                        String number = wlmArray[0];
-                        String conut = wlmArray[1];
-                        //白名单ip报文 是通过 ; 来跟分割的，这里转化一下
-                        String mobile = wlmArray[2].replace(",", ";");
-                        if (number.equals("0")) {
-                            PersistWhite.saveList(mobile);
-                        } else if (number.equals("1")) {
-                            PersistWhite.deleteList(mobile);
-                        }
-                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLM=OK",null,null);
-                    } else if (key.equals("IPALARMWLS")) {
-                        if (value.equals("0")) {
-                            PersistConfig.saveIsAcceptOtherNum(true);
-                        } else if (value.equals("1")) {
-                            PersistConfig.saveIsAcceptOtherNum(false);
-                        }
-                        SmsManager.getDefault().sendTextMessage(sender,null,"IPALARMWLS=OK",null,null);
-                    }
-                    //小后门测试fota升级
-                    else if(key.equals("FLYSCALEFOTA")){
-                        if(BuildConfig.DEBUG && value.equals("1")){
-                            NettyHelper.getInstance().modifyFota("1","1","20200708");
-                        }
-                    }else if(key.equals("FLYSCALEPERSISTDATA")){
-                        if(value.equals("1")){
-                            SmsManager.getDefault().sendTextMessage(sender,null,PersistConfig.findConfig().toString(),null,null);
-                        }
-                    }
+            //BMD9876*SC*01*02*03# BMD9876*SC*0#（删除全部）
+            //BMD9876*XG*01#10000*02#18922709554 修改
+            //BMD9876*CX*01*02*03# BMD9876*CX*0#
+            if (content != null && content.startsWith("BMD9876")) {
+                content = content.trim();
+                if (content.endsWith("#")) {
+                    content = content.trim().substring(0, content.trim().length() - 1);
                 }
-            }
-        } catch (Exception e) {
+                String[] array = TextUtils.split(content, "\\*");
+                if (array != null && array.length >= 3 && TextUtils.equals(array[0], "BMD9876")) {
+                    if (TextUtils.equals(array[1], "SC")) {
+                        for (int i = 2; i < array.length; i++) {
+                            try {
+                                if (i == 2 && TextUtils.equals(array[i], "0")) {
+                                    //删除所有
+                                    PersistWhite.deleteAllNum();
+                                    break;
+                                } else {
+                                    PersistWhite.deleteNumByIndex(array[i]);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else if (TextUtils.equals(array[1], "XG")) {
+                        for (int i = 2; i < array.length; i++) {
+                            if (i>=4) break;//一次最多修改两组号码
+                            String[] arr = array[i].split("#");
+                            if (arr.length == 2) {
+                                PersistWhite.saveNum(arr[0], arr[1]);
+                            }
+                        }
+                    } else if (TextUtils.equals(array[1], "CX")) {
+                        List<PersistWhite> list = PersistWhite.findList();
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("BMD9876*CX");
+                        for (int i = 2; i < array.length; i++) {
+                            if (i == 2 && array[i].equals("0")) {
+                                for (PersistWhite pw : list) {
+                                    sb.append("*").append(pw.getIndex()).append("#").append(pw.getReceiveNum());
+                                }
+                                break;
+                            }
+                            for (PersistWhite pw : list) {
+                                if (pw.getIndex().equals(array[i])) {
+                                    sb.append("*").append(pw.getIndex()).append("#").append(pw.getReceiveNum());
+                                }
+                            }
+                        }
 
+                        String replyMsg = sb.toString();
+                        DDLog.i("回复：" + replyMsg);
+                        SmsManager.getDefault().sendTextMessage(sender, null, replyMsg, null, null);
+                    }
+
+                }
+            } else {
+                DDLog.i("格式错误！");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

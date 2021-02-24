@@ -2,6 +2,7 @@ package com.flyscale.alertor.data.persist;
 
 import android.text.TextUtils;
 
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.ListHelper;
 
 import org.litepal.LitePal;
@@ -18,7 +19,21 @@ import java.util.List;
  * @DESCRIPTION 暂无
  */
 public class PersistWhite extends LitePalSupport {
-    String receiveNum = "09941183111";
+    String receiveNum = "16886119";
+    String index = "0";
+
+    public String getIndex() {
+        return index;
+    }
+
+    public PersistWhite setIndex(String index) {
+        this.index = index;
+        return this;
+    }
+
+    public static void deleteNumByIndex(String index) {
+        LitePal.deleteAll(PersistWhite.class, "index = ?", index);
+    }
 
     public String getReceiveNum() {
         return receiveNum;
@@ -30,60 +45,56 @@ public class PersistWhite extends LitePalSupport {
 
     /**
      * 没有数据则初始化白名单
+     *
      * @return
      */
-    public static List<PersistWhite> findList(){
+    public static List<PersistWhite> findList() {
         List<PersistWhite> list = LitePal.findAll(PersistWhite.class);
-        if(ListHelper.isValidCollection(list)){
+        if (ListHelper.isValidCollection(list)) {
             return list;
-        }else {
+        } else {
             PersistWhite persistWhite = new PersistWhite();
             persistWhite.save();
             return LitePal.findAll(PersistWhite.class);
         }
     }
 
-    public static void saveNum(String num){
+    public static void saveNum(String index, String num) {
         PersistWhite persistWhite = new PersistWhite();
+        if (TextUtils.equals(index, "0")) {
+            DDLog.i("index不能为0，保存失败！");
+            return;
+        }
+        persistWhite.setIndex(index);
         persistWhite.setReceiveNum(num);
         persistWhite.save();
     }
 
-    /**
-     * 添加或删除的白名单号码，最少1个，最多无限制，电话号码之间以封号”;”分割
-     * @param results
-     */
-    public static void saveList(String results){
+
+    public static void deleteList(String results) {
         try {
-            String[] array = TextUtils.split(results,";");
-            for(String item : array){
-                saveNum(item);
-            }
-        }catch (Exception e){
-
-        }
-
-    }
-
-    public static void deleteList(String results){
-        try {
-            String[] array = TextUtils.split(results,";");
-            for(String item : array){
+            String[] array = TextUtils.split(results, ";");
+            for (String item : array) {
                 deleteNum(item);
             }
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
 
     }
 
-    public static void deleteNum(String num){
-        LitePal.deleteAll(PersistWhite.class,"receiveNum = ?",num);
+    public static void deleteNum(String num) {
+        LitePal.deleteAll(PersistWhite.class, "receiveNum = ?", num);
     }
 
-    public static boolean isContains(String num){
-        if(TextUtils.isEmpty(num)){
+    public static void deleteAllNum() {
+        LitePal.deleteAll(PersistWhite.class, "receiveNum != ?", PersistConfig.findConfig().getAlarmNum());
+    }
+
+    public static boolean isContains(String num) {
+        if (TextUtils.isEmpty(num)) {
             return false;
         }
-        List list = LitePal.where("receiveNum = ?",num).find(PersistWhite.class);
+        List list = LitePal.where("receiveNum = ?", num).find(PersistWhite.class);
         return ListHelper.isValidCollection(list);
     }
 }
