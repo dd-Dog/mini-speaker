@@ -132,7 +132,15 @@ public class SMSReceiver extends BroadcastReceiver {
                     }
 
                 }
-            } else {
+            } else if(content !=null && content.startsWith("PTHM9876")){
+                String[] split = content.trim().split("\\*");
+                if (split.length == 2){
+                    PersistConfig.saveAlarmNum(split[1]);
+                    DDLog.i("修改报警号码成功:" + PersistConfig.findConfig().getAlarmNum());
+                }else {
+                    DDLog.i("格式不正确！");
+                }
+            }else {
                 DDLog.i("格式错误！");
             }
 
