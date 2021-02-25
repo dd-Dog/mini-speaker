@@ -136,6 +136,24 @@ public class PersistConfig extends LitePalSupport {
     //闹钟列表
     List<PendingIntent> list;
 
+    //电池电量
+    private int battery;
+
+    public int getBattery() {
+        return battery;
+    }
+
+    public void setBattery(int battery) {
+        this.battery = battery;
+    }
+
+    public static PersistConfig saveBattery(int battery) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setBattery(battery);
+        persistConfig.save();
+        return persistConfig;
+    }
+
     public void setArrayList(List<PendingIntent> list) {
         this.list = list;
     }
