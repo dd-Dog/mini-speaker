@@ -19,7 +19,7 @@ import java.util.List;
  * @DESCRIPTION 暂无
  */
 public class PersistWhite extends LitePalSupport {
-    String receiveNum = "16886119";
+    String receiveNum = "099116886119";
     String index = "0";
 
     public String getIndex() {

@@ -64,10 +64,15 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
             } else {
                 List<PersistWhite> list = PersistWhite.findList();
                 boolean exist = false;
-                for (PersistWhite pw : list) {
-                    if (pw.getReceiveNum().equals(mReceiveNum)) {
-                        exist = true;
-                        break;
+                if (list.size() == 1) {
+                    //白名单中只有报警号码，认为白名单功能未开启，所有号码都能接听
+                    exist = true;
+                }else {
+                    for (PersistWhite pw : list) {
+                        if (pw.getReceiveNum().equals(mReceiveNum)) {
+                            exist = true;
+                            break;
+                        }
                     }
                 }
                 if (!exist)
@@ -80,7 +85,7 @@ public class CallPhoneReceiver2 extends BroadcastReceiver {
             int state = intent.getIntExtra("phone_state", 0);
             if (state == INCOMING || state == CALL_WAITING) {
                 //呼入
-                ifEndCall();
+                //ifEndCall();
             } else if (state == DIALING) {
                 //呼出
             } else if (state == DISCONNECTED) {
