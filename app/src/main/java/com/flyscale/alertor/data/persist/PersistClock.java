@@ -11,13 +11,21 @@ import java.util.List;
  */
 public class PersistClock extends LitePalSupport {
 
-    public int week;
+    public int week, requestCode;
     String startTime, endTime, voice;
     long address;
     boolean before;
 
     public long getAddress() {
         return address;
+    }
+
+    public int getRequestCode() {
+        return requestCode;
+    }
+
+    public void setRequestCode(int requestCode) {
+        this.requestCode = requestCode;
     }
 
     public void setAddress(long address) {
@@ -66,6 +74,7 @@ public class PersistClock extends LitePalSupport {
 
     /**
      * 保存定时播放音频（根据周几播放）
+     *
      * @param week
      * @param startTime
      * @param endTime
@@ -74,11 +83,11 @@ public class PersistClock extends LitePalSupport {
      * @return
      */
     public static PersistClock saveAlarm(int week, String startTime, String endTime, String voice, boolean before,
-                                         long address) {
+                                         long address, int requestCode) {
         PersistClock persistClock = new PersistClock();
         //避免插入重复数据
-        List<PersistClock> songs = LitePal.where("week = ? and startTime = ? and endTime = ? and voice = ? ",
-                String.valueOf(week), startTime, endTime, voice).find(PersistClock.class);
+        List<PersistClock> songs = LitePal.where("week = ? and address = ?" ,
+                String.valueOf(week), String.valueOf(address)).find(PersistClock.class);
         if (songs == null || songs.size() == 0) {
         } else {
             for (int i = 0; i < songs.size(); i++) {
@@ -91,8 +100,10 @@ public class PersistClock extends LitePalSupport {
         persistClock.setVoice(voice);
         persistClock.setBefore(before);
         persistClock.setAddress(address);
+        persistClock.setRequestCode(requestCode);
         persistClock.save();
         return persistClock;
     }
+
 
 }

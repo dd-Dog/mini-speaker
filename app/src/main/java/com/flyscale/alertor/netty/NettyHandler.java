@@ -313,7 +313,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             } else if (address == TcpPacketFactory.CLEAR_ALL_MUSIC_SHOW) {
                 /*清除所有音频节目列表*/
                 DDLog.i("清除所有音频节目列表");
-                alarmManagerUtil.cancelAlarm();
+                if (alarmManagerUtil != null) {
+                    alarmManagerUtil.cancelAlarm();
+                }
             } else if (address == TcpPacketFactory.DOWNLOAD_AMR) {
                 /*7.3.3bc 终端接收完AMR音频文件后反馈*/
                 DDLog.i("终端接收完AMR音频文件后反馈");
@@ -811,9 +813,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                             if (list.get(j) != null) {
                                 Log.i(TAG, "initView: " + list.get(j));
                                 Random random = new Random();
-                                PersistClock.saveAlarm(week, startTime, endTime, voice, isPlay, address);
+                                final int requestCode = random.nextInt(1000) + j;
                                 alarmManagerUtil = AlarmManagerUtil.getInstance(BaseApplication.sContext);
-                                alarmManagerUtil.getAlarmManagerStart(random.nextInt(1000) + j, list.get(j),
+                                alarmManagerUtil.getAlarmManagerStart(requestCode, list.get(j),
                                         startTime, endTime, fileName, voice, isPlay, address);
                             }
                         }

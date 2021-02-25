@@ -36,11 +36,12 @@ public class DateHelper {
 
     /**
      * 日期转毫秒
-     * @param date 符合pattern的日期格式
+     *
+     * @param date    符合pattern的日期格式
      * @param pattern
      * @return
      */
-    public static long stringToLong(String date,String pattern){
+    public static long stringToLong(String date, String pattern) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern, Locale.CHINESE);
         Date date1 = null;
         try {
@@ -53,12 +54,13 @@ public class DateHelper {
 
     /**
      * 毫秒转时间字符串
+     *
      * @param date
      * @param pattern
      * @return
      */
-    public static String longToString(Long date,String pattern){
-        if(date != null && date > 0){
+    public static String longToString(Long date, String pattern) {
+        if (date != null && date > 0) {
             Date dateParam = new Date();
             dateParam.setTime(date);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
@@ -69,13 +71,14 @@ public class DateHelper {
         return "";
     }
 
-    public static String longToString(String pattern){
-        return longToString(System.currentTimeMillis(),pattern);
+    public static String longToString(String pattern) {
+        return longToString(System.currentTimeMillis(), pattern);
     }
 
 
     /**
      * 将时间转换成毫秒
+     *
      * @param time
      * @return
      */
@@ -89,6 +92,11 @@ public class DateHelper {
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         // 这里时区需要设置一下，不然可能个别手机会有8个小时的时间差
         mCalendar.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+        if (week == 1) {
+            week = 7;
+        } else {
+            week = week - 1;
+        }
         mCalendar.set(Calendar.DAY_OF_WEEK, week);
         mCalendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(time.substring(0, 2)));
         mCalendar.set(Calendar.MINUTE, Integer.parseInt(time.substring(2, 4)));
@@ -98,41 +106,43 @@ public class DateHelper {
 //        if(systemTime > selectTime) {
 //            mCalendar.add(Calendar.DAY_OF_MONTH, 1);
 //        }
+        Log.i("TAG", "transferTime: 当前时候" + mCalendar.getTime());
         return selectTime;
     }
 
-    public static long getFMDuration(String startTime,String endTime){
+    public static long getFMDuration(String startTime, String endTime) {
         DateFormat df = new SimpleDateFormat("HHmmss");
-        try
-        {
+        try {
             Date d1 = df.parse(splicingString(startTime));
             Date d2 = df.parse(splicingString(endTime));
             long diff = d2.getTime() - d1.getTime();//这样得到的差值是毫秒级别
             long days = diff / (1000 * 60 * 60 * 24);
 
-            long hours = (diff-days*(1000 * 60 * 60 * 24))/(1000* 60 * 60);
-            long minutes = (diff-days*(1000 * 60 * 60 * 24)-hours*(1000* 60 * 60))/(1000* 60);
+            long hours = (diff - days * (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
+            long minutes = (diff - days * (1000 * 60 * 60 * 24) - hours * (1000 * 60 * 60)) / (1000 * 60);
             //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
             return diff;
-        }catch (Exception e) {
+        } catch (Exception e) {
 
         }
         return 0;
     }
-    public static String splicingString(String string){
-        String hour = string.substring(0,2);
-        String min = string.substring(2,4);
+
+    public static String splicingString(String string) {
+        String hour = string.substring(0, 2);
+        String min = string.substring(2, 4);
         String second = string.substring(4);
         String time = hour + min + second;
-        return  time;
+        return time;
     }
 
-    public static String StringTimeHms(){
+    public static String StringTimeHms() {
         final Calendar c = Calendar.getInstance();
         String mHour = String.valueOf(c.get(Calendar.HOUR_OF_DAY));
         String mMin = String.valueOf(c.get(Calendar.MINUTE));
         String mSecond = String.valueOf(c.get(Calendar.SECOND));
-        return mHour + mMin + mSecond;
+        return FillZeroUtil.getString(2, mHour) + FillZeroUtil.getString(2, mMin) +
+                FillZeroUtil.getString(2, mSecond);
     }
 
 }
