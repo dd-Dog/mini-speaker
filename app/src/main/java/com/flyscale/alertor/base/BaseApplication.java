@@ -8,6 +8,7 @@ import android.util.Log;
 
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
+import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
@@ -58,7 +59,8 @@ public class BaseApplication extends Application {
 //        }
         //初始化白名单
         PersistWhite.findList();
-	FMLitepalUtil.init();
-	BreakFMLitepalUtil.init();
+        FMLitepalUtil.init();
+        BreakFMLitepalUtil.init();
+        AlarmManagerUtil.getInstance(BaseApplication.sContext).initProgram();//设置未被取消的定时MP3播放
     }
 }

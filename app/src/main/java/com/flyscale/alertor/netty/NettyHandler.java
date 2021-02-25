@@ -313,9 +313,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             } else if (address == TcpPacketFactory.CLEAR_ALL_MUSIC_SHOW) {
                 /*清除所有音频节目列表*/
                 DDLog.i("清除所有音频节目列表");
-                if (alarmManagerUtil != null) {
-                    alarmManagerUtil.cancelAlarm();
-                }
+                alarmManagerUtil = AlarmManagerUtil.getInstance(BaseApplication.sContext);
+                alarmManagerUtil.cancelAlarm();
             } else if (address == TcpPacketFactory.DOWNLOAD_AMR) {
                 /*7.3.3bc 终端接收完AMR音频文件后反馈*/
                 DDLog.i("终端接收完AMR音频文件后反馈");

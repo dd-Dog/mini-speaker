@@ -12,7 +12,7 @@ import java.util.List;
 public class PersistClock extends LitePalSupport {
 
     public int week, requestCode;
-    String startTime, endTime, voice;
+    String startTime, endTime, voice, fileName;
     long address;
     boolean before;
 
@@ -26,6 +26,14 @@ public class PersistClock extends LitePalSupport {
 
     public void setRequestCode(int requestCode) {
         this.requestCode = requestCode;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public void setAddress(long address) {
@@ -83,7 +91,7 @@ public class PersistClock extends LitePalSupport {
      * @return
      */
     public static PersistClock saveAlarm(int week, String startTime, String endTime, String voice, boolean before,
-                                         long address, int requestCode) {
+                                         long address, int requestCode, String fileName) {
         PersistClock persistClock = new PersistClock();
         //避免插入重复数据
         List<PersistClock> songs = LitePal.where("week = ? and address = ?" ,
@@ -101,6 +109,7 @@ public class PersistClock extends LitePalSupport {
         persistClock.setBefore(before);
         persistClock.setAddress(address);
         persistClock.setRequestCode(requestCode);
+        persistClock.setFileName(fileName);
         persistClock.save();
         return persistClock;
     }

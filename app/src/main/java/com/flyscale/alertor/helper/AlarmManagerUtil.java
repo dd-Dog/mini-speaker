@@ -49,7 +49,7 @@ public class AlarmManagerUtil {
                                      String voice, boolean beforePlay, long address) {
         alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
         Log.i("TAG", "cancelAlarm: " + requestCode);
-        PersistClock.saveAlarm(week, startTime, endTime, voice, beforePlay, address, requestCode);
+        PersistClock.saveAlarm(week, startTime, endTime, voice, beforePlay, address, requestCode, fileName);
         Intent intent = new Intent(mContext, TimingPlanReceiver.class);
         intent.putExtra("week", week);
         intent.putExtra("start", startTime);
@@ -76,7 +76,7 @@ public class AlarmManagerUtil {
             } else if (begin > 0 && persist > 0) {
                 //中途插入
                 Log.i("TAG", "getAlarmManagerStart: 中途插入的" + times);
-            } else if (begin < 0 && persist >  0) {
+            } else if (begin < 0 && persist > 0) {
                 //还没到时间
                 times = DateHelper.getFMDuration(time, startTime);
                 Log.i("TAG", "getAlarmManagerStart: 还没到时间" + times);
@@ -110,7 +110,7 @@ public class AlarmManagerUtil {
 
         String time = DateHelper.StringTimeHms();
         long begin = DateHelper.getFMDuration(startTime, time);
-        long times = 0;
+        long times;
 
         if (DateUtil.getDayOfWeek() > week) {
             week = (7 - DateUtil.getDayOfWeek()) + week;
@@ -131,15 +131,14 @@ public class AlarmManagerUtil {
         Log.i("TAG", "cancelAlarm: 执行取消定时");
         List<PersistClock> songs = LitePal.findAll(PersistClock.class);
         for (int i = 0; i < songs.size(); i++) {
+            Log.i("TAG", "cancelAlarm: " + songs.get(i).getRequestCode());
             alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
             Intent intent = new Intent(mContext, TimingPlanReceiver.class);
             pendingIntent = PendingIntent.getBroadcast(mContext, songs.get(i).getRequestCode(), intent, PendingIntent.FLAG_CANCEL_CURRENT);
             if (alarmManager != null) {
                 alarmManager.cancel(pendingIntent);
-                if (!String.valueOf(songs.get(i).getRequestCode()).isEmpty()) {
-                    LitePal.deleteAll(PersistClock.class, "requestCode = ?", String.valueOf(songs.get(i).getRequestCode()));
-                }
             }
+            LitePal.deleteAll(PersistClock.class, "requestCode = ?", String.valueOf(songs.get(i).getRequestCode()));
         }
     }
 
@@ -151,6 +150,26 @@ public class AlarmManagerUtil {
             pendingIntent = PendingIntent.getBroadcast(mContext, 6515649, intent, PendingIntent.FLAG_CANCEL_CURRENT);
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
                     + persist, pendingIntent);
+        }
+    }
+
+    public void initProgram() {
+        List<PersistClock> songs = LitePal.findAll(PersistClock.class);
+        if (!songs.isEmpty()) {
+            for (int i = 0; i < songs.size(); i++) {
+                PersistClock s = songs.get(i);
+                int week = s.getWeek();
+                String startTime = s.getStartTime();
+                String endTime = s.getEndTime();
+                String fileName = s.getFileName();
+                String voice = s.getVoice();
+                int requestCode = s.getRequestCode();
+                boolean beforePlay = s.isBefore();
+                long address = s.getAddress();
+                if (address != 0) {
+                    getAlarmManagerStart(requestCode, week, startTime, endTime, fileName, voice, beforePlay, address);
+                }
+            }
         }
     }
 }
