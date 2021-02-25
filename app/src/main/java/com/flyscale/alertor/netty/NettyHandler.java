@@ -38,6 +38,9 @@ import com.flyscale.alertor.media.MusicPlayer;
 import com.liulishuo.okdownload.DownloadTask;
 import com.liulishuo.okdownload.core.cause.EndCause;
 import com.liulishuo.okdownload.core.listener.DownloadListener2;
+import com.flyscale.alertor.helper.FMLitepalUtil;
+import com.flyscale.alertor.helper.FMUtil;
+import com.flyscale.alertor.helper.BreakFMLitepalUtil;
 
 import org.litepal.LitePal;
 
@@ -530,7 +533,53 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                             address, "0/" + num + "/" + addZero("0/" + num + "/")));
 
                 }
-            } else {
+            } else if(FMLitepalUtil.isFmShow(address)) {
+                /*7.3.11 设置FM普通广播节目*/
+                String data = tcpPacket.getData();
+                FMLitepalUtil.updateLine(address, data);
+                /**
+                 * 设置正常反馈代码为0,否则为错误编码,例如:
+                 * wa,00000101,0/000000000000000000000000000000xxxx
+                 * wa,00000101,-100/000000000000000000000000000xxxx
+                 * */
+                if(FMLitepalUtil.isUpdataSuccess(address,data)){
+                    String result = "0/";
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                            result + TcpPacketFactory.dataZero.substring(result.length())));
+                }else{
+                    String result = "-100/";
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                            result + TcpPacketFactory.dataZero.substring(result.length())));
+                }
+            }else if(address == TcpPacketFactory.CLEAR_ALL_FM_SHOW){
+                /*清除所有FM播放*/
+                for (int i=1;i<33;i++){
+                    FMUtil.cancelFMAlarmManager(BaseApplication.sContext,i);
+                }
+                FMUtil.stopFM(BaseApplication.sContext);
+            }else if(address == TcpPacketFactory.PLAY_FM){
+                /*7.3.11b FM播放反馈*/
+                String data = tcpPacket.getData();
+                Log.e("fengpj","接收到平台的FM播放反馈");
+            }else if(BreakFMLitepalUtil.isFmShow(address)) {
+                /*7.3.12 设置FM插播广播节目*/
+                String data = tcpPacket.getData();
+                BreakFMLitepalUtil.updateLine(address, data);
+                /**
+                 * 设置正常反馈代码为0,否则为错误编码,例如:
+                 * wa,00000101,0/000000000000000000000000000000xxxx
+                 * wa,00000101,-100/000000000000000000000000000xxxx
+                 * */
+                if(BreakFMLitepalUtil.isUpdataSuccess(address,data)){
+                    String result = "0/";
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                            result + TcpPacketFactory.dataZero.substring(result.length())));
+                }else{
+                    String result = "-100/";
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                            result + TcpPacketFactory.dataZero.substring(result.length())));
+                }
+            }else {
                 //系统变量
                 SystemVariable(address, tcpPacket);
             }

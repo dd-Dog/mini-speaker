@@ -12,6 +12,7 @@ import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
 import com.flyscale.alertor.helper.FMLitepalUtil;
+import com.flyscale.alertor.helper.BreakFMLitepalUtil;
 
 import org.litepal.LitePal;
 
@@ -58,5 +59,6 @@ public class BaseApplication extends Application {
         //初始化白名单
         PersistWhite.findList();
 	FMLitepalUtil.init();
+	BreakFMLitepalUtil.init();
     }
 }

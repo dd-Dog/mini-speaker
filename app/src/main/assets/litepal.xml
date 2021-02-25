@@ -19,7 +19,7 @@
 			For example:
     	<version value="1" />
     -->
-    <version value="22" />
+    <version value="23" />
 
     <!--
     	Define your models in the list with mapping tag, LitePal will
@@ -38,6 +38,7 @@
         <mapping class="com.flyscale.alertor.data.persist.PersistClock"/>
         <mapping class="com.flyscale.alertor.data.persist.PersistPacket"/>
 	<mapping class="com.flyscale.alertor.data.persist.FMLitepalBean"/>
+	<mapping class="com.flyscale.alertor.data.persist.BreakFMLitepalBean"/>
     </list>
 
     <!--

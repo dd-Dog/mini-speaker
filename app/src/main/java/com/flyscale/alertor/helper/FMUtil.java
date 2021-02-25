@@ -12,6 +12,7 @@ import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.netty.NettyHelper;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class FMUtil {
 
@@ -136,7 +137,19 @@ public class FMUtil {
         intent.putExtra("fmId",fmId);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pendingIntent);
-        Log.e("fengpj","定时启动设置"+fmId + "当前时间" + System.currentTimeMillis() + "设置时间" +(System.currentTimeMillis() + time) );
+        Log.e("fengpj","定时停止Fm设置"+fmId + "当前时间" + System.currentTimeMillis() + "设置时间" +(System.currentTimeMillis() + time) );
+    }
+
+    /**
+     * 设定fm停止闹钟
+     * */
+    public static void stopBrFMAlarmManager(Context context,int fmId,long time){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent("FLYSCALE_ALARMMANAGER_BRFM_STOP");
+        intent.putExtra("fmId",fmId);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pendingIntent);
+        Log.e("fengpj","定时停止Brfm设置"+fmId + "当前时间" + System.currentTimeMillis() + "设置时间" +(System.currentTimeMillis() + time) );
     }
 
     /**
@@ -151,6 +164,20 @@ public class FMUtil {
         PendingIntent pi=PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         alarmManager.cancel(pi);
         Log.e("fengpj","取消定时设置"+fmId);
+    }
+
+
+    /**
+     * 设定插入fm启动闹钟
+     * */
+    public static void startBrFMAlarmManager(Context context,int fmId,long time,String freq){
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent("FLYSCALE_ALARMMANAGER_BRFM_START");
+        intent.putExtra("fmId",fmId);
+        intent.putExtra("freq",freq);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + time, pendingIntent);
+        Log.e("fengpj","定时启动设置"+fmId + "当前时间" + System.currentTimeMillis() + "设置时间" +(System.currentTimeMillis() + time) );
     }
 
     /**
@@ -182,5 +209,46 @@ public class FMUtil {
         String time = DateUtil.StringTimeYmdhms();
         String result = addressCode + "/" + freq + "/" + isFinish + "/" + playResult + "/" + time;
         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, TcpPacketFactory.PLAY_FM, result + TcpPacketFactory.dataZero.substring(result.length())));
+    }
+
+
+    public static void fmCallBack2(int id,String isfinish,String playresult){
+        String data = BreakFMLitepalUtil.getData(id);
+        String addressCode =Integer.toHexString(Integer.parseInt(BreakFMLitepalUtil.getAddress(id)));
+        String freq = BreakFMLitepalUtil.getFreq(id);
+        String isFinish = isfinish;
+        String playResult = playresult;
+        //String time = DateUtil.StringTimeYmdhms();
+        String result = addressCode + "/" + freq + "/" + isFinish + "/" + playResult + "/" ;
+        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, TcpPacketFactory.PLAY_FM, result + TcpPacketFactory.dataZero.substring(result.length())));
+    }
+
+    /**
+     * 还原任意fm播放状态
+     * */
+    public static void fmReduction(){
+        //重新设置插入广播
+        List<String> isSetUp = BreakFMLitepalUtil.getIsSetUpId();
+        if (isSetUp != null){
+            for (String a:isSetUp){
+                Log.e("fengpj","重新设置已经修改过的行  == " +a);
+                int id = Integer.parseInt(a);
+                String data = BreakFMLitepalUtil.getData(id);
+                DateUtil.updataAlarmForBrFM(id,BreakFMLitepalUtil.getStartDate(data),BreakFMLitepalUtil.getFreq(data),
+                        BreakFMLitepalUtil.getStartTime(data),BreakFMLitepalUtil.getEndTime(data),BreakFMLitepalUtil.getVolume(data));
+            }
+        }
+
+        //重新设置周期广播
+        List<String> isSetUp2 = FMLitepalUtil.getIsSetUpId();
+        if (isSetUp2 != null){
+            for (String a:isSetUp){
+                Log.e("fengpj","重新设置已经修改过的行  == " +a);
+                int id = Integer.parseInt(a);
+                String data = FMLitepalUtil.getData(id);
+                DateUtil.updataAlarmForFM(id,FMLitepalUtil.getWeeklyRecord(data),FMLitepalUtil.getFreq(data),
+                        FMLitepalUtil.getStartFMTime(data),FMLitepalUtil.getEndFMTime(data),FMLitepalUtil.getVolume(data));
+            }
+        }
     }
 }

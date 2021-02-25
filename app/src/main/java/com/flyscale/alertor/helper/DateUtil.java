@@ -193,6 +193,21 @@ public class DateUtil {
     }
 
     /**
+     * 转化拼接字符串  调整时间表达
+     * HH:mm
+     * */
+    public static String splicingString3(String string){
+        String year = string.substring(0,4);
+        String month = string.substring(4,6);
+        String day = string.substring(6,8);
+        String hour = string.substring(8,10);
+        String min = string.substring(10,12);
+        String second  = string.substring(12);
+        String time = year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + second;
+        return  time;
+    }
+
+    /**
      * 筛选可用的日期
      * */
     public static int getFirstDay(int today){
@@ -286,7 +301,30 @@ public class DateUtil {
             //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
             return diff;
         }catch (Exception e) {
+            Log.e("fengpj","无法正确获取时间差");
+        }
+        return 0;
+    }
 
+    /**
+     * 获取两个时间的差值
+     * yyyy-MM-dd HH:mm:ss
+     * */
+    public static long getTimeDiff2(String currentTime,String startTime){
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try
+        {
+            Date d1 = df.parse(currentTime);
+            Date d2 = df.parse(splicingString3(startTime));
+            long diff = d2.getTime() - d1.getTime();//这样得到的差值是毫秒级别
+            long days = diff / (1000 * 60 * 60 * 24);
+
+            long hours = (diff-days*(1000 * 60 * 60 * 24))/(1000* 60 * 60);
+            long minutes = (diff-days*(1000 * 60 * 60 * 24)-hours*(1000* 60 * 60))/(1000* 60);
+            //System.out.println(""+days+"天"+hours+"小时"+minutes+"分");
+            return diff;
+        }catch (Exception e) {
+            Log.e("fengpj","无法正确获取时间差");
         }
         return 0;
     }
@@ -372,6 +410,18 @@ public class DateUtil {
 //            FMUtil.cancelFMAlarmManager(BaseApplication.sContext, id);
 //            FMUtil.startFMAlarmManager(BaseApplication.sContext, id, 0 + INTERVAL_DAY, weeklyrecord,freq);
 //        }
+    }
+
+
+    /**
+     * 设置插入FM定时启动闹钟
+     * */
+    public static void updataAlarmForBrFM(int id,String startDate,String freq,String startTime,
+                                        String endTime,String volumn){
+        String starttime = startDate + startTime;
+        long time = getTimeDiff2(getCurrentDate(),starttime);
+        FMUtil.startBrFMAlarmManager(BaseApplication.sContext,id,time,freq);
+        Log.e("fengpj","设置插入FM定时启动闹钟"+ id+"\n"+startDate+"\n"+freq+"\n"+startTime+"\n"+endTime+"\n"+volumn);
     }
 
 }

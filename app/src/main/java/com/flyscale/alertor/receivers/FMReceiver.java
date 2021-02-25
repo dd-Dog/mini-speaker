@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.flyscale.alertor.data.persist.BreakFMLitepalBean;
+import com.flyscale.alertor.helper.BreakFMLitepalUtil;
 import com.flyscale.alertor.helper.DateUtil;
 import com.flyscale.alertor.helper.FMLitepalUtil;
 import com.flyscale.alertor.helper.FMUtil;
@@ -14,6 +16,8 @@ import com.flyscale.alertor.netty.NettyHelper;
 
 
 public class FMReceiver extends BroadcastReceiver {
+    private static boolean isBrFMplaying = false;
+
     @Override
     public void onReceive(Context context, Intent intent) {
 
@@ -50,10 +54,38 @@ public class FMReceiver extends BroadcastReceiver {
             }
         }else if(action.equals("FLYSCALE_ALARMMANAGER_FM_STOP")){
             int fmid = intent.getIntExtra("fmId",0);
-            FMUtil.stopFM(context);
-            if (NettyHelper.getInstance().isConnect()){
-                FMUtil.fmCallBack(fmid,"1","0");
+            if (!isBrFMplaying) {
+                FMUtil.stopFM(context);
             }
+            FMUtil.fmCallBack(fmid,"1","0");
+        }else if(action.equals("FLYSCALE_ALARMMANAGER_BRFM_START")){
+            int fmid = intent.getIntExtra("fmId",0);
+            Float freq = Float.parseFloat(intent.getStringExtra("freq"));
+            FMUtil.startFM(context);
+            FMUtil.adjustFM(context,freq);
+            String startTime = DateUtil.StringTimeHms();
+            String endTime = BreakFMLitepalUtil.getEndTime(fmid);
+            FMUtil.fmCallBack2(fmid,"0","0");
+            isBrFMplaying = true;
+            long time = DateUtil.getFMDuration(startTime,endTime);
+            FMUtil.stopBrFMAlarmManager(context,fmid,time);
+        }else if(action.equals("FLYSCALE_ALARMMANAGER_BRFM_STOP")){
+            int fmid = intent.getIntExtra("fmId",0);
+            FMUtil.stopFM(context);
+            BreakFMLitepalBean litepalBean = new BreakFMLitepalBean();
+            litepalBean.setName("FM" + fmid);
+            litepalBean.setStartDate("0");
+            litepalBean.setFreq("0.0");
+            litepalBean.setStartTime("00:00");
+            litepalBean.setEndTime("00:00");
+            litepalBean.setVolume("0");
+            litepalBean.setIsSetUp("false");
+            litepalBean.setAddress("");
+            litepalBean.setData("");
+            litepalBean.updateAll("name = ?","FM" + BreakFMLitepalUtil.getCorrectLine(fmid));
+            FMUtil.fmCallBack2(fmid,"0","0");
+            isBrFMplaying = false;
+            FMUtil.fmReduction();
         }
     }
 }
