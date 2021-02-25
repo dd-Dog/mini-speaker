@@ -1483,18 +1483,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.PLATFORM_PHONE_NUM) {
             //一键报警平台电话号码(可写) wd,00000048,18909910000/000000000000000000xxxx
             //参数1：一键报警平台对应电话号码 ; 0为取消
-            String platformPhoneNum = "";
+            String alarmNum = "";
             if (cmd == CMD.WRITE) {
                 if (split.length > 0) {
-                    platformPhoneNum = split[0];
+                    alarmNum = split[0];
                     //TODO 服务器下发最新的一键报警平台电话号码，修改设备中的数据(0 取消功能)
-                    PersistConfig.savePlatformNum(platformPhoneNum);
+                    PersistConfig.saveAlarmNum(alarmNum);
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
                 }
             } else if (cmd == CMD.READ) {
-                platformPhoneNum = PersistConfig.findConfig().getPlatformNum();
+                alarmNum = PersistConfig.findConfig().getAlarmNum();
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
-                        platformPhoneNum + "/" + addZero(platformPhoneNum + "/")));
+                        alarmNum + "/" + addZero(alarmNum + "/")));
             }
 
         } else if (address == TcpPacketFactory.ALARM_VOLUME) {

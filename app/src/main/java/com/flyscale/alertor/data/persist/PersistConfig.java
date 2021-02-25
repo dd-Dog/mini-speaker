@@ -111,11 +111,6 @@ public class PersistConfig extends LitePalSupport {
     String callDate = "202101010000";  //拨打电话的时间（年月日时分）
     String times = "03";           //拨打失败后的重试次数
 
-
-    /*************平台电话号码*****************/
-    String platformNum = "0";
-
-
     /*********** 4个功能键对应的电话号码 ****************/
     String key1Num = "0";
     String key2Num = "0";
@@ -680,14 +675,6 @@ public class PersistConfig extends LitePalSupport {
         this.times = times;
     }
 
-    public String getPlatformNum() {
-        return platformNum;
-    }
-
-    public void setPlatformNum(String platformNum) {
-        this.platformNum = platformNum;
-    }
-
     public String getKey1Num() {
         return key1Num;
     }
@@ -867,13 +854,6 @@ public class PersistConfig extends LitePalSupport {
         PersistConfig persistConfig = findConfig();
         persistConfig.setArrayList(list);
         persistConfig.save();
-    }
-
-    public static PersistConfig savePlatformNum(String num) {
-        PersistConfig persistConfig = findConfig();
-        persistConfig.setPlatformNum(num);
-        persistConfig.save();
-        return persistConfig;
     }
 
     public static PersistConfig saveLinkType(String type) {
