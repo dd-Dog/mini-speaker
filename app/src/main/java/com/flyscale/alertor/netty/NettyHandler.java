@@ -213,6 +213,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         if (TextUtils.equals(TcpPacketFactory.LOGIN_CODE.SUCCESS.getCode() + "", data.split("/")[0])) {
                             DDLog.i("登录成功");
                             PersistConfig.saveLogin(true);
+                            PersistConfig.saveBattery(PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext));
                             LoginSuccess();
                             return;
                         }
@@ -755,7 +756,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                                 Random random = new Random();
                                 PersistClock.saveAlarm(week, startTime, endTime, voice, isPlay, address);
                                 alarmManagerUtil = AlarmManagerUtil.getInstance(BaseApplication.sContext);
-                                alarmManagerUtil.getAlarmManagerStart(random.nextInt(100) + j, list.get(j),
+                                alarmManagerUtil.getAlarmManagerStart(random.nextInt(1000) + j, list.get(j),
                                         startTime, endTime, fileName, voice, isPlay, address);
                             }
                         }

@@ -10,9 +10,15 @@ import android.util.Log;
 
 import com.flyscale.alertor.Constants;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.packet.TcpPacketFactory;
+import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.helper.ClientInfoHelper;
+import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.MediaHelper;
+import com.flyscale.alertor.helper.PhoneManagerUtil;
 import com.flyscale.alertor.helper.SPUtil;
 import com.flyscale.alertor.led.LedInstance;
+import com.flyscale.alertor.netty.NettyHelper;
 
 /**
  * @author 高鹤泉
@@ -24,7 +30,7 @@ public class BatteryReceiver extends BroadcastReceiver {
 
     public static int sBatteryLevel = -1;
     int mLastBatteryLevel = -1;
-//    int mBatteryStatus = BatteryManager.BATTERY_STATUS_UNKNOWN;
+    //    int mBatteryStatus = BatteryManager.BATTERY_STATUS_UNKNOWN;
     String TAG = "BatteryReceiver";
     private int mBatteryLevel = 100;
     private int mBatteryStatus = 1;
@@ -51,23 +57,49 @@ public class BatteryReceiver extends BroadcastReceiver {
         SPUtil.put(context, Constants.BatteryInfo.BATTERY_VOLTAGE, batteryVoltage);
         SPUtil.put(context, Constants.TrampSwitch.TRAMP_SWITCH, mTrampSwitch);
 
-        if(TextUtils.equals(action,Intent.ACTION_BATTERY_CHANGED)){
+        if (TextUtils.equals(action, Intent.ACTION_BATTERY_CHANGED)) {
             mLastBatteryLevel = sBatteryLevel;
-            sBatteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL,100);
+            sBatteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 100);
 //            mBatteryStatus = intent.getIntExtra(BatteryManager.EXTRA_STATUS,BatteryManager.BATTERY_STATUS_UNKNOWN);
 //            Log.i(TAG, "onReceive: sBatteryLevel = " + sBatteryLevel);
-        }else if(TextUtils.equals(action,Intent.ACTION_BATTERY_LOW)){
-            if(!BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
-                MediaHelper.play(MediaHelper.BATTERY_LOW_CHARGE,true);
+            whenIsChange();
+        } else if (TextUtils.equals(action, Intent.ACTION_BATTERY_LOW)) {
+            if (!BaseApplication.sFlyscaleManager.getAdapterState().equals("1")) {
+                MediaHelper.play(MediaHelper.BATTERY_LOW_CHARGE, true);
             }
-        }else if(TextUtils.equals(action,BRConstant.ACTION_AC)){
+        } else if (TextUtils.equals(action, BRConstant.ACTION_AC)) {
             String status = intent.getStringExtra("status");
 //            Log.i(TAG, "onReceive: sPlugged = " + status);
             whenIsCharge();
         }
     }
 
-    public void register(){
+    /**
+     * 第一次为当前电量与登录时的电量比较
+     * 电量变化超过20%，发送心跳消息，并且保存当前电量
+     * 以后就是比较为当前电量与上一次保存电量
+     */
+    private void whenIsChange() {
+        int battery = PersistConfig.findConfig().getBattery();
+        if (sBatteryLevel - battery >= 20 || battery - sBatteryLevel >= 20) {
+            if (battery == 0) {
+                return;
+            }
+            Log.i(TAG, "whenIsChange: 电量变化超过20%");
+            final long time = System.currentTimeMillis();
+            NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.HEARTBEAT_DATA,
+                    PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
+                            DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
+                            PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
+                            (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
+                            36 + "/" +
+                            PhoneManagerUtil.getTamperSwitch(BaseApplication.sContext) + "/" + ClientInfoHelper.getMusicVolume()
+            ));
+            PersistConfig.saveBattery(PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext));
+        }
+    }
+
+    public void register() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         // 电量低
@@ -76,20 +108,20 @@ public class BatteryReceiver extends BroadcastReceiver {
         filter.addAction(Intent.ACTION_BATTERY_OKAY);
         // AC充电
         filter.addAction(BRConstant.ACTION_AC);
-        BaseApplication.sContext.registerReceiver(this,filter);
+        BaseApplication.sContext.registerReceiver(this, filter);
     }
 
-    public void unRegister(){
+    public void unRegister() {
         BaseApplication.sContext.unregisterReceiver(this);
     }
 
     /**
      * 当正在充电的时候
      */
-    public void whenIsCharge(){
-        if(BaseApplication.sFlyscaleManager.getAdapterState().equals("1")){
+    public void whenIsCharge() {
+        if (BaseApplication.sFlyscaleManager.getAdapterState().equals("1")) {
             LedInstance.getInstance().showChargeLed();
-        }else {
+        } else {
             LedInstance.getInstance().offChargeLed();
         }
     }

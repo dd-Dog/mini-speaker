@@ -402,6 +402,9 @@ public class NettyHelper {
             } else {
                 Log.i(TAG, "send: 发送消息失败 请检查长连接是否已经断开");
                 if (address != 0) {
+                    if (address == 3) {
+                        return;
+                    }
                     PersistPacket.savePacket(cmd, address, data);
                 }
             }
