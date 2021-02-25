@@ -70,16 +70,27 @@ public class PersistWhite extends LitePalSupport {
         persistWhite.save();
     }
 
-
-    public static void deleteList(String results) {
+    /**
+     * 添加或删除的白名单号码集合
+     * @param list
+     */
+    public static void saveList(List<String> list) {
         try {
-            String[] array = TextUtils.split(results, ";");
-            for (String item : array) {
+            for (int i = 0 ; i < list.size() ; i++) {
+                saveNum(i + 1 + "" , list.get(i));
+            }
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void deleteList(List<String> list) {
+        try {
+            for(String item : list){
                 deleteNum(item);
             }
         } catch (Exception e) {
         }
-
     }
 
     public static void deleteNum(String num) {

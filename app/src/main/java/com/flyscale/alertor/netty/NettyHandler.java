@@ -18,6 +18,7 @@ import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.data.persist.PersistClock;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistPacket;
+import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DDLog;
@@ -648,7 +649,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
      * @param size     文件大小
      * @param address  行地址
      */
-    private void downLoadCommonFile(String fileName, long size , final long address) {
+    private void downLoadCommonFile(final String fileName, long size , final long address) {
         if (ClientInfoHelper.getAvailableSize() < size) {
             DDLog.i("磁盘空间不足，取消下载");
             //空间不足（原因值 -7）
@@ -679,6 +680,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         //TODO 下载完成并升级
 
                     } else {
+                        if (TextUtils.equals(fileName , "whitelst.txt")) {
+                            //下载的为白名单，添加到白名单列表
+                            PersistWhite.deleteAllNum();
+                            List<String> listWhite = FileHelper.readFileList(PersistConfig.COMMON_FILE_PATH + fileName);
+                            DDLog.i("服务器下发白名单内容 == " + listWhite.toString());
+                            PersistWhite.saveList(listWhite);
+                        }
                         //下载成功（原因值 0）
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                                 address, "0/" + addZero("0/")));

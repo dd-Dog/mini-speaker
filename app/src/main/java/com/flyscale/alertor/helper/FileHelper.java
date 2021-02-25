@@ -3,6 +3,8 @@ package com.flyscale.alertor.helper;
 import android.annotation.SuppressLint;
 import android.os.Environment;
 
+import com.flyscale.alertor.data.persist.PersistConfig;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,8 +12,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.nio.Buffer;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author 高鹤泉
@@ -249,5 +256,57 @@ public class FileHelper {
             DDLog.i("KI配置文件不存在！");
         }
         return "";
+    }
+
+    /**
+     * 获取文件中内容（行字符串集合）
+     * @return
+     */
+    public static List<String> readFileList(String path){
+        File file = new File(path);
+        if(file != null && file.exists()){
+            try {
+                InputStream inputStream = new FileInputStream(file);
+                InputStreamReader streamReader = new InputStreamReader(inputStream);
+                BufferedReader reader = new BufferedReader(streamReader);
+                String line;
+                List<String> list = new ArrayList<>();
+                while ((line = reader.readLine()) != null){
+                    DDLog.i("readFileList: " + line);
+                    list.add(line);
+                }
+                return list;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 将字符串集合写入文件中
+     *
+     * @return
+     */
+    public static void writeListToFile(List<String> list, String path) {
+        String stringList = "";
+        for (String str : list) {
+            stringList = str + "\r\n";
+        }
+
+        try {
+            File file = new File(path);
+            if (!file.exists()) {
+                DDLog.i("创建文件 == ");
+                file.getParentFile().mkdir();
+                file.createNewFile();
+            }
+            RandomAccessFile raf = new RandomAccessFile(file, "rwd");
+            raf.seek(file.length());
+            raf.write(stringList.getBytes());
+            raf.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
