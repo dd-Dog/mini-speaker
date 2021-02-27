@@ -43,17 +43,23 @@ public class PersistConfig extends LitePalSupport {
 
     /*bianjb-服务器地址，端口信息--开始*/
     /******************飞图FTP测试服务器*******************/
+    boolean flyDebug = false;
     String ftpHostNameDebugFly = "";
     String ftpHostIPDebugFly = "192.168.1.104";
     int ftpHostPortDebugFly = 22;
     String ftpUsernameFly = "flyscale";
     String ftpPasswordFly = "fly123";
+    String tcpHostnameFly = "192.168.1.130";
+    int tcpPortFly = 8086;
+    String httpDownloadUrlFly = "http://192.168.1.104:8186/download/";
 
     /******************客户测试服务器*******************/
-    String tcpHostNameDebug1 = "bltst2.xjxlb.com";//两个域名使用同一IP，默认使用1
-    String tcpHostNameDebug2 = "bltst2.xjxlb.com";
+    boolean customerDebug = false;
+    String tcpHostNameDebug1 = "xlb999.xjxlb.com";//两个域名使用同一IP，默认使用1
+    String tcpHostNameDebug2 = "xlb999.xjxlb.com";
     String tcpHostIPDebug = "";
     int tcpPortDebug = 50074;
+    String httpDownloadUrlDebug = "http://xlb999.xjxlb.com:58029";
 
     /******************客户正式服务器*******************/
     String ftpHostNameRelease = "ftp3.xjxlb.com";
@@ -139,6 +145,60 @@ public class PersistConfig extends LitePalSupport {
     //电池电量
     private int battery;
 
+    public int getTcpPortFly() {
+        return tcpPortFly;
+    }
+
+    public PersistConfig setTcpPortFly(int tcpPortFly) {
+        this.tcpPortFly = tcpPortFly;
+        return this;
+    }
+
+    public String getHttpDownloadUrlFly() {
+        return httpDownloadUrlFly;
+    }
+
+    public PersistConfig setHttpDownloadUrlFly(String httpDownloadUrlFly) {
+        this.httpDownloadUrlFly = httpDownloadUrlFly;
+        return this;
+    }
+
+    public String getHttpDownloadUrlDebug() {
+        return httpDownloadUrlDebug;
+    }
+
+    public PersistConfig setHttpDownloadUrlDebug(String httpDownloadUrlDebug) {
+        this.httpDownloadUrlDebug = httpDownloadUrlDebug;
+        return this;
+    }
+
+    public String getTcpHostnameFly() {
+        return tcpHostnameFly;
+    }
+
+    public PersistConfig setTcpHostnameFly(String tcpHostnameFly) {
+        this.tcpHostnameFly = tcpHostnameFly;
+        return this;
+    }
+
+    public boolean isCustomerDebug() {
+        return customerDebug;
+    }
+
+    public PersistConfig setCustomerDebug(boolean customerDebug) {
+        this.customerDebug = customerDebug;
+        return this;
+    }
+
+    public boolean isFlyDebug() {
+        return flyDebug;
+    }
+
+    public PersistConfig setFlyDebug(boolean flyDebug) {
+        this.flyDebug = flyDebug;
+        return this;
+    }
+
     public int getBattery() {
         return battery;
     }
@@ -178,6 +238,62 @@ public class PersistConfig extends LitePalSupport {
     public PersistConfig setRandomKey(String randomKey) {
         this.randomKey = randomKey;
         return this;
+    }
+
+    public static PersistConfig saveTcpPortFly(int port) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setTcpPortFly(port);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveTcpPortDebug(int port) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setTcpPortDebug(port);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveHttpDownloadUrlDebug(String url) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setHttpDownloadUrlDebug(url);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveHttpDownloadUrlFly(String url) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setHttpDownloadUrlFly(url);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveTcpHostnameFly(String hostname) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setTcpHostnameFly(hostname);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveTcpHostNameDebug1(String hostname) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setTcpHostNameDebug1(hostname);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveFlyDebug(boolean login) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFlyDebug(login);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveCustomerDebug(boolean login) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setCustomerDebug(login);
+        persistConfig.save();
+        return persistConfig;
     }
 
     public static PersistConfig saveLogin(boolean login) {

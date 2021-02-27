@@ -136,13 +136,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        Log.i(TAG, "channelActive:  ---  链接成功 ---");
-        //保存第一次登陆的时间 永久不变
-        PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
-        if (!UserActionHelper.isFastConnect(120 * 1000)) {
-            MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS, true);
-        }
-        LedInstance.getInstance().showStateLed();
+        Log.i(TAG, "channelActive");
 
         //开始鉴权
         //TcpPacketFactory.LOGIN, "460031234567890/0A9464026708209/")
@@ -216,6 +210,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     if (data.split("/") != null) {
                         if (TextUtils.equals(TcpPacketFactory.LOGIN_CODE.SUCCESS.getCode() + "", data.split("/")[0])) {
                             DDLog.i("登录成功");
+                            //保存第一次登陆的时间 永久不变
+                            PersistConfig.saveFirstLoginTime(System.currentTimeMillis());
+                            if (!UserActionHelper.isFastConnect(120 * 1000)) {
+                                MediaHelper.play(MediaHelper.SERVER_CONNECT_SUCCESS, true);
+                            }
+                            LedInstance.getInstance().showStateLed();
+
                             PersistConfig.saveLogin(true);
                             PersistConfig.saveBattery(PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext));
                             LoginSuccess();
