@@ -38,13 +38,13 @@ public class BaseApplication extends Application {
         LitePal.initialize(this);
         PersistConfig.saveLogin(false);
 
-//        sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
-//        sFlyscaleManager.setExternalAlarmStatus(0);
-//        if(sFlyscaleManager.getAdapterState().equals("1")){
-//            LedInstance.getInstance().showChargeLed();
-//        }else {
-//            LedInstance.getInstance().offChargeLed();
-//        }
+        sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
+        sFlyscaleManager.setExternalAlarmStatus(0);
+        if(sFlyscaleManager.getAdapterState().equals("1")){
+            LedInstance.getInstance().showChargeLed();
+        }else {
+            LedInstance.getInstance().offChargeLed();
+        }
 //
 //        //每次升级取反
 //        PersistConfig.saveDefaultAlarmOn(true);
