@@ -27,6 +27,7 @@ import com.flyscale.alertor.helper.FileHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.HttpDownloadHelper;
 import com.flyscale.alertor.helper.LocationHelper;
+import com.flyscale.alertor.helper.LoginHelper;
 import com.flyscale.alertor.helper.MD5Util;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.NetHelper;
@@ -711,7 +712,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         }
         //先删除后下载
         FileHelper.deleteFile(PersistConfig.COMMON_FILE_PATH + fileName);
-        String url = PersistConfig.findConfig().getHttpDownloadUrl() + fileName;
+        String url = LoginHelper.getHttpDownloadUrl() + fileName;
         HttpDownloadHelper.downloadFile(url, PersistConfig.COMMON_FILE_PATH, fileName, new DownloadListener2() {
             @Override
             public void taskStart(@NonNull DownloadTask task) {
@@ -769,8 +770,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
          * Bit1表示星期二是否播放(0播放、1不播放)；
          */
         DDLog.i("地址=" + address);
-        //            String url = PersistConfig.findConfig().getHttpDownloadUrl() + fileName;
-        String url = "http://192.168.1.104:8186/download/" + fileName;//测试时使用
+        String url = LoginHelper.getHttpDownloadUrl() + fileName;//测试时使用
         final String path = Constants.FilePath.FILE_NORMAL;
         HttpDownloadHelper.downloadFile(url, path, fileName, new DownloadListener2() {
             @Override
@@ -864,7 +864,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 FileHelper.deleteFile(path + fileName);
             }
 //            String url = PersistConfig.findConfig().getHttpDownloadUrl() + fileName;
-            String url = "http://192.168.1.104:8186/download/" + fileName;//测试时使用
+            String url = LoginHelper.getHttpDownloadUrl() + fileName;//测试时使用
             HttpDownloadHelper.downloadFile(url, path, fileName,
                     new DownloadListener2() {
                         @Override
@@ -907,8 +907,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
          * 如果终端FTP下载失败，      返回 wa,01000000,-2/00000000000000000000000000000xxxx
          * 如果终端没有足够的空间，    返回 wa,01000000,-3/00000000000000000000000000000xxxx
          */
-//        String url = PersistConfig.findConfig().getHttpDownloadUrl() + "/" + fileName;
-        String url = "http://192.168.1.104:8186/download/" + fileName;//测试时使用
+        String url = LoginHelper.getHttpDownloadUrl() + fileName;//测试时使用
         @SuppressLint("SdCardPath") final String path = Constants.FilePath.FILE_EMR;
         final long address;
         if ("mp3".equals(type)) {
