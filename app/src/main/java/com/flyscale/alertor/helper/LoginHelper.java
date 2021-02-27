@@ -9,6 +9,14 @@ import com.flyscale.alertor.data.persist.PersistConfig;
  */
 public class LoginHelper {
 
+    public static String getWifiSSID(){
+        return PersistConfig.findConfig().getWifiSSIDFly();
+    }
+
+    public static String getWifiPwd(){
+        return PersistConfig.findConfig().getWifiPwdFly();
+    }
+
     public static String getHostname(){
         boolean flyDebug = PersistConfig.findConfig().isFlyDebug();
         boolean customerDebug = PersistConfig.findConfig().isCustomerDebug();
@@ -48,4 +56,7 @@ public class LoginHelper {
         }
     }
 
+    public static boolean isFlyDebug() {
+        return PersistConfig.findConfig().isFlyDebug();
+    }
 }
