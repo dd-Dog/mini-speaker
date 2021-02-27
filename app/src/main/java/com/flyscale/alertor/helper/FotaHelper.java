@@ -92,15 +92,8 @@ public class FotaHelper {
      * ⑧.版本更新内容
      * ⑨.升级包文件大小
      */
-    public void checkVersion(String total,String num,String tradeNum) {
+    public void checkVersion() {
         try {
-            if(mCallback != null){
-                if(mCallback instanceof FotaAction){
-                    ((FotaAction) mCallback).setTotal(total);
-                    ((FotaAction) mCallback).setNum(num);
-                    ((FotaAction) mCallback).setTradeNum(tradeNum);
-                }
-            }
             mIOtaInter.checkVersion(new ICheckVersionAidlInter.Stub() {
                 @Override
                 public void hasNewVersion(final NewVersionInfo newVersionInfo) throws RemoteException {

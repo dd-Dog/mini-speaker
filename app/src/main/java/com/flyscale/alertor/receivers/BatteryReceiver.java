@@ -14,6 +14,7 @@ import com.flyscale.alertor.data.packet.TcpPacketFactory;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DateHelper;
+import com.flyscale.alertor.helper.FillZeroUtil;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PhoneManagerUtil;
 import com.flyscale.alertor.helper.SPUtil;
@@ -88,7 +89,7 @@ public class BatteryReceiver extends BroadcastReceiver {
             Log.i(TAG, "whenIsChange: 电量变化超过20%");
             final long time = System.currentTimeMillis();
             NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.HEARTBEAT_DATA,
-                    PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
+                    FillZeroUtil.getString(3, String.valueOf(PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext))) + "/" +
                             DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
                             PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
                             (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
