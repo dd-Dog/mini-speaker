@@ -52,6 +52,8 @@ public class PersistConfig extends LitePalSupport {
     String tcpHostnameFly = "192.168.1.130";
     int tcpPortFly = 8086;
     String httpDownloadUrlFly = "http://192.168.1.104:8186/download/";
+    String wifiSSIDFly = "ddDog";
+    String wifiPwd = "11111111";
 
     /******************客户测试服务器*******************/
     boolean customerDebug = false;
@@ -149,6 +151,24 @@ public class PersistConfig extends LitePalSupport {
         return tcpPortFly;
     }
 
+    public String getWifiSSIDFly() {
+        return wifiSSIDFly;
+    }
+
+    public PersistConfig setWifiSSIDFly(String wifiSSIDFly) {
+        this.wifiSSIDFly = wifiSSIDFly;
+        return this;
+    }
+
+    public String getWifiPwdFly() {
+        return wifiPwd;
+    }
+
+    public PersistConfig setWifiPwdFly(String wifiPwd) {
+        this.wifiPwd = wifiPwd;
+        return this;
+    }
+
     public PersistConfig setTcpPortFly(int tcpPortFly) {
         this.tcpPortFly = tcpPortFly;
         return this;
@@ -238,6 +258,20 @@ public class PersistConfig extends LitePalSupport {
     public PersistConfig setRandomKey(String randomKey) {
         this.randomKey = randomKey;
         return this;
+    }
+
+    public static PersistConfig saveWifiPwdFly(String pwd) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setWifiPwdFly(pwd);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveWifiSSIDFly(String ssid) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setWifiSSIDFly(ssid);
+        persistConfig.save();
+        return persistConfig;
     }
 
     public static PersistConfig saveTcpPortFly(int port) {

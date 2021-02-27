@@ -1,7 +1,6 @@
 package com.flyscale.alertor;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,28 +8,19 @@ import android.content.IntentFilter;
 import android.flyscale.FlyscaleManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.telephony.NeighboringCellInfo;
-import android.telephony.TelephonyManager;
-import android.telephony.gsm.GsmCellLocation;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseActivity;
-import com.flyscale.alertor.data.persist.PersistConfig;
-import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.ClientInfoHelper;
 import com.flyscale.alertor.helper.DDLog;
-import com.flyscale.alertor.helper.DateHelper;
-import com.flyscale.alertor.helper.FotaHelper;
+import com.flyscale.alertor.helper.LoginHelper;
 import com.flyscale.alertor.helper.WifiUtil;
 import com.flyscale.alertor.services.AlarmService;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -67,14 +57,17 @@ public class MainActivity extends BaseActivity {
 //        PersistConfig.saveIsIpAlarmFirst(false);
 //        PersistConfig.saveSpecialNum("19902012807");
 
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                connectWifi();
-            }
-        }, 10 * 1000, 10 * 1000);
+        if (LoginHelper.isFlyDebug()){
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    connectWifi();
+                }
+            }, 10 * 1000, 10 * 1000);
+        }
     }
+
     static boolean isWifiConnected = false;
     private void connectWifi() {
         boolean wifiOpen = WifiUtil.isWifiOpen(this);
@@ -86,7 +79,7 @@ public class MainActivity extends BaseActivity {
         if (!isWifiConnected){
             DDLog.i("wifi正在连接...");
             WifiUtil wifiUtil = new WifiUtil();
-//            wifiUtil.connectWifi(this, "ddDog", "11111111", "WPA");
+            wifiUtil.connectWifi(this, LoginHelper.getWifiSSID(), LoginHelper.getWifiPwd(), "WPA");
         }else {
             DDLog.i("wifi已连接");
         }

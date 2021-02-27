@@ -15,6 +15,9 @@ public class EnvSettingsReceiver extends BroadcastReceiver {
     private static final String CUSTOMER_DEBUG = "debug";
     private static final String CUSTOMER_RELEASE = "product";
 
+    private static final String WIFI_SSID_FLY = "ssid";
+    private static final String WIFI_PWD_FLY = "pwd";
+
     private static final String HOSTNAME_PARAM = "hostname";
     private static final String PORT_PARAM = "port";
     private static final String DOWNLOAD_URL_PARAM = "download_url";
@@ -43,17 +46,49 @@ public class EnvSettingsReceiver extends BroadcastReceiver {
             String downloadUrl = intent.getStringExtra(DOWNLOAD_URL_PARAM);
             DDLog.i("mode=" + mode + ",hostname=" + hostname + ",port=" + port + ",downloadUrl=" + downloadUrl);
             if (TextUtils.equals(mode, FLY_DEBUG)) {
-                PersistConfig.saveTcpHostnameFly(hostname);
-                PersistConfig.saveTcpPortFly(port);
-                PersistConfig.saveHttpDownloadUrlFly(downloadUrl);
+                String ssid = intent.getStringExtra(WIFI_SSID_FLY);
+                String pwd = intent.getStringExtra(WIFI_PWD_FLY);
+                if (!TextUtils.isEmpty(ssid)) {
+                    PersistConfig.saveWifiSSIDFly(ssid);
+                }
+                if (!TextUtils.isEmpty(pwd)) {
+                    PersistConfig.saveWifiPwdFly(pwd);
+                }
+                if (!TextUtils.isEmpty(hostname)) {
+                    PersistConfig.saveTcpHostnameFly(hostname);
+                }
+                if (port != 0) {
+                    PersistConfig.saveTcpPortFly(port);
+                }
+
+                if (!TextUtils.isEmpty(downloadUrl)) {
+                    PersistConfig.saveHttpDownloadUrlFly(downloadUrl);
+                }
+
+
             } else if (TextUtils.equals(mode, CUSTOMER_DEBUG)) {
-                PersistConfig.saveTcpHostNameDebug1(hostname);
-                PersistConfig.saveTcpPortDebug(port);
-                PersistConfig.saveHttpDownloadUrlFly(downloadUrl);
+                if (!TextUtils.isEmpty(hostname)) {
+                    PersistConfig.saveTcpHostNameDebug1(hostname);
+                }
+                if (port != 0) {
+                    PersistConfig.saveTcpPortDebug(port);
+                }
+
+                if (!TextUtils.isEmpty(downloadUrl)) {
+                    PersistConfig.saveHttpDownloadUrlFly(downloadUrl);
+                }
+
             } else if (TextUtils.equals(mode, CUSTOMER_RELEASE)) {
-                PersistConfig.saveTcpHostNameRelease1(hostname);
-                PersistConfig.saveTcpPortRelease(port);
-                PersistConfig.saveHttpDownloadUrl(downloadUrl);
+                if (!TextUtils.isEmpty(hostname)) {
+                    PersistConfig.saveTcpHostNameRelease1(hostname);
+                }
+                if (port != 0) {
+                    PersistConfig.saveTcpPortRelease(port);
+                }
+
+                if (!TextUtils.isEmpty(downloadUrl)) {
+                    PersistConfig.saveHttpDownloadUrl(downloadUrl);
+                }
             }
         } else if (TextUtils.equals("com.flyscale.ENV_SETTINGS.QUERY", intent.getAction())) {
             boolean flyDebug = PersistConfig.findConfig().isFlyDebug();
@@ -61,6 +96,8 @@ public class EnvSettingsReceiver extends BroadcastReceiver {
             String tcpHostnameFly = PersistConfig.findConfig().getTcpHostnameFly();
             int tcpPortFly = PersistConfig.findConfig().getTcpPortFly();
             String httpDownloadUrlFly = PersistConfig.findConfig().getHttpDownloadUrlFly();
+            String wifiPwdFly = PersistConfig.findConfig().getWifiPwdFly();
+            String wifiSSIDFly = PersistConfig.findConfig().getWifiSSIDFly();
 
             String tcpHostNameDebug1 = PersistConfig.findConfig().getTcpHostNameDebug1();
             int tcpPortDebug = PersistConfig.findConfig().getTcpPortDebug();
@@ -73,6 +110,9 @@ public class EnvSettingsReceiver extends BroadcastReceiver {
             StringBuilder sb = new StringBuilder();
             sb.append("flyDebug").append(":").append(flyDebug).append(" \n");
             sb.append("customerDebug").append(":").append(customerDebug).append(" \n");
+
+            sb.append("wifiSSIDFly").append(":").append(wifiSSIDFly).append(" \n");
+            sb.append("wifiPwdFly").append(":").append(wifiPwdFly).append(" \n");
 
             sb.append("tcpHostnameFly").append(":").append(tcpHostnameFly).append(" \n");
             sb.append("tcpPortFly").append(":").append(tcpPortFly).append(" \n");
