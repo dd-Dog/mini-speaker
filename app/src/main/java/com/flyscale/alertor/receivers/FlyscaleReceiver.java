@@ -60,6 +60,20 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             String key4 = PersistConfig.findConfig().getKey4Num();
             DDLog.d(getClass() , "按下功能键4, 拨号：" + key4);
             if (!TextUtils.equals(key4, "0")) PhoneUtil.call(context , key4);
+        } else if (TextUtils.equals(action , BRConstant.ACTION_FM_AND_MP3)) {
+            //选择FM或者MP3
+
+        } else if (TextUtils.equals(action , BRConstant.ACTION_PREV)) {
+            //上一首
+
+        } else if (TextUtils.equals(action , BRConstant.ACTION_STOP_AND_PLAY)) {
+            //暂停和播放
+
+        } else if (TextUtils.equals(action , BRConstant.ACTION_NEXT)) {
+            //下一首
+
+        } else if (TextUtils.equals(action , BRConstant.ACTION_PEOPLE_SERVICES)) {
+            //民生服务
 
         }
     }

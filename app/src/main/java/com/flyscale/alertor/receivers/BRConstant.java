@@ -26,4 +26,15 @@ public interface BRConstant {
     String ACTION_FUNCTION_KEY2_DOWN = "flyscale.privkey.FUNCTION_KEY2.down";
     String ACTION_FUNCTION_KEY3_DOWN = "flyscale.privkey.FUNCTION_KEY3.down";
     String ACTION_FUNCTION_KEY4_DOWN = "flyscale.privkey.FUNCTION_KEY4.down";
+
+    //按键FM/MPS
+    String ACTION_FM_AND_MP3 = "flyscale.privkey.FM_MP3.down";
+    //上一首或者上一个频道
+    String ACTION_PREV= "flyscale.privkey.PREV.down";
+    //暂停或播放
+    String ACTION_STOP_AND_PLAY = "flyscale.privkey.STOP_PLAY.down";
+    //下一首或者下一个频道
+    String ACTION_NEXT = "flyscale.privkey.NEXT.down";
+    //民生服务
+    String ACTION_PEOPLE_SERVICES = "flyscale.privkey.PEOPLE_SERVICES.down";
 }
