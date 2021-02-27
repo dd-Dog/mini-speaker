@@ -333,8 +333,8 @@ public class NettyHelper {
      * fota升级
      * 总包数@包序号@接收状态@失败原因
      */
-    public void modifyFota(String total, String num, String tradeNum) {
-        mFotaHelper.checkVersion(total, num, tradeNum);
+    public void modifyFota() {
+        mFotaHelper.checkVersion();
     }
 
 

@@ -729,7 +729,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     DDLog.i("下载通用文件成功");
                     if (address == TcpPacketFactory.DOWNLOAD_UPDATE_PATCH) {
                         //TODO 下载完成并升级
-
+                        //终端版本升级
+                        NettyHelper.getInstance().modifyFota();
                     } else {
                         if (TextUtils.equals(fileName , "whitelst.txt")) {
                             //下载的为白名单，添加到白名单列表
