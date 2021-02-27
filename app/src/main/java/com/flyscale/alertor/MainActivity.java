@@ -24,6 +24,7 @@ import com.flyscale.alertor.base.BaseActivity;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.ClientInfoHelper;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FotaHelper;
 import com.flyscale.alertor.helper.WifiUtil;
@@ -78,12 +79,16 @@ public class MainActivity extends BaseActivity {
     private void connectWifi() {
         boolean wifiOpen = WifiUtil.isWifiOpen(this);
         if (!wifiOpen) {
+            DDLog.i("wifi关闭，正在打开wifi");
             WifiUtil.switchWifi(this, true);
             return;
         }
         if (!isWifiConnected){
+            DDLog.i("wifi正在连接...");
             WifiUtil wifiUtil = new WifiUtil();
-            wifiUtil.connectWifi(this, "ddDog", "11111111", "WPA");
+//            wifiUtil.connectWifi(this, "ddDog", "11111111", "WPA");
+        }else {
+            DDLog.i("wifi已连接");
         }
     }
 

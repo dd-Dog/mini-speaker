@@ -125,6 +125,7 @@ public class NettyHelper {
                 modifySslHandler(null, false);
             }
         }
+
         ChannelFuture future = mBootstrap.connect(PersistConfig.findConfig().getTcpHostNameDebug1(), PersistConfig.findConfig().getTcpPortDebug());
 //        ChannelFuture future = mBootstrap.connect("192.168.1.130", 60000);
         Log.i(TAG, "connect: ----" + PersistConfig.findConfig().getTcpHostNameDebug1() + "...." + PersistConfig.findConfig().getTcpPortDebug());
