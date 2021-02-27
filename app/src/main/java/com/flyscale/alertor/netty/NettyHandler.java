@@ -991,8 +991,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             public void run() {
                 final long time = System.currentTimeMillis();
                 NettyHelper.getInstance().send(TcpPacketFactory.createPacketSend(TcpPacketFactory.HEARTBEAT_DATA,
-                        PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext) + "/" +
-                                DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
+                        FillZeroUtil.getString(3, String.valueOf(PhoneManagerUtil.getBatteryLevel(BaseApplication.sContext))) +
+                                "/" + DateHelper.longToString(time, DateHelper.yyyyMMdd_HHmmss) + "/" +
                                 PhoneManagerUtil.getBatteryStatus(BaseApplication.sContext) + "/" +
                                 (float) (Math.round((PhoneManagerUtil.getBatteryVoltage(BaseApplication.sContext).floatValue() / 1000) * 10)) / 10 + "/" +
                                 36 + "/" +
