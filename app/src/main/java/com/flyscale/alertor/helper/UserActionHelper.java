@@ -1,5 +1,7 @@
 package com.flyscale.alertor.helper;
 
+import android.text.TextUtils;
+
 import com.flyscale.alertor.base.BaseApplication;
 
 /**
@@ -18,7 +20,7 @@ public class UserActionHelper {
      * @return
      */
     public static boolean isMute(){
-        boolean isMute = BaseApplication.sFlyscaleManager.getMuteState().equals("1");
+        boolean isMute = TextUtils.equals("1" , BaseApplication.sFlyscaleManager.getMuteState());
         return isMute;
     }
 
