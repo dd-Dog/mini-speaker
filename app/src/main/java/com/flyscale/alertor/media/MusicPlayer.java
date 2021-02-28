@@ -337,7 +337,7 @@ public class MusicPlayer {
     /**
      * 播放下一首
      */
-    private void playNext() {
+    public void playNext() {
         DDLog.i("playNext");
         mMediaPlayer.reset();
         setIndexAfterPlay();//确定下一首播放啥

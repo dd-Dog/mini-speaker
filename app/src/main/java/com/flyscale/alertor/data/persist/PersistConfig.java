@@ -41,6 +41,9 @@ public class PersistConfig extends LitePalSupport {
     //报警灯常亮是否取反的标志  true 维持现状 false 取反
     boolean isDefaultAlarmOn = true;
 
+    //播放模式（MP3 - 0 ， FM - 1）
+    int playMode = 0;
+
     /*bianjb-服务器地址，端口信息--开始*/
     /******************飞图FTP测试服务器*******************/
     boolean flyDebug = false;
@@ -146,6 +149,14 @@ public class PersistConfig extends LitePalSupport {
 
     //电池电量
     private int battery;
+
+    public int getPlayMode() {
+        return playMode;
+    }
+
+    public void setPlayMode(int playMode) {
+        this.playMode = playMode;
+    }
 
     public int getTcpPortFly() {
         return tcpPortFly;
@@ -270,6 +281,13 @@ public class PersistConfig extends LitePalSupport {
     public static PersistConfig saveWifiSSIDFly(String ssid) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setWifiSSIDFly(ssid);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig savePlayMode(int mode) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPlayMode(mode);
         persistConfig.save();
         return persistConfig;
     }

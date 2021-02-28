@@ -10,8 +10,10 @@ import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistPair;
 import com.flyscale.alertor.helper.DDLog;
+import com.flyscale.alertor.helper.FMUtil;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
+import com.flyscale.alertor.media.MusicPlayer;
 
 /**
  * @author 高鹤泉
@@ -61,16 +63,52 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             DDLog.d(getClass() , "按下功能键4, 拨号：" + key4);
             if (!TextUtils.equals(key4, "0")) PhoneUtil.call(context , key4);
         } else if (TextUtils.equals(action , BRConstant.ACTION_FM_AND_MP3)) {
-            //选择FM或者MP3
-
+            //选择FM或者MP3切换
+            int mode = PersistConfig.findConfig().getPlayMode();
+            if (mode == 1) {
+                //播放MP3
+                PersistConfig.savePlayMode(0);
+                MusicPlayer.getInstance().playLocal();
+            } else {
+                //播放FM
+                PersistConfig.savePlayMode(1);
+                FMUtil.startFM(context);
+                FMUtil.searchFM(context);
+            }
         } else if (TextUtils.equals(action , BRConstant.ACTION_PREV)) {
             //上一首
+            int mode = PersistConfig.findConfig().getPlayMode();
+            if (mode == 0) {
+                //播放上一首MP3
+                //MusicPlayer.getInstance().playLastMusic();
+            } else {
+                //播放上一个FM频道
 
+            }
         } else if (TextUtils.equals(action , BRConstant.ACTION_STOP_AND_PLAY)) {
             //暂停和播放
-
+            int mode = PersistConfig.findConfig().getPlayMode();
+            if (mode == 0) {
+                //暂停或者开始MP3
+                if (MusicPlayer.getInstance().isPlaying()) {
+                    MusicPlayer.getInstance().playNext();
+                } else {
+                    MusicPlayer.getInstance().pause(true);
+                }
+            } else {
+                //暂停或者播放FM
+                FMUtil.pauseFM(context);
+            }
         } else if (TextUtils.equals(action , BRConstant.ACTION_NEXT)) {
             //下一首
+            int mode = PersistConfig.findConfig().getPlayMode();
+            if (mode == 0) {
+                //播放下一首MP3
+                MusicPlayer.getInstance().playNext();
+            } else {
+                //播放下一个FM频道
+                FMUtil.adjustFM(context , 0);
+            }
 
         } else if (TextUtils.equals(action , BRConstant.ACTION_PEOPLE_SERVICES)) {
             //民生服务
