@@ -846,6 +846,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
          * 终端收到指令先删除终端本地存储的该文件，再进行下载， 如果该文件正在播放，需返回-15
          */
         final String path = Constants.FilePath.FILE_NORMAL;
+        String s = MusicPlayer.music.substring(MusicPlayer.music.lastIndexOf(File.separator)).replace("/", "");
         if (ClientInfoHelper.getAvailableSize() < size) {
             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                     TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-3/00000000000000000000000000000"));
@@ -855,7 +856,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (new File(path + fileName).exists()) {
                 FileHelper.deleteFile(path + fileName);
             }
-        } else if (MusicPlayer.getInstance().isPlaying()) {
+        } else if (s.equals(fileName)) {
             //正在播放，无法删除
             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                     TcpPacketFactory.EMR_AMR_FILE_OPERATION, FillZeroUtil.getString(-15 + "/", 32)));

@@ -145,4 +145,19 @@ public class DateHelper {
                 FillZeroUtil.getString(2, mSecond);
     }
 
+    public static String ssToMM(long ss) {
+        String time = "" ;
+        long minute = ss / 60000 ;
+        long seconds = ss % 60000 ;
+        long second = Math.round((float)seconds/1000) ;
+        if( minute < 10 ){
+            time += "0" ;
+        }
+        time += minute+":" ;
+        if( second < 10 ){
+            time += "0" ;
+        }
+        time += second ;
+        return time ;
+    }
 }

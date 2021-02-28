@@ -1,16 +1,18 @@
 package com.flyscale.alertor.media;
 
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.flyscale.alertor.MainActivity;
+import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
-import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.helper.ThreadPool;
 import com.flyscale.alertor.netty.NettyHelper;
 
@@ -20,9 +22,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Timer;
 
-import io.netty.util.Timeout;
-import io.netty.util.TimerTask;
-
+import static com.flyscale.alertor.MainActivity.timer;
 import static com.flyscale.alertor.helper.InternetUtil.TAG;
 
 public class MusicPlayer {
@@ -47,6 +47,7 @@ public class MusicPlayer {
     private PLAY_MODE mPlayMode = PLAY_MODE.LIST_LOOP;//默认列表循环播放
     private PLAY_TYPE mPlayType = PLAY_TYPE.NORMAL;//默认播放常规音频
     public static int mPlayCount;
+    public static String music;
 
     private MusicPlayer() {
         mMediaPlayer = new MediaPlayer();
@@ -162,8 +163,17 @@ public class MusicPlayer {
      * @param path
      * @param enforce 如果当前正在播放，是否强制停止当前
      */
-    public void playTip(String path, boolean enforce, final int count) {
+    public void playTip(final String path, boolean enforce, final int count) {
         mPlayCount = count;
+        music = path;
+        boolean play = false;
+        setPlayType(PLAY_TYPE.EMERGENCY);
+        if (mPlayCount == 0) {
+            if (timer != null) {
+                timer.cancel();
+                play = true;
+            }
+        }
         if (TextUtils.isEmpty(path)) {
             DDLog.i("文件路径为空");
             return;
@@ -186,11 +196,20 @@ public class MusicPlayer {
             mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    if (mPlayType == PLAY_TYPE.NORMAL && mCurrentNormalPausePoint > 0) {
+                        mMediaPlayer.seekTo(mCurrentNormalPausePoint);
+                        mCurrentNormalPausePoint = 0;
+                    } else if (mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0) {
+                        mMediaPlayer.seekTo(mCurrentEmrPausePoint);
+                        mCurrentEmrPausePoint = 0;
+                    }
                     if (mPlayCount != 0) {
                         mp.start();
+                        sendStartEmrBroadcast();
                     }
                 }
             });
+            final boolean finalPlay = play;
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(final MediaPlayer mp) {
@@ -210,6 +229,15 @@ public class MusicPlayer {
                             }, 1000);
                         }
                     }
+                    if (mPlayCount == 0) {
+                        Log.i(TAG, "onCompletion: " + mNormalList);
+                        if (finalPlay) {
+                            setPlayType(PLAY_TYPE.NORMAL);
+                            playNext();
+                        } else {
+                            sendStopBroadcast();
+                        }
+                    }
                 }
             });
         } catch (IOException e) {
@@ -221,9 +249,6 @@ public class MusicPlayer {
      * 播放本地文件
      */
     public void playLocal() {
-        ArrayList<String> mCurrentList = new ArrayList<>();
-
-        mCurrentList.add("/mnt/sdcard/flyscale/media/normal/dnxk.mp3");
         DDLog.i("play");
         if (mCurrentList.size() <= 0) {
             DDLog.w("没有曲目可以播放！");
@@ -262,13 +287,21 @@ public class MusicPlayer {
             }
             mMediaPlayer.pause();
             mMediaPlayer.reset();
+            if (timer != null) {
+                timer.cancel();
+            }
         } else {
             if (mMediaPlayer.isPlaying()) {
                 mMediaPlayer.pause();
+                if (timer != null) {
+                    timer.cancel();
+                }
             } else {
                 DDLog.w("当前没有播放，无法暂停！");
             }
         }
+        Intent intent = new Intent("flyscale.music.pause");
+        BaseApplication.sContext.sendBroadcast(intent);
     }
 
     /**
@@ -287,11 +320,13 @@ public class MusicPlayer {
      */
     private void setIndexAfterPlay() {
         DDLog.i("setIndexAfterPlay,mPlayType=" + mPlayType);
+        Log.i(TAG, "setIndexAfterPlay: ");
         if (mPlayType == PLAY_TYPE.NORMAL) {
             if (mCurrentNormalPausePoint > 0) {
                 //说明之前被中断而暂停，现在要恢复,所以不再更改当前曲目
                 return;
             }
+            Log.i(TAG, "setIndexAfterPlay: 下一首之前的" + mCurrentNormalIndex);
             mLastNormalIndex = mCurrentNormalIndex;
             switch (mPlayMode) {
                 case RANDOM:
@@ -325,6 +360,7 @@ public class MusicPlayer {
             DDLog.i("setIndexAfterPlay,mode=" + mPlayMode + ",mCurrentEmrIndex=" + mCurrentEmrIndex);
         }
 
+        Log.i(TAG, "setIndexAfterPlay: 下一首播放位置" + mCurrentNormalIndex);
     }
 
     private final MediaPlayer.OnCompletionListener mMediaPlayerCompleteListener = new MediaPlayer.OnCompletionListener() {
@@ -338,7 +374,7 @@ public class MusicPlayer {
      * 播放下一首
      */
     public void playNext() {
-        DDLog.i("playNext");
+        DDLog.i("playNext" + mCurrentNormalIndex);
         mMediaPlayer.reset();
         setIndexAfterPlay();//确定下一首播放啥
         try {
@@ -351,6 +387,8 @@ public class MusicPlayer {
             }
             mMediaPlayer.setDataSource(filePath);
             mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+            mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
+            mMediaPlayer.setOnCompletionListener(mMediaPlayerCompleteListener);
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
@@ -370,6 +408,8 @@ public class MusicPlayer {
                 mCurrentEmrPausePoint = 0;
             }
             mMediaPlayer.start();
+            music = mCurrentList.get(mCurrentNormalIndex);
+            sendStartBroadcast();
         }
     };
 
@@ -400,9 +440,8 @@ public class MusicPlayer {
             playNext(path, address);
         } else {
             try {
-                Log.i(TAG, "playBefore: 播放前导音" + path);
                 String QDY = path.substring(0, 38) + "QDY.AMR";
-                Log.i(TAG, "playBefore: " + QDY);
+                Log.i(TAG, "playBefore: 播放前导音" + QDY);
                 //如果前导音文件不存在，直接播放学习文件
                 if (new File(QDY).exists()) {
                     mMediaPlayer.reset();
@@ -413,16 +452,32 @@ public class MusicPlayer {
                     mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
+                            if (mPlayType == PLAY_TYPE.NORMAL && mCurrentNormalPausePoint > 0) {
+                                mMediaPlayer.seekTo(mCurrentNormalPausePoint);
+                                mCurrentNormalPausePoint = 0;
+                            } else if (mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0) {
+                                mMediaPlayer.seekTo(mCurrentEmrPausePoint);
+                                mCurrentEmrPausePoint = 0;
+                            }
                             mMediaPlayer.start();
                         }
                     });
                     mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
                         public void onCompletion(MediaPlayer mp) {
+                            Log.i(TAG, "onCompletion: 播放正式音频文件");
                             playNext(path, address);
                         }
                     });
                 } else {
+                    if (mPlayType == PLAY_TYPE.NORMAL && mCurrentNormalPausePoint > 0) {
+                        mMediaPlayer.seekTo(mCurrentNormalPausePoint);
+                        mCurrentNormalPausePoint = 0;
+                    } else if (mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0) {
+                        mMediaPlayer.seekTo(mCurrentEmrPausePoint);
+                        mCurrentEmrPausePoint = 0;
+                    }
+                    Log.i(TAG, "onCompletion: 播放正式音频文件");
                     playNext(path, address);
                 }
             } catch (IOException e) {
@@ -436,7 +491,6 @@ public class MusicPlayer {
         mMediaPlayer.reset();
         mPlayCount = 1;
         try {
-//            path = path.substring(0, 38) + ".AMR";
             Log.i(TAG, "playNext: " + path);
             if (new File(path).exists()) {
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -447,6 +501,7 @@ public class MusicPlayer {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         mMediaPlayer.start();
+                        sendStartBroadcast();
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
                                 FillZeroUtil.getString("0/", 32)));
                     }
@@ -462,6 +517,7 @@ public class MusicPlayer {
                             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
                                     FillZeroUtil.getString(finalPath.substring(34) + "/" + Long.toHexString(address) +
                                             1 + "/" +DateHelper.longToString(times, DateHelper.yyMMddHHmmss), 32)));
+                            sendStopBroadcast();
                         }
                         mp.start();
                     }
@@ -479,6 +535,14 @@ public class MusicPlayer {
     public void playNormal(String path, int playTimes) {
         try {
             mPlayCount = playTimes;
+            music = path;
+            if (mMediaPlayer.isPlaying()) {
+                for (int i = 0; i < playTimes; i++) {
+                    mNormalList.add(path);
+                    Log.i(TAG, "playNormal: " + mCurrentList);
+                }
+                return;
+            }
             mMediaPlayer.reset();
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.setDataSource(path);
@@ -488,7 +552,15 @@ public class MusicPlayer {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     if (mPlayCount != 0) {
+                        if (mPlayType == PLAY_TYPE.NORMAL && mCurrentNormalPausePoint > 0) {
+                            mMediaPlayer.seekTo(mCurrentNormalPausePoint);
+                            mCurrentNormalPausePoint = 0;
+                        } else if (mPlayType == PLAY_TYPE.EMERGENCY && mCurrentEmrPausePoint > 0) {
+                            mMediaPlayer.seekTo(mCurrentEmrPausePoint);
+                            mCurrentEmrPausePoint = 0;
+                        }
                         mMediaPlayer.start();
+                        sendStartBroadcast();
                     }
                 }
             });
@@ -511,10 +583,93 @@ public class MusicPlayer {
                             }, 1000);
                         }
                     }
+                    if (mPlayCount == 0) {
+                        sendStopBroadcast();
+                    }
                 }
             });
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendStartBroadcast() {
+        Intent intent = new Intent("flyscale.music.start");
+        BaseApplication.sContext.sendBroadcast(intent);
+    }
+
+    private void sendStopBroadcast() {
+        Intent intent = new Intent("flyscale.music.stop");
+        BaseApplication.sContext.sendBroadcast(intent);
+    }
+
+    private void sendStartEmrBroadcast() {
+        Intent intent = new Intent("flyscale.emr.start");
+        BaseApplication.sContext.sendBroadcast(intent);
+    }
+
+    private void sendStopEmrBroadcast() {
+        Intent intent = new Intent("flyscale.emr.stop");
+        BaseApplication.sContext.sendBroadcast(intent);
+    }
+
+    //播放上一首文件
+    public void playLastMusic() {
+        //分情况，如果播放的为第一首歌，直接播放最后一首；其余情况播放上一首
+        Log.i(TAG, "playLast: 本地播放上一首" + mNormalList.get(mLastNormalIndex));
+        if (mCurrentNormalIndex != 0) {
+            mCurrentNormalIndex = (mCurrentNormalIndex - 1) % mCurrentList.size();
+        } else mCurrentNormalIndex = mCurrentList.size();
+        Log.i(TAG, "playLastMusic: " + mCurrentNormalIndex);
+        mMediaPlayer.reset();
+        setIndexAfterPlay();//确定下一首播放啥
+        try {
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            String filePath = "";
+            if (mPlayType == PLAY_TYPE.NORMAL) {
+                filePath = mCurrentList.get(mCurrentNormalIndex);
+            } else {
+                filePath = mCurrentList.get(mCurrentEmrIndex);
+            }
+            mMediaPlayer.setDataSource(filePath);
+            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+            mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
+            mMediaPlayer.setOnCompletionListener(mMediaPlayerCompleteListener);
+            mMediaPlayer.prepareAsync();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //播放下一首文件
+    public void playNextMusic() {
+        //分情况，如果播放的为最后一首歌，直接播放第一首；其余情况播放上一首
+        DDLog.i("playNextMusic：本地播放下一首");
+        mMediaPlayer.reset();
+        setIndexAfterPlay();//确定下一首播放啥
+        try {
+            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            String filePath = "";
+            if (mPlayType == PLAY_TYPE.NORMAL) {
+                filePath = mCurrentList.get(mCurrentNormalIndex);
+            } else {
+                filePath = mCurrentList.get(mCurrentEmrIndex);
+            }
+            mMediaPlayer.setDataSource(filePath);
+            mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+            mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
+            mMediaPlayer.setOnCompletionListener(mMediaPlayerCompleteListener);
+            mMediaPlayer.prepareAsync();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getTime() {
+        return mMediaPlayer.getCurrentPosition();
+    }
+
+    public String getDuration() {
+        return DateHelper.ssToMM(mMediaPlayer.getDuration());
     }
 }

@@ -32,7 +32,7 @@ public class TimingPlanReceiver extends BroadcastReceiver {
         Log.i(TAG, "onReceive: 取消" + intent.getIntExtra("cancel", 0));
         if (intent.getIntExtra("cancel", 0) != 0) {
             Log.i(TAG, "onReceive: 取消music");
-            MusicPlayer.getInstance().reset(true);
+            MusicPlayer.getInstance().reset(false);
         } else if (intent.getIntExtra("week", 0) != 0) {
             Log.i(TAG, "onReceive: 开始定时任务...");
             final String start = intent.getStringExtra("start");

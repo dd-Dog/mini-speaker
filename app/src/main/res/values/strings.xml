@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">Alertor</string>
     <string name="reset">重置</string>
+
+    <string name="clock_24_hours_format">kk:mm:ss</string>
+    <string name="clock_12_hours_format">h:mm:ss</string>
+    <string name="data_24">EEEE yyyy年MM月dd日</string>
+    <string name="data_12">EEEE yyyy年MM月dd日</string>
 </resources>
