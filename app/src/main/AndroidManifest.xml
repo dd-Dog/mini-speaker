@@ -84,7 +84,7 @@
                 <action android:name="flyscale.privkey.FUNCTION_KEY3.down"/>
                 <action android:name="flyscale.privkey.FUNCTION_KEY4.down"/>
                 <action android:name="flyscale.privkey.FM_MP3.down"/>
-                <action android:name="flyscale.privkey.PREV.downn"/>
+                <action android:name="flyscale.privkey.PREV.down"/>
                 <action android:name="flyscale.privkey.STOP_PLAY.down"/>
                 <action android:name="flyscale.privkey.NEXT.down"/>
                 <action android:name="flyscale.privkey.PEOPLE_SERVICES.down"/>
