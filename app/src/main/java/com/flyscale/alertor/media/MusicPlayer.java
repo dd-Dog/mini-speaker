@@ -236,7 +236,7 @@ public class MusicPlayer {
                         DDLog.i("onCompletion: " + mNormalList);
                         if (finalPlay) {
                             setPlayType(PLAY_TYPE.NORMAL);
-                            playNext();
+                            playNext(false);
                         } else {
                             sendStopBroadcast();
                         }
@@ -267,16 +267,25 @@ public class MusicPlayer {
             mMediaPlayer.prepareAsync();
             mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
             mMediaPlayer.setOnCompletionListener(mMediaPlayerCompleteListener);
+            mMediaPlayer.setOnErrorListener(mOnErrorListener);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
+    private MediaPlayer.OnErrorListener mOnErrorListener = new MediaPlayer.OnErrorListener() {
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            DDLog.i("MediaPlayer onError:" + what + "," + extra);
+            return false;
+        }
+    };
+
     /**
      * 暂停播放
      *
-     * @param reload 表示此次暂停将要重新加载文件
+     * @param reload 表示此次暂停将保存当前播放位置信息
      */
     public void pause(boolean reload) {
         DDLog.i("pause,reload=" + reload);
@@ -289,7 +298,8 @@ public class MusicPlayer {
                 mCurrentEmrPausePoint = mMediaPlayer.getCurrentPosition();
             }
             mMediaPlayer.pause();
-            mMediaPlayer.reset();
+            mMediaPlayer.setOnPreparedListener(null);
+//            mMediaPlayer.reset();//这里不需要reset.多次调用可以会报错，错误引起OnComplete被调用
             if (timer != null) {
                 timer.cancel();
             }
@@ -376,8 +386,9 @@ public class MusicPlayer {
         @Override
         public void onCompletion(MediaPlayer mp) {
             DDLog.i("onCompletion,播放下一首");
-            if (mAutoPlayNext)
-                playNext();
+            if (mAutoPlayNext){
+                playNext(false);
+            }
         }
     };
 
@@ -387,7 +398,7 @@ public class MusicPlayer {
      */
     public void playNextManual() {
         mAutoPlayNext = false;//手动播放了下一首
-        playNext();//播放下一首
+        playNext(false);//播放下一首
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -400,11 +411,13 @@ public class MusicPlayer {
 
     /**
      * 播放下一首
+     *
+     * @param restore true:如果之前有保存状态则恢复播放；false:从头播放
      */
-    public void playNext() {
+    public void playNext(boolean restore) {
         DDLog.i("playNext=" + mCurrentNormalIndex);
         mMediaPlayer.reset();
-        setIndexAfterPlay(true);//确定下一首播放啥
+        setIndexAfterPlay(true);    //确定下一首播放啥
         try {
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             String filePath = "";
@@ -415,8 +428,15 @@ public class MusicPlayer {
             }
             mMediaPlayer.setDataSource(filePath);
             mMediaPlayer.setLooping(mPlayMode == PLAY_MODE.SINGLE_LOOP);
+
+            //从头播放，位置记录置0
+            if (!restore && (mCurrentNormalPausePoint > 0 || mCurrentEmrPausePoint > 0)) {
+                mCurrentNormalPausePoint = 0;
+                mCurrentEmrPausePoint = 0;
+            }
             mMediaPlayer.setOnPreparedListener(mMediaPlayerPreparedListener);
             mMediaPlayer.setOnCompletionListener(mMediaPlayerCompleteListener);
+            mMediaPlayer.setOnErrorListener(mOnErrorListener);
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
