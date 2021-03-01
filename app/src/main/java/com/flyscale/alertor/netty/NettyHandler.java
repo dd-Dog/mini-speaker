@@ -1,8 +1,6 @@
 package com.flyscale.alertor.netty;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.Service;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -15,7 +13,6 @@ import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.data.packet.TcpPacketFactory;
-import com.flyscale.alertor.data.persist.PersistClock;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistPacket;
 import com.flyscale.alertor.data.persist.PersistWhite;
@@ -36,6 +33,7 @@ import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.helper.UserActionHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.media.MusicPlayer;
+import com.flyscale.alertor.services.AlarmService;
 import com.liulishuo.okdownload.DownloadTask;
 import com.liulishuo.okdownload.core.cause.EndCause;
 import com.liulishuo.okdownload.core.listener.DownloadListener2;
@@ -50,7 +48,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -244,7 +241,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
                         DDLog.i("结果" + fileName + size + playTimes);
-                        DownLoadAmr(fileName, size, playTimes, "mp3");
+                        PersistConfig.saveEmrInfo(fileName, size, playTimes, "mp3");
+                        AlarmService.emergencyAudio();
                     }
                 }
             } else if (address == TcpPacketFactory.EMR_BROADCAST_MP3) {
@@ -260,7 +258,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
-                        DownLoadAmr(fileName, size, playTimes, "amr");
+                        PersistConfig.saveEmrInfo(fileName, size, playTimes, "amr");
+                        AlarmService.emergencyAudio();
                     }
                 }
             } else if (address == TcpPacketFactory.EMR_BROADCAST_AMR) {
@@ -282,7 +281,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
-                        DownLoadAndDelete(fileName, size, playTimes);
+                        PersistConfig.saveNormal(fileName, size, playTimes);
+                        AlarmService.remotePlayMP3();
                     }
                 }
             } else if (address == TcpPacketFactory.GET_FILE_SIZE) {
@@ -294,6 +294,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         FillZeroUtil.getString(data.split("/")[0] + "/" +
                                 FillZeroUtil.getString(9, String.valueOf(FileHelper.getFileSize(new File(filePath)))) +
                                 "/", 32)));
+            } else if (address == TcpPacketFactory.GET_FILE_MD5) {
+                /* 获取AMR格式音频文件MD5值*/
+                //终端返回输出格式：
+                //ra,01000006,12345678901234567890123456789012xxxx
+                @SuppressLint("SdCardPath")
+                String filePath = "/mnt/sdcard/flyscale/media/normal/" + data.split("/")[0];
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
+                        FillZeroUtil.getString(32, MD5Util.md5(new File(filePath)))));
             } else if (TcpPacketFactory.MUSIC_SHOW_LIST.contains(address)) {
                 /*7.3.3b设置音频文件播放节目*/
                 /*
@@ -828,7 +836,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
     //下载和删除
     @SuppressLint("SdCardPath")
-    private void DownLoadAndDelete(final String fileName, long size, final int playTimes) {
+    public static void DownLoadAndDelete(final String fileName, long size, final int playTimes) {
         /**
          * 输入格式：
          * wd,01000001,abcdefgh.amr/0123456789/30/13235xxxx
@@ -856,7 +864,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (new File(path + fileName).exists()) {
                 FileHelper.deleteFile(path + fileName);
             }
-        } else if (s.equals(fileName)) {
+        } else if (!s.equals(null) && s.equals(fileName)) {
             //正在播放，无法删除
             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                     TcpPacketFactory.EMR_AMR_FILE_OPERATION, FillZeroUtil.getString(-15 + "/", 32)));
@@ -899,8 +907,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
 
     //下载文件
-    private void DownLoadAmr(final String fileName, long size, final int playTimes, final String type) {
-        Log.i(TAG, "DownLoadAmr: 下载紧急文件");
+    public static void DownLoadAmr(final String fileName, long size, final int playTimes, final String type) {
+        Log.i("TAG", "DownLoadAmr: 下载紧急文件");
         /**
          * 输入格式：
          * 如果终端可以下载，         返回 wa,01000000,0/000000000000000000000000000000xxxx
@@ -958,10 +966,13 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
 
                         String state = null;
                         long cmd;
+                        String name = null;
                         if (address == TcpPacketFactory.EMR_BROADCAST_MP3_FTP) {
                             cmd = TcpPacketFactory.EMR_BROADCAST_MP3;
+                            name = "JINJIMP3.AMR";
                         } else {
                             cmd = TcpPacketFactory.EMR_BROADCAST_AMR;
+                            name = "JINJIMP3.AMR/0";
                         }
                         //播放紧急文件
                         MusicPlayer.getInstance().playTip(path + "JINJIMP3.AMR", true, playTimes);
@@ -978,7 +989,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         //发送播放反馈
                         final long time = System.currentTimeMillis();
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, cmd,
-                                FillZeroUtil.getString("JINJIMP3.AMR" + "/" + state + "/" +
+                                FillZeroUtil.getString(name + "/" + state + "/" +
                                         DateHelper.longToString(time, DateHelper.yyMMddHHmmss) + "/", 32)));
                     }
                 }
