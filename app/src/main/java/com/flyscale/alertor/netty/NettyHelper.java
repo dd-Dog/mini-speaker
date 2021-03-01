@@ -126,8 +126,8 @@ public class NettyHelper {
                 modifySslHandler(null, false);
             }
         }
-        String hostname = "192.168.1.78";
-        int serverPort = 8086;
+        String hostname = LoginHelper.getHostname();
+        int serverPort = LoginHelper.getServerPort();
         ChannelFuture future = mBootstrap.connect(hostname, serverPort);
         Log.i(TAG, "connect: ----" + hostname + "...." + serverPort);
         future.addListener(mChannelFutureListener);
