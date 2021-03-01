@@ -320,8 +320,10 @@ public class MusicPlayer {
 
     /**
      * 播放完成后设置曲目下标
+     *
+     * @param next true:下一首，false:上一首
      */
-    private void setIndexAfterPlay() {
+    private void setIndexAfterPlay(boolean next) {
         DDLog.i("setIndexAfterPlay,mPlayType=" + mPlayType);
         DDLog.i("setIndexAfterPlay: ");
         if (mPlayType == PLAY_TYPE.NORMAL) {
@@ -330,13 +332,17 @@ public class MusicPlayer {
                 return;
             }
             DDLog.i("setIndexAfterPlay: 下一首之前的" + mCurrentNormalIndex);
-            mLastNormalIndex = mCurrentNormalIndex;
+            if (next)
+                mLastNormalIndex = mCurrentNormalIndex;
+            else {
+                mLastNormalIndex = ((mCurrentNormalIndex - 2) + mCurrentList.size()) % mCurrentList.size();
+            }
             switch (mPlayMode) {
                 case RANDOM:
                     mCurrentNormalIndex = new Random().nextInt(mCurrentList.size() - 1) % mCurrentList.size();
                     break;
                 case LIST_LOOP:
-                    mCurrentNormalIndex = (mCurrentNormalIndex + 1) % mCurrentList.size();
+                    mCurrentNormalIndex = (mCurrentNormalIndex + (next ? 1 : -1) + mCurrentList.size()) % mCurrentList.size();
                     break;
                 case SINGLE_LOOP:
                     //TODO 不做处理
@@ -388,7 +394,7 @@ public class MusicPlayer {
                 //延时，避免播放回调监听读取到播放前的值
                 mAutoPlayNext = true;//播放动作执行后，设置为自动播放下一首
             }
-        },300);
+        }, 300);
 
     }
 
@@ -398,7 +404,7 @@ public class MusicPlayer {
     public void playNext() {
         DDLog.i("playNext=" + mCurrentNormalIndex);
         mMediaPlayer.reset();
-        setIndexAfterPlay();//确定下一首播放啥
+        setIndexAfterPlay(true);//确定下一首播放啥
         try {
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             String filePath = "";
@@ -640,12 +646,10 @@ public class MusicPlayer {
     public void playLastMusic() {
         //分情况，如果播放的为第一首歌，直接播放最后一首；其余情况播放上一首
         DDLog.i("playLast: 本地播放上一首" + mNormalList.get(mLastNormalIndex));
-        if (mCurrentNormalIndex != 0) {
-            mCurrentNormalIndex = (mCurrentNormalIndex - 1) % mCurrentList.size();
-        } else mCurrentNormalIndex = mCurrentList.size();
+        mAutoPlayNext = false;  //禁止自动播放下一首
         DDLog.i("playLastMusic: " + mCurrentNormalIndex);
         mMediaPlayer.reset();
-        setIndexAfterPlay();//确定下一首播放啥
+        setIndexAfterPlay(false);//确定下一首播放啥
         try {
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             String filePath = "";
@@ -661,6 +665,13 @@ public class MusicPlayer {
             mMediaPlayer.prepareAsync();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            new Timer().schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    mAutoPlayNext = true;
+                }
+            }, 300);
         }
     }
 
@@ -669,7 +680,7 @@ public class MusicPlayer {
         //分情况，如果播放的为最后一首歌，直接播放第一首；其余情况播放上一首
         DDLog.i("playNextMusic：本地播放下一首");
         mMediaPlayer.reset();
-        setIndexAfterPlay();//确定下一首播放啥
+        setIndexAfterPlay(true);//确定下一首播放啥
         try {
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             String filePath = "";
