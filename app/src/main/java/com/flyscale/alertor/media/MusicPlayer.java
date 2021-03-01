@@ -69,8 +69,10 @@ public class MusicPlayer {
                     for (File file : files) {
                         if (file.getName().endsWith(".mp3") || file.getName().endsWith(".MP3") ||
                                 file.getName().endsWith(".amr") || file.getName().endsWith(".AMR")) {
-                            mNormalList.add(file.getAbsolutePath());
-                            DDLog.i(file.getAbsolutePath());
+                            if (!file.getName().equalsIgnoreCase("GUOGE.AMR")) {
+                                mNormalList.add(file.getAbsolutePath());
+                                DDLog.i(file.getAbsolutePath());
+                            }
                         }
                     }
                 } else {
@@ -94,7 +96,7 @@ public class MusicPlayer {
         });
     }
 
-    private static class MusicPlayerSingle{
+    private static class MusicPlayerSingle {
         public static MusicPlayer S_INSTANCE = new MusicPlayer();
     }
 

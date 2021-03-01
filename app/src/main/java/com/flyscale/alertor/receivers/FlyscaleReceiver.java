@@ -93,9 +93,9 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             if (mode == 0) {
                 //暂停或者开始MP3
                 if (MusicPlayer.getInstance().isPlaying()) {
-                    MusicPlayer.getInstance().playNext();
-                } else {
                     MusicPlayer.getInstance().pause(true);
+                } else {
+                    MusicPlayer.getInstance().playNext();
                 }
             } else {
                 //暂停或者播放FM
