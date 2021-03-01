@@ -19,9 +19,15 @@ public class CopyAssetsUtil {
     private static final String COMMON_PATH = "/mnt/sdcard/flyscale/";
 
     public static void initFile() {
-        copyAssetsDirPhone(BaseApplication.sContext, "normal", MEDIA_PATH);
-        copyAssetsDirPhone(BaseApplication.sContext, "emr", EMR_MEDIA_PATH);
-        copyAssetsDirPhone(BaseApplication.sContext, "common", COMMON_PATH);
+        ThreadPool.getInstance().execute(new Runnable() {
+            @Override
+            public void run() {
+                copyAssetsDirPhone(BaseApplication.sContext, "normal", MEDIA_PATH);
+                copyAssetsDirPhone(BaseApplication.sContext, "emr", EMR_MEDIA_PATH);
+                copyAssetsDirPhone(BaseApplication.sContext, "common", COMMON_PATH);
+            }
+        });
+
     }
 
     /**
