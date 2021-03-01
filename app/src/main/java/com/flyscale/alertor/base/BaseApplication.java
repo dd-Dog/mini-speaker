@@ -10,6 +10,7 @@ import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistWhite;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.CopyAssetsUtil;
+import com.flyscale.alertor.helper.SPUtil;
 import com.flyscale.alertor.helper.SoundPoolHelper;
 import com.flyscale.alertor.led.LedInstance;
 import com.flyscale.alertor.netty.AlarmHelper;
@@ -40,9 +41,9 @@ public class BaseApplication extends Application {
 
         sFlyscaleManager = (FlyscaleManager) getSystemService(FlyscaleManager.FLYSCALE_SERVICE);
         sFlyscaleManager.setExternalAlarmStatus(0);
-        if(sFlyscaleManager.getAdapterState().equals("1")){
+        if (sFlyscaleManager.getAdapterState().equals("1")) {
             LedInstance.getInstance().showChargeLed();
-        }else {
+        } else {
             LedInstance.getInstance().offChargeLed();
         }
 //
@@ -62,7 +63,11 @@ public class BaseApplication extends Application {
         PersistWhite.findList();
         FMLitepalUtil.init();
         BreakFMLitepalUtil.init();
-        CopyAssetsUtil.initFile();//复制assets中的文件至指定位置
+        boolean initFile = (boolean) SPUtil.get(this, "init_file", false);
+        if (!initFile) {
+            CopyAssetsUtil.initFile();//复制assets中的文件至指定位置
+            SPUtil.put(this, "init_file", true);
+        }
         AlarmManagerUtil.getInstance(BaseApplication.sContext).initProgram();//设置未被取消的定时MP3播放
     }
 }
