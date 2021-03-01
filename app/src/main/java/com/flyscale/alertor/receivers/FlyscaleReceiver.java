@@ -14,6 +14,9 @@ import com.flyscale.alertor.helper.FMUtil;
 import com.flyscale.alertor.helper.MediaHelper;
 import com.flyscale.alertor.helper.PhoneUtil;
 import com.flyscale.alertor.media.MusicPlayer;
+import com.flyscale.alertor.services.AlarmService;
+
+import static com.flyscale.alertor.MainActivity.timer;
 
 /**
  * @author 高鹤泉
@@ -64,19 +67,7 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             if (!TextUtils.equals(key4, "0")) PhoneUtil.call(context , key4);
         } else if (TextUtils.equals(action , BRConstant.ACTION_FM_AND_MP3)) {
             //选择FM或者MP3切换
-            int mode = PersistConfig.findConfig().getPlayMode();
-            if (mode == 1) {
-                //播放MP3
-                PersistConfig.savePlayMode(0);
-                FMUtil.stopFM(context);
-                MusicPlayer.getInstance().playLocal();
-            } else {
-                //播放FM
-                PersistConfig.savePlayMode(1);
-                MusicPlayer.getInstance().pause(false);
-                FMUtil.startFM(context);
-                FMUtil.searchFM(context);
-            }
+            AlarmService.localPlay();
         } else if (TextUtils.equals(action , BRConstant.ACTION_PREV)) {
             //上一首
             int mode = PersistConfig.findConfig().getPlayMode();

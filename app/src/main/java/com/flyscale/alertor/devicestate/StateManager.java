@@ -41,6 +41,7 @@ public class StateManager {
     public void setStateByPriority(int priority, boolean saveState) {
         if (mState != null && mState.getPriority() == priority) {
             DDLog.i("setStateByPriority，已经在这个状态了呢。priority=" + priority);
+            mState.start();
             return;
         }
         IState state = stateList.get(priority);

@@ -8,10 +8,12 @@ import android.util.Log;
 
 import com.flyscale.alertor.Constants;
 import com.flyscale.alertor.base.BaseApplication;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.DateUtil;
 import com.flyscale.alertor.media.MusicPlayer;
+import com.flyscale.alertor.services.AlarmService;
 
 import java.util.Timer;
 
@@ -33,6 +35,7 @@ public class TimingPlanReceiver extends BroadcastReceiver {
         if (intent.getIntExtra("cancel", 0) != 0) {
             Log.i(TAG, "onReceive: 取消music");
             MusicPlayer.getInstance().reset(false);
+            PersistConfig.saveTiming("", 0, true, "", "");//重置
         } else if (intent.getIntExtra("week", 0) != 0) {
             Log.i(TAG, "onReceive: 开始定时任务...");
             final String start = intent.getStringExtra("start");
@@ -55,15 +58,8 @@ public class TimingPlanReceiver extends BroadcastReceiver {
             Log.i(TAG, "onReceive: 播放文件, time当前时间" + time);
             Log.i(TAG, "onReceive: 播放文件, persist时间结束" + persist);
             if (persist > 0 && week == DateUtil.getDayOfWeek()) {
-                //设置音量
-                AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-                am.setStreamVolume(STREAM_MUSIC, Integer.parseInt(voice), FLAG_SHOW_UI);
-                //播放文件
-                String path = Constants.FilePath.FILE_NORMAL;
-                Log.i(TAG, "onReceive: 播放" + (path + fileName));
-                MusicPlayer.getInstance().playBefore(path + fileName, beforePlay, address);
-                //持续persist时间
-                AlarmManagerUtil.getInstance(BaseApplication.sContext).cancelMusic(persist);
+                PersistConfig.saveTiming(fileName, address, beforePlay, voice, end);
+                AlarmService.remotePlayMP3();
             } else {
                 Log.i(TAG, "onReceive: 星期" + week + "当前时间为" + time);
                 Log.i(TAG, "onReceive: 星期" + week + "开始时间为" + start);

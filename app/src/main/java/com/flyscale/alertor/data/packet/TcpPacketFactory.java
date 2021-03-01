@@ -36,6 +36,9 @@ public class TcpPacketFactory {
     /*7.3.3a 获取AMR格式音频文件大小*/
     public static final long GET_FILE_SIZE = 0x01000002L;
 
+    /*7.3.3a1 获取AMR格式音频文件MD5值*/
+    public static final long GET_FILE_MD5 = 0x01000006L;
+
     /*7.3.3b设置音频文件播放节目*/
     public static final ArrayList<Long> MUSIC_SHOW_LIST = new ArrayList<Long>();
 

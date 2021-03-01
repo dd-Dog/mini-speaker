@@ -10,6 +10,7 @@ import com.flyscale.alertor.MainActivity;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
+import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
@@ -48,7 +49,8 @@ public class MusicPlayer {
     private PLAY_MODE mPlayMode = PLAY_MODE.LIST_LOOP;//默认列表循环播放
     private PLAY_TYPE mPlayType = PLAY_TYPE.NORMAL;//默认播放常规音频
     public static int mPlayCount;
-    public static String music;
+    public static String music = null;
+    boolean play = false;
 
     private boolean mAutoPlayNext = true;//自动播放下一首，区别于手动播放下一首
 
@@ -169,14 +171,14 @@ public class MusicPlayer {
     public void playTip(final String path, boolean enforce, final int count) {
         mPlayCount = count;
         music = path;
-        boolean play = false;
         setPlayType(PLAY_TYPE.EMERGENCY);
-        if (mPlayCount == 0) {
-            if (timer != null) {
-                timer.cancel();
-                play = true;
-            }
+        if (mPlayCount != 0) {
+            play = true;
         }
+        if (timer != null) {
+            timer.cancel();
+        }
+        Log.i(TAG, "playTip: " + play);
         if (TextUtils.isEmpty(path)) {
             DDLog.i("文件路径为空");
             return;
@@ -188,6 +190,7 @@ public class MusicPlayer {
             return;
         }
         try {
+            mMediaPlayer.reset();
             final Timer timer = new Timer();
             DDLog.i("playTip: " + path);
             mMediaPlayer.reset();
@@ -207,6 +210,7 @@ public class MusicPlayer {
                         mCurrentEmrPausePoint = 0;
                     }
                     if (mPlayCount != 0) {
+                        Log.i(TAG, "onPrepared: 准备完成，开始播放");
                         mp.start();
                         sendStartEmrBroadcast();
                     }
@@ -258,6 +262,7 @@ public class MusicPlayer {
             return;
         }
         try {
+            mMediaPlayer.reset();
             setIndexBeforePlay();
             mMediaPlayer.setDataSource(mCurrentList.get(mCurrentNormalIndex));
 
@@ -289,7 +294,12 @@ public class MusicPlayer {
      */
     public void pause(boolean reload) {
         DDLog.i("pause,reload=" + reload);
+        if (timer != null) {
+            timer.cancel();
+        }
         if (reload) {
+            Intent intent = new Intent("flyscale.music.pause");
+            BaseApplication.sContext.sendBroadcast(intent);
             //分类型记录当前播放位置，因为两者都可以被中断
             if (mPlayType == PLAY_TYPE.NORMAL) {
                 mCurrentNormalPausePoint = mMediaPlayer.getCurrentPosition();
@@ -313,8 +323,6 @@ public class MusicPlayer {
                 DDLog.w("当前没有播放，无法暂停！");
             }
         }
-        Intent intent = new Intent("flyscale.music.pause");
-        BaseApplication.sContext.sendBroadcast(intent);
     }
 
     /**
@@ -634,6 +642,7 @@ public class MusicPlayer {
                     }
                     if (mPlayCount == 0) {
                         sendStopBroadcast();
+                        PersistConfig.saveNormal("", 0, 0);
                     }
                 }
             });
@@ -643,16 +652,19 @@ public class MusicPlayer {
     }
 
     private void sendStartBroadcast() {
+        Log.i(TAG, "sendStartBroadcast: 发送开始播放MP3");
         Intent intent = new Intent("flyscale.music.start");
         BaseApplication.sContext.sendBroadcast(intent);
     }
 
     private void sendStopBroadcast() {
+        Log.i(TAG, "sendStopBroadcast: 发送停止播放MP3");
         Intent intent = new Intent("flyscale.music.stop");
         BaseApplication.sContext.sendBroadcast(intent);
     }
 
     private void sendStartEmrBroadcast() {
+        Log.i(TAG, "sendStartEmrBroadcast: 发送开始播放紧急语音");
         Intent intent = new Intent("flyscale.emr.start");
         BaseApplication.sContext.sendBroadcast(intent);
     }
