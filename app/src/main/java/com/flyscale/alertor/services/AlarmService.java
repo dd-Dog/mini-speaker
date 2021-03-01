@@ -49,7 +49,7 @@ public class AlarmService extends BaseService {
     TelephonyStateReceiver mTelephonyStateReceiver;
     //    CallPhoneReceiver mCallPhoneReceiver;
     CallPhoneReceiver2 mCallPhoneReceiver2;
-    StateManager mStateManager;
+    static StateManager mStateManager;
 
     public AlarmService() {
 
@@ -104,12 +104,12 @@ public class AlarmService extends BaseService {
     }
 
     //紧急语音广播
-    public void emergencyAudio() {
+    public static void emergencyAudio() {
         mStateManager.setStateByPriority(EmergencyAudioState.PRIORITY, true);
     }
 
     //平台控制播放MP3
-    public void remotePlayMP3() {
+    public static void remotePlayMP3() {
         mStateManager.setStateByPriority(RemotePlayMP3State.PRIORITY, true);
     }
 
@@ -124,7 +124,7 @@ public class AlarmService extends BaseService {
     }
 
     //本地播放MP3或者FM
-    public void localPlay() {
+    public static void localPlay() {
         mStateManager.setStateByPriority(LocalPlayState.PRIORITY, true);
     }
 

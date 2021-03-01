@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.text.TextUtils;
 
 import com.flyscale.alertor.helper.DateHelper;
+import com.flyscale.alertor.media.MusicPlayer;
 
 import org.litepal.LitePal;
 import org.litepal.crud.LitePalSupport;
@@ -149,6 +150,84 @@ public class PersistConfig extends LitePalSupport {
 
     //电池电量
     private int battery;
+
+    //远程播放参数
+    String path, fileName, type, voice, end;
+    int playTimes;
+    long size, address;
+    boolean beforePlay;
+
+    public String getVoice() {
+        return voice;
+    }
+
+    public String getEnd() {
+        return end;
+    }
+
+    public void setEnd(String end) {
+        this.end = end;
+    }
+
+    public void setVoice(String voice) {
+        this.voice = voice;
+    }
+
+    public long getAddress() {
+        return address;
+    }
+
+    public void setAddress(long address) {
+        this.address = address;
+    }
+
+    public boolean isBeforePlay() {
+        return beforePlay;
+    }
+
+    public void setBeforePlay(boolean beforePlay) {
+        this.beforePlay = beforePlay;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public void setSize(long size) {
+        this.size = size;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public int getPlayTimes() {
+        return playTimes;
+    }
+
+    public void setPlayTimes(int playTimes) {
+        this.playTimes = playTimes;
+    }
 
     public int getPlayMode() {
         return playMode;
@@ -1230,6 +1309,37 @@ public class PersistConfig extends LitePalSupport {
         persistConfig.save();
         return persistConfig;
     }
+
+    public static PersistConfig saveEmrInfo(String fileName, long size, int playTimes, String type) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFileName(fileName);
+        persistConfig.setSize(size);
+        persistConfig.setPlayTimes(playTimes);
+        persistConfig.setType(type);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveNormal(String fileName, long size, int playTimes) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFileName(fileName);
+        persistConfig.setSize(size);
+        persistConfig.setPlayTimes(playTimes);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveTiming(String fileName, long address, boolean beforePlay, String voice, String end) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setFileName(fileName);
+        persistConfig.setAddress(address);
+        persistConfig.setBeforePlay(beforePlay);
+        persistConfig.setVoice(voice);
+        persistConfig.setEnd(end);
+        persistConfig.save();
+        return persistConfig;
+    }
+
     @Override
     public String toString() {
         return "PersistConfig{" +
