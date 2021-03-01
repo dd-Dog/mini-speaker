@@ -32,11 +32,11 @@
     </LinearLayout>
 
     <TextView
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="3dp"
         android:layout_width="wrap_content"
         android:layout_height="16sp"
         android:layout_gravity="center"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:id="@+id/textView"
         android:text=""/>
 

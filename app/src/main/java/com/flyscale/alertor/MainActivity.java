@@ -154,9 +154,10 @@ public class MainActivity extends BaseActivity {
                             public void run() {
                                 handler.sendEmptyMessage(1);
                             }
-                        }, 0, 100);
+                        }, 0, 200);
                         break;
                     case "flyscale.music.stop":
+                        Log.i(TAG, "onReceive: 停止了");
                         handler.sendEmptyMessage(3);
                         break;
                     case "flyscale.music.pause":
@@ -170,9 +171,10 @@ public class MainActivity extends BaseActivity {
                             public void run() {
                                 handler.sendEmptyMessage(2);
                             }
-                        }, 0, 100);
+                        }, 0, 200);
                         break;
-                    case "FLYSCALE_FM_INFORMATION":
+                    case "com.android.flyscale.FM_INFORMATION":
+                        Log.i(TAG, "onReceive: FM");
                         float a =intent.getFloatExtra("freq",0);
                         boolean b = intent.getBooleanExtra("isFmOn",false);
                         if (b) {
