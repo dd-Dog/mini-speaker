@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.flyscale.alertor.MainActivity.timer;
 import static com.flyscale.alertor.helper.InternetUtil.TAG;
@@ -48,6 +49,8 @@ public class MusicPlayer {
     private PLAY_TYPE mPlayType = PLAY_TYPE.NORMAL;//默认播放常规音频
     public static int mPlayCount;
     public static String music;
+
+    private boolean mAutoPlayNext = true;//自动播放下一首，区别于手动播放下一首
 
     private MusicPlayer() {
         mMediaPlayer = new MediaPlayer();
@@ -95,6 +98,7 @@ public class MusicPlayer {
             }
         });
     }
+
 
     private static class MusicPlayerSingle {
         public static MusicPlayer S_INSTANCE = new MusicPlayer();
@@ -185,7 +189,7 @@ public class MusicPlayer {
         }
         try {
             final Timer timer = new Timer();
-            Log.i(TAG, "playTip: " + path);
+            DDLog.i("playTip: " + path);
             mMediaPlayer.reset();
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -229,7 +233,7 @@ public class MusicPlayer {
                         }
                     }
                     if (mPlayCount == 0) {
-                        Log.i(TAG, "onCompletion: " + mNormalList);
+                        DDLog.i("onCompletion: " + mNormalList);
                         if (finalPlay) {
                             setPlayType(PLAY_TYPE.NORMAL);
                             playNext();
@@ -319,17 +323,17 @@ public class MusicPlayer {
      */
     private void setIndexAfterPlay() {
         DDLog.i("setIndexAfterPlay,mPlayType=" + mPlayType);
-        Log.i(TAG, "setIndexAfterPlay: ");
+        DDLog.i("setIndexAfterPlay: ");
         if (mPlayType == PLAY_TYPE.NORMAL) {
             if (mCurrentNormalPausePoint > 0) {
                 //说明之前被中断而暂停，现在要恢复,所以不再更改当前曲目
                 return;
             }
-            Log.i(TAG, "setIndexAfterPlay: 下一首之前的" + mCurrentNormalIndex);
+            DDLog.i("setIndexAfterPlay: 下一首之前的" + mCurrentNormalIndex);
             mLastNormalIndex = mCurrentNormalIndex;
             switch (mPlayMode) {
                 case RANDOM:
-                    mCurrentNormalIndex = new Random().nextInt(mCurrentList.size() - 1);
+                    mCurrentNormalIndex = new Random().nextInt(mCurrentList.size() - 1) % mCurrentList.size();
                     break;
                 case LIST_LOOP:
                     mCurrentNormalIndex = (mCurrentNormalIndex + 1) % mCurrentList.size();
@@ -359,21 +363,40 @@ public class MusicPlayer {
             DDLog.i("setIndexAfterPlay,mode=" + mPlayMode + ",mCurrentEmrIndex=" + mCurrentEmrIndex);
         }
 
-        Log.i(TAG, "setIndexAfterPlay: 下一首播放位置" + mCurrentNormalIndex);
+        DDLog.i("setIndexAfterPlay: 下一首播放位置" + mCurrentNormalIndex);
     }
 
     private final MediaPlayer.OnCompletionListener mMediaPlayerCompleteListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mp) {
-            playNext();
+            DDLog.i("onCompletion,播放下一首");
+            if (mAutoPlayNext)
+                playNext();
         }
     };
+
+
+    /**
+     * 手动播放下一首
+     */
+    public void playNextManual() {
+        mAutoPlayNext = false;//手动播放了下一首
+        playNext();//播放下一首
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                //延时，避免播放回调监听读取到播放前的值
+                mAutoPlayNext = true;//播放动作执行后，设置为自动播放下一首
+            }
+        },300);
+
+    }
 
     /**
      * 播放下一首
      */
     public void playNext() {
-        DDLog.i("playNext" + mCurrentNormalIndex);
+        DDLog.i("playNext=" + mCurrentNormalIndex);
         mMediaPlayer.reset();
         setIndexAfterPlay();//确定下一首播放啥
         try {
@@ -436,12 +459,12 @@ public class MusicPlayer {
     public void playBefore(final String path, boolean isPlay, final long address) {
         DDLog.i("playBefore" + isPlay);
         if (!isPlay) {
-            Log.i(TAG, "playBefore: 不播放前导音" + path);
+            DDLog.i("playBefore: 不播放前导音" + path);
             playNext(path, address);
         } else {
             try {
                 String QDY = path.substring(0, 38) + "QDY.AMR";
-                Log.i(TAG, "playBefore: 播放前导音" + QDY);
+                DDLog.i("playBefore: 播放前导音" + QDY);
                 //如果前导音文件不存在，直接播放学习文件
                 if (new File(QDY).exists()) {
                     mMediaPlayer.reset();
@@ -465,7 +488,7 @@ public class MusicPlayer {
                     mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
                         public void onCompletion(MediaPlayer mp) {
-                            Log.i(TAG, "onCompletion: 播放正式音频文件");
+                            DDLog.i("onCompletion: 播放正式音频文件");
                             playNext(path, address);
                         }
                     });
@@ -477,7 +500,7 @@ public class MusicPlayer {
                         mMediaPlayer.seekTo(mCurrentEmrPausePoint);
                         mCurrentEmrPausePoint = 0;
                     }
-                    Log.i(TAG, "onCompletion: 播放正式音频文件");
+                    DDLog.i("onCompletion: 播放正式音频文件");
                     playNext(path, address);
                 }
             } catch (IOException e) {
@@ -491,7 +514,7 @@ public class MusicPlayer {
         mMediaPlayer.reset();
         mPlayCount = 1;
         try {
-            Log.i(TAG, "playNext: " + path);
+            DDLog.i("playNext: " + path);
             if (new File(path).exists()) {
                 mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                 mMediaPlayer.setDataSource(path);
@@ -539,7 +562,7 @@ public class MusicPlayer {
             if (mMediaPlayer.isPlaying()) {
                 for (int i = 0; i < playTimes; i++) {
                     mNormalList.add(path);
-                    Log.i(TAG, "playNormal: " + mCurrentList);
+                    DDLog.i("playNormal: " + mCurrentList);
                 }
                 return;
             }
@@ -616,11 +639,11 @@ public class MusicPlayer {
     //播放上一首文件
     public void playLastMusic() {
         //分情况，如果播放的为第一首歌，直接播放最后一首；其余情况播放上一首
-        Log.i(TAG, "playLast: 本地播放上一首" + mNormalList.get(mLastNormalIndex));
+        DDLog.i("playLast: 本地播放上一首" + mNormalList.get(mLastNormalIndex));
         if (mCurrentNormalIndex != 0) {
             mCurrentNormalIndex = (mCurrentNormalIndex - 1) % mCurrentList.size();
         } else mCurrentNormalIndex = mCurrentList.size();
-        Log.i(TAG, "playLastMusic: " + mCurrentNormalIndex);
+        DDLog.i("playLastMusic: " + mCurrentNormalIndex);
         mMediaPlayer.reset();
         setIndexAfterPlay();//确定下一首播放啥
         try {

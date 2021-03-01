@@ -106,7 +106,7 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             int mode = PersistConfig.findConfig().getPlayMode();
             if (mode == 0) {
                 //播放下一首MP3
-                MusicPlayer.getInstance().playNext();
+                MusicPlayer.getInstance().playNextManual();
             } else {
                 //播放下一个FM频道
                 FMUtil.adjustFM(context , 0);
