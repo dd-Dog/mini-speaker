@@ -31,6 +31,7 @@ public class MusicPlayer {
     private final MediaPlayer mMediaPlayer;
 
     public static final String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
+    private static final String MEDIA_QDY_PATH = "/mnt/sdcard/flyscale/media/leading/";
     private static final String EMR_MEDIA_PATH = "/mnt/sdcard/flyscale/media/emr/";
 
     private final ArrayList<String> mNormalList;
@@ -492,12 +493,15 @@ public class MusicPlayer {
 
     public void playBefore(final String path, boolean isPlay, final long address) {
         DDLog.i("playBefore" + isPlay);
+        music = path;
         if (!isPlay) {
             DDLog.i("playBefore: 不播放前导音" + path);
             playNext(path, address);
         } else {
             try {
-                String QDY = path.substring(0, 38) + "QDY.AMR";
+                String s = path.substring(path.lastIndexOf(File.separator)).replace("/", "");
+                s = s.substring(0,4) + "QDY.AMR";
+                String QDY = MEDIA_QDY_PATH + s;
                 DDLog.i("playBefore: 播放前导音" + QDY);
                 //如果前导音文件不存在，直接播放学习文件
                 if (new File(QDY).exists()) {
@@ -545,6 +549,7 @@ public class MusicPlayer {
 
     private void playNext(String path, final long address) {
         DDLog.i("playNext");
+        music = path;
         mMediaPlayer.reset();
         mPlayCount = 1;
         try {

@@ -1,5 +1,6 @@
 package com.flyscale.alertor.devicestate;
 
+import android.content.Intent;
 import android.util.Log;
 
 import com.flyscale.alertor.base.BaseApplication;
@@ -45,6 +46,8 @@ public class LocalPlayState implements IState {
             if (timer != null) {
                 timer.cancel();
             }
+            Intent intent = new Intent("flyscale.fm.start");
+            BaseApplication.sContext.sendBroadcast(intent);
             PersistConfig.savePlayMode(1);
             MusicPlayer.getInstance().pause(false);
             FMUtil.startFM(BaseApplication.sContext);

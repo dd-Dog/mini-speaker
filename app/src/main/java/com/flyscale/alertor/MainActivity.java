@@ -126,6 +126,7 @@ public class MainActivity extends BaseActivity {
         intentFilter.addAction("flyscale.music.stop");
         intentFilter.addAction("flyscale.emr.start");
         intentFilter.addAction("FLYSCALE_FM_INFORMATION");
+        intentFilter.addAction("flyscale.fm.start");
         registerReceiver(this.mReceiver, intentFilter);
 
         IntentFilter filter = new IntentFilter();
@@ -181,6 +182,9 @@ public class MainActivity extends BaseActivity {
                             textView.setText("FM " + a);
                         }
                         break;
+                    case "flyscale.fm.start":
+                        textView.setText("FM ");
+                        break;
                 }
             }
         };
@@ -196,7 +200,8 @@ public class MainActivity extends BaseActivity {
                 case 1:
                     //当前播放文件名
                     final String s = MusicPlayer.music.substring(MusicPlayer.music.lastIndexOf(File.separator)).replace("/", "");
-                    textView.setText("MP3  " + DateHelper.ssToMM(musicPlayer.getTime()) + "/" + musicPlayer.getDuration());
+                    textView.setText(s.substring(0, s.indexOf(".")) + " " + DateHelper.ssToMM(musicPlayer.getTime()) +
+                            "/" + musicPlayer.getDuration());
                     break;
                 case 2:
                     //紧急语音

@@ -25,6 +25,7 @@ public class CopyAssetsUtil {
                 copyAssetsDirPhone(BaseApplication.sContext, "normal", MEDIA_PATH);
                 copyAssetsDirPhone(BaseApplication.sContext, "emr", EMR_MEDIA_PATH);
                 copyAssetsDirPhone(BaseApplication.sContext, "common", COMMON_PATH);
+                copyAssetsDirPhone(BaseApplication.sContext, "leading", MEDIA_PATH);
             }
         });
 
