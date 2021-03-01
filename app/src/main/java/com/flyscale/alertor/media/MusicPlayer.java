@@ -27,7 +27,7 @@ import static com.flyscale.alertor.helper.InternetUtil.TAG;
 
 public class MusicPlayer {
     private final MediaPlayer mMediaPlayer;
-    private static MusicPlayer mInstance;
+
     public static final String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
     private static final String EMR_MEDIA_PATH = "/mnt/sdcard/flyscale/media/emr/";
 
@@ -94,15 +94,12 @@ public class MusicPlayer {
         });
     }
 
+    private static class MusicPlayerSingle{
+        public static MusicPlayer S_INSTANCE = new MusicPlayer();
+    }
+
     public static MusicPlayer getInstance() {
-        if (mInstance == null) {
-            synchronized (MusicPlayer.class) {
-                if (mInstance == null) {
-                    mInstance = new MusicPlayer();
-                }
-            }
-        }
-        return mInstance;
+        return MusicPlayerSingle.S_INSTANCE;
     }
 
     //播放模式
@@ -213,13 +210,13 @@ public class MusicPlayer {
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(final MediaPlayer mp) {
-                    mPlayCount --;
+                    mPlayCount--;
                     if (mPlayCount > 0) {
                         DDLog.i("播放次数" + mPlayCount);
                         if (mPlayCount == 1) {
                             mp.start();
                             DDLog.i("播放完成" + mPlayCount);
-                        } else if (mPlayCount > 1){
+                        } else if (mPlayCount > 1) {
                             mp.start();
                             timer.schedule(new java.util.TimerTask() {
                                 @Override
@@ -416,10 +413,11 @@ public class MusicPlayer {
 
     /**
      * 重置所有参数
+     *
      * @param enforce 即使存在播放也要重置
      */
     public void reset(boolean enforce) {
-        if (!enforce && mMediaPlayer.isPlaying()){
+        if (!enforce && mMediaPlayer.isPlaying()) {
             return;
         }
         mLastNormalIndex = 0;   //记录上一首次播放的文件
@@ -512,11 +510,11 @@ public class MusicPlayer {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
                         DDLog.i("播放完成");
-                        mPlayCount --;
+                        mPlayCount--;
                         if (mPlayCount == 0) {
                             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE, address,
                                     FillZeroUtil.getString(finalPath.substring(34) + "/" + Long.toHexString(address) +
-                                            1 + "/" +DateHelper.longToString(times, DateHelper.yyMMddHHmmss), 32)));
+                                            1 + "/" + DateHelper.longToString(times, DateHelper.yyMMddHHmmss), 32)));
                             sendStopBroadcast();
                         }
                         mp.start();
@@ -567,13 +565,13 @@ public class MusicPlayer {
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(final MediaPlayer mp) {
-                    mPlayCount --;
+                    mPlayCount--;
                     if (mPlayCount > 0) {
                         DDLog.i("播放次数" + mPlayCount);
                         if (mPlayCount == 1) {
                             mp.start();
                             DDLog.i("播放完成" + mPlayCount);
-                        } else if (mPlayCount > 1){
+                        } else if (mPlayCount > 1) {
                             mp.start();
                             timer.schedule(new java.util.TimerTask() {
                                 @Override
