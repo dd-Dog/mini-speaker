@@ -74,6 +74,7 @@ public class FMReceiver extends BroadcastReceiver {
             float freq = Float.parseFloat(intent.getStringExtra("freq"));
             RemoteBreakFMState.setFmid(fmid);
             RemoteBreakFMState.setFreq(freq);
+	    stateManager.setStateByPriority(RemoteBreakFMState.PRIORITY,true);
 //            FMUtil.startFM(context);
 //            FMUtil.adjustFM(context,freq);
 //            String startTime = DateUtil.StringTimeHms();
@@ -85,6 +86,7 @@ public class FMReceiver extends BroadcastReceiver {
         }else if(action.equals("FLYSCALE_ALARMMANAGER_BRFM_STOP")){
             int fmid = intent.getIntExtra("fmId",0);
             RemoteBreakFMState.setFmid(fmid);
+	    remoteBreakFMState.stop();
 //            FMUtil.stopFM(context);
 //            BreakFMLitepalBean litepalBean = new BreakFMLitepalBean();
 //            litepalBean.setName("FM" + fmid);
