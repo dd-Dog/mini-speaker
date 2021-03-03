@@ -141,7 +141,7 @@ public class FMUtil {
     }
 
     /**
-     * 设定fm停止闹钟
+     * 设定brfm停止闹钟
      * */
     public static void stopBrFMAlarmManager(Context context,int fmId,long time){
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -160,6 +160,21 @@ public class FMUtil {
         // 取消AlarmManager的定时服务
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent=new Intent("FLYSCALE_ALARMMANAGER_FM_START");// 和设定闹钟时的action要一样
+        // 这里PendingIntent的requestCode、intent和flag要和设定闹钟时一样
+        PendingIntent pi=PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmManager.cancel(pi);
+        Log.e("fengpj","取消定时设置"+fmId);
+    }
+
+
+    /**
+     * 取消brfm闹钟提醒
+     */
+    public static void cancelBrFMAlarmManager(Context context,int fmId)
+    {
+        // 取消AlarmManager的定时服务
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent=new Intent("FLYSCALE_ALARMMANAGER_BRFM_START");// 和设定闹钟时的action要一样
         // 这里PendingIntent的requestCode、intent和flag要和设定闹钟时一样
         PendingIntent pi=PendingIntent.getBroadcast(context, fmId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         alarmManager.cancel(pi);
@@ -227,6 +242,18 @@ public class FMUtil {
      * 还原任意fm播放状态
      * */
     public static void fmReduction(){
+        //重新设置周期广播
+        List<String> isSetUp2 = FMLitepalUtil.getIsSetUpId();
+        if (isSetUp2 != null){
+            for (String a:isSetUp2){
+                Log.e("fengpj","重新设置已经修改过的行  == " +a);
+                int id = Integer.parseInt(a);
+                String data = FMLitepalUtil.getData(id);
+                DateUtil.updataAlarmForFM(id,FMLitepalUtil.getWeeklyRecord(data),FMLitepalUtil.getFreq(data),
+                        FMLitepalUtil.getStartFMTime(data),FMLitepalUtil.getEndFMTime(data),FMLitepalUtil.getVolume(data));
+            }
+        }
+
         //重新设置插入广播
         List<String> isSetUp = BreakFMLitepalUtil.getIsSetUpId();
         if (isSetUp != null){
@@ -236,18 +263,6 @@ public class FMUtil {
                 String data = BreakFMLitepalUtil.getData(id);
                 DateUtil.updataAlarmForBrFM(id,BreakFMLitepalUtil.getStartDate(data),BreakFMLitepalUtil.getFreq(data),
                         BreakFMLitepalUtil.getStartTime(data),BreakFMLitepalUtil.getEndTime(data),BreakFMLitepalUtil.getVolume(data));
-            }
-        }
-
-        //重新设置周期广播
-        List<String> isSetUp2 = FMLitepalUtil.getIsSetUpId();
-        if (isSetUp2 != null){
-            for (String a:isSetUp){
-                Log.e("fengpj","重新设置已经修改过的行  == " +a);
-                int id = Integer.parseInt(a);
-                String data = FMLitepalUtil.getData(id);
-                DateUtil.updataAlarmForFM(id,FMLitepalUtil.getWeeklyRecord(data),FMLitepalUtil.getFreq(data),
-                        FMLitepalUtil.getStartFMTime(data),FMLitepalUtil.getEndFMTime(data),FMLitepalUtil.getVolume(data));
             }
         }
     }

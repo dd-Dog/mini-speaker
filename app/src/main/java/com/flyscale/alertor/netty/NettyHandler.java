@@ -568,6 +568,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     FMUtil.cancelFMAlarmManager(BaseApplication.sContext,i);
                 }
                 FMUtil.stopFM(BaseApplication.sContext);
+            }else if(address == TcpPacketFactory.CLEAR_ALL_BREAKING_FM_SHOW){
+                /*清除所有FM播放*/
+                for (int i=1;i<33;i++){
+                    FMUtil.cancelBrFMAlarmManager(BaseApplication.sContext,i);
+                }
+                FMUtil.stopFM(BaseApplication.sContext);
             }else if(address == TcpPacketFactory.PLAY_FM){
                 /*7.3.11b FM播放反馈*/
                 String data = tcpPacket.getData();
