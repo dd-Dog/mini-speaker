@@ -1588,18 +1588,18 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.BATCH_DEL_FILE) {
             //批量删除文件指令(可写) wd,0000004a,ABCDEFGHIJKLMNOP/0000000000000xxxx
             //参数1：批量删除的文件名缩写，代表含义为：A=MP3A.amr; B=MP3B.amr... P=MP3P.amr
-            String fliesName = "";
-            if (cmd == CMD.WRITE) {
-                if (split.length > 0) {
-                    fliesName = split[0];
-                    //TODO 服务器下发要删除的文件名缩写，执行删除操作
-                    char[] names = fliesName.toCharArray();
-                    for (int i = 0 ; i < names.length ; i++) {
-                        FileHelper.deleteFile(MusicPlayer.MEDIA_PATH + "MP3" + names[i] + ".amr");
-                    }
-                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
-                }
-            }
+//            String fliesName = "";
+//            if (cmd == CMD.WRITE) {
+//                if (split.length > 0) {
+//                    fliesName = split[0];
+//                    //TODO 服务器下发要删除的文件名缩写，执行删除操作
+//                    char[] names = fliesName.toCharArray();
+//                    for (int i = 0 ; i < names.length ; i++) {
+//                        FileHelper.deleteFile(MusicPlayer.MEDIA_PATH + "MP3" + names[i] + ".amr");
+//                    }
+//                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
+//                }
+//            }
         } else if (address == TcpPacketFactory.DEVICE_SHORT_LINK_SLEEP) {
             //设备进入短链接休眠（可写）wd,0000004b,00000000000000000000000000000000xxxx
             if (cmd == CMD.WRITE) {
