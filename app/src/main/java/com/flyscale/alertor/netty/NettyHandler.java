@@ -1229,7 +1229,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
         } else if (address == TcpPacketFactory.BASE_STATION_INFORMATION) {
             //基站信息(只读) rd,0000002a,36d0/000b/b0c1/0000/60/000000000xxxx
             if (cmd == CMD.READ) {
-                //各个参数：SID/NID/BID/000/signal_level
+                //各个参数：SID/NID/0000/BID/signal_level
                 String[] cellInfo = NetHelper.getBaseData(BaseApplication.sContext).split(",");
                 //从设备中获取参数
                 String sid = cellInfo[0];
@@ -1237,7 +1237,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String bid = cellInfo[2];
                 String s = "0000";
                 String singleLevel = PhoneUtil.getMobileDbm() + "";
-                String baseStationInfo = sid + "/" + nid + "/" + bid + "/" + s + "/" + singleLevel + "/";
+                String baseStationInfo = sid + "/" + nid + "/" + s + "/" + bid + "/" + singleLevel + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         baseStationInfo + addZero(baseStationInfo)));
             }
@@ -1520,7 +1520,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             //第5个字符,“频选”参数 ：0 默认; 1 4G-800M优选;  2:4G-1800M优选
             String channelSelect = "";
             //第6个字符,“WIFI开关”参数 ：0 开通; 1 关闭
-            String wifiSwitch = "";
+//            String wifiSwitch = "";
 
             if (cmd == CMD.WRITE) {
                 emrPlayMode = data.substring(0, 1);
@@ -1528,14 +1528,14 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 alarmMode = data.substring(2, 3);
                 callEnable = data.substring(3, 4);
                 channelSelect = data.substring(4, 5);
-                wifiSwitch = data.substring(5, 6);
+//                wifiSwitch = data.substring(5, 6);
                 //TODO 服务器下发的最新参数，修改设备中的该参数
                 PersistConfig.saveEmrPlayMode(emrPlayMode);
                 PersistConfig.saveMoveSwitch(moveSwitch);
                 PersistConfig.saveAlarmMode(alarmMode);
                 PersistConfig.saveCallEnabled(callEnable);
                 PersistConfig.saveChannelSelect(channelSelect);
-                PersistConfig.saveWifiSwitch(wifiSwitch);
+//                PersistConfig.saveWifiSwitch(wifiSwitch);
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address, TcpPacketFactory.dataZero));
 
             } else if (cmd == CMD.READ) {
@@ -1545,8 +1545,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 alarmMode = PersistConfig.findConfig().getAlarmMode();
                 callEnable = PersistConfig.findConfig().getCallEnable();
                 channelSelect = PersistConfig.findConfig().getChannelSelect();
-                wifiSwitch = PersistConfig.findConfig().getWifiSwitch();
-                String devicePersonFunc = emrPlayMode + moveSwitch + alarmMode + callEnable + channelSelect + wifiSwitch;
+//                wifiSwitch = PersistConfig.findConfig().getWifiSwitch();
+                String devicePersonFunc = emrPlayMode + moveSwitch + alarmMode + callEnable + channelSelect /*+ wifiSwitch*/;
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         devicePersonFunc + addZero(devicePersonFunc)));
             }
