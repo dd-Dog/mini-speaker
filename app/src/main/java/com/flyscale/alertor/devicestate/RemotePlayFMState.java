@@ -23,9 +23,6 @@ public class RemotePlayFMState implements IState {
 
     @Override
     public void start() {
-<<<<<<< HEAD
-        stop();
-=======
         FMUtil.startFM(BaseApplication.sContext);
         FMUtil.adjustFM(context,freq);
         FMUtil.fmCallBack(fmid,"0","0");
@@ -33,7 +30,6 @@ public class RemotePlayFMState implements IState {
         String endTime = FMLitepalUtil.getEndTime(fmid);
         long time = DateUtil.getFMDuration(startTime,endTime);
         FMUtil.stopFMAlarmManager(context,fmid,time);
->>>>>>> 4e52ffb93e70b7f1a300c0246892fb7b2b0b4473
     }
 
     @Override
