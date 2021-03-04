@@ -11,6 +11,8 @@ import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.packet.CMD;
 import com.flyscale.alertor.data.packet.TcpPacket;
 import com.flyscale.alertor.data.persist.PersistConfig;
+import com.flyscale.alertor.devicestate.EmergencyAudioState;
+import com.flyscale.alertor.devicestate.RemotePlayMP3State;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.helper.FillZeroUtil;
@@ -25,11 +27,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.flyscale.alertor.MainActivity.timer;
-import static com.flyscale.alertor.helper.InternetUtil.TAG;
 
 public class MusicPlayer {
     private final MediaPlayer mMediaPlayer;
 
+    private static final String TAG = "MusicPlayer";
     public static final String MEDIA_PATH = "/mnt/sdcard/flyscale/media/normal/";
     private static final String MEDIA_QDY_PATH = "/mnt/sdcard/flyscale/media/leading/";
     private static final String EMR_MEDIA_PATH = "/mnt/sdcard/flyscale/media/emr/";
@@ -136,7 +138,7 @@ public class MusicPlayer {
                 //如果当前正在播放其它东西，立即停止播放紧急音频
                 if (mMediaPlayer.isPlaying()) {
                     pause(true);
-                    playLocal();
+//                    playLocal();
                 }
                 break;
             default:
@@ -186,6 +188,8 @@ public class MusicPlayer {
         }
         if (mMediaPlayer.isPlaying() && enforce) {
             pause(true);
+//            PersistConfig.savePaused(true);
+//            Log.i("TAG", "pause: 保存本地播放状态" + PersistConfig.findConfig().isPauseLocal());
         } else if (mMediaPlayer.isPlaying()) {
             DDLog.i("播放器正忙");
             return;
@@ -215,9 +219,15 @@ public class MusicPlayer {
                         mp.start();
                         sendStartEmrBroadcast();
                     }
+                    if (mPlayCount == 0) {
+                        if (timer != null) {
+                            timer.cancel();
+                        }
+                        setPlayType(PLAY_TYPE.NORMAL);
+                        EmergencyAudioState.stops();
+                    }
                 }
             });
-            final boolean finalPlay = play;
             mMediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(final MediaPlayer mp) {
@@ -239,12 +249,12 @@ public class MusicPlayer {
                     }
                     if (mPlayCount == 0) {
                         DDLog.i("onCompletion: " + mNormalList);
-                        if (finalPlay) {
-                            setPlayType(PLAY_TYPE.NORMAL);
-                            playNext(false);
-                        } else {
-                            sendStopBroadcast();
+                        DDLog.i("暂停点" + mCurrentEmrPausePoint);
+                        if (timer != null) {
+                            timer.cancel();
                         }
+                        setPlayType(PLAY_TYPE.NORMAL);
+                        EmergencyAudioState.stops();
                     }
                 }
             });
@@ -307,6 +317,7 @@ public class MusicPlayer {
                 DDLog.i("mCurrentNormalPausePoint=" + mCurrentNormalPausePoint);
             } else {
                 mCurrentEmrPausePoint = mMediaPlayer.getCurrentPosition();
+                DDLog.i("mCurrentEmrPausePoint=" + mCurrentEmrPausePoint);
             }
             mMediaPlayer.pause();
             mMediaPlayer.setOnPreparedListener(null);
@@ -344,9 +355,15 @@ public class MusicPlayer {
      */
     private void setIndexAfterPlay(boolean next) {
         DDLog.i("setIndexAfterPlay,mPlayType=" + mPlayType);
-        DDLog.i("setIndexAfterPlay: ");
+        DDLog.i("setIndexAfterPlay:normal " + mCurrentNormalPausePoint);
+        DDLog.i("setIndexAfterPlay:emr " + mCurrentEmrPausePoint);
         if (mPlayType == PLAY_TYPE.NORMAL) {
             if (mCurrentNormalPausePoint > 0) {
+                //说明之前被中断而暂停，现在要恢复,所以不再更改当前曲目
+                return;
+            }
+            if (mCurrentEmrPausePoint > 0) {
+                setPlayType(PLAY_TYPE.NORMAL);
                 //说明之前被中断而暂停，现在要恢复,所以不再更改当前曲目
                 return;
             }
@@ -395,6 +412,9 @@ public class MusicPlayer {
         @Override
         public void onCompletion(MediaPlayer mp) {
             DDLog.i("onCompletion,播放下一首");
+            if (timer != null) {
+                timer.cancel();
+            }
             if (mAutoPlayNext){
                 playNext(false);
             }
@@ -466,6 +486,7 @@ public class MusicPlayer {
             }
             mMediaPlayer.start();
             music = mCurrentList.get(mCurrentNormalIndex);
+            Log.i(TAG, "onPrepared: " + music);
             sendStartBroadcast();
         }
     };
@@ -580,6 +601,8 @@ public class MusicPlayer {
                                     FillZeroUtil.getString(finalPath.substring(34) + "/" + Long.toHexString(address) +
                                             1 + "/" + DateHelper.longToString(times, DateHelper.yyMMddHHmmss), 32)));
                             sendStopBroadcast();
+                            PersistConfig.saveTiming("", 0, true, "","", 4);
+                            RemotePlayMP3State.stops();
                         }
                         mp.start();
                     }
@@ -595,17 +618,14 @@ public class MusicPlayer {
     }
 
     public void playNormal(String path, int playTimes) {
+        Log.i(TAG, "playNormal: "  + path + ".........." + playTimes);
+        if (timer != null) {
+            timer.cancel();
+        }
+        mPlayCount = playTimes;
+        music = path;
+        mMediaPlayer.reset();
         try {
-            mPlayCount = playTimes;
-            music = path;
-            if (mMediaPlayer.isPlaying()) {
-                for (int i = 0; i < playTimes; i++) {
-                    mNormalList.add(path);
-                    DDLog.i("playNormal: " + mCurrentList);
-                }
-                return;
-            }
-            mMediaPlayer.reset();
             mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
             mMediaPlayer.setDataSource(path);
             mMediaPlayer.prepareAsync();
@@ -621,8 +641,12 @@ public class MusicPlayer {
                             mMediaPlayer.seekTo(mCurrentEmrPausePoint);
                             mCurrentEmrPausePoint = 0;
                         }
-                        mMediaPlayer.start();
+                        mp.start();
                         sendStartBroadcast();
+                    } else {
+                        sendStopBroadcast();
+                        PersistConfig.saveNormal("", 0, 0, 0);
+                        RemotePlayMP3State.stops();
                     }
                 }
             });
@@ -646,8 +670,13 @@ public class MusicPlayer {
                         }
                     }
                     if (mPlayCount == 0) {
+                        Log.i(TAG, "onCompletion: 播放完成");
+                        if (timer != null) {
+                            timer.cancel();
+                        }
                         sendStopBroadcast();
-                        PersistConfig.saveNormal("", 0, 0);
+                        PersistConfig.saveNormal("", 0, 0, 0);
+                        RemotePlayMP3State.stops();
                     }
                 }
             });

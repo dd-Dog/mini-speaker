@@ -241,7 +241,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
                         DDLog.i("结果" + fileName + size + playTimes);
-                        PersistConfig.saveEmrInfo(fileName, size, playTimes, "mp3");
+                        PersistConfig.saveEmrInfo(fileName, size, playTimes, "mp3", 2);
                         AlarmService.emergencyAudio();
                     }
                 }
@@ -258,7 +258,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
                         final int playTimes = Integer.parseInt(data.split("/")[2]);
-                        PersistConfig.saveEmrInfo(fileName, size, playTimes, "amr");
+                        PersistConfig.saveEmrInfo(fileName, size, playTimes, "amr", 2);
                         AlarmService.emergencyAudio();
                     }
                 }
@@ -280,8 +280,8 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     if (data.split("/") != null) {
                         String fileName = data.split("/")[0];
                         long size = Long.parseLong(data.split("/")[1]);
-                        final int playTimes = Integer.parseInt(data.split("/")[2]);
-                        PersistConfig.saveNormal(fileName, size, playTimes);
+                        int playTimes = Integer.parseInt(data.split("/")[2]);
+                        PersistConfig.saveNormal(fileName, size, playTimes, 3);
                         AlarmService.remotePlayMP3();
                     }
                 }
@@ -793,6 +793,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                     //下载失败
                     NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ,
                             TcpPacketFactory.DOWNLOAD_AMR, FillZeroUtil.getString("-6/", 32)));
+                } else if (cause.equals(EndCause.SAME_TASK_BUSY)) {
+                    NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                            "-1/00000000000000000000000000000"));
                 } else if (cause.equals(EndCause.COMPLETED)) {
                     try {
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ, TcpPacketFactory.DOWNLOAD_AMR,
@@ -854,7 +857,10 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
          * 终端收到指令先删除终端本地存储的该文件，再进行下载， 如果该文件正在播放，需返回-15
          */
         final String path = Constants.FilePath.FILE_NORMAL;
-        String s = MusicPlayer.music.substring(MusicPlayer.music.lastIndexOf(File.separator)).replace("/", "");
+        String s = null;
+        if (MusicPlayer.music != null) {
+             s = MusicPlayer.music.substring(MusicPlayer.music.lastIndexOf(File.separator)).replace("/", "");
+        }
         if (ClientInfoHelper.getAvailableSize() < size) {
             NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                     TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-3/00000000000000000000000000000"));
@@ -864,10 +870,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
             if (new File(path + fileName).exists()) {
                 FileHelper.deleteFile(path + fileName);
             }
-        } else if (!s.equals(null) && s.equals(fileName)) {
-            //正在播放，无法删除
-            NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
-                    TcpPacketFactory.EMR_AMR_FILE_OPERATION, FillZeroUtil.getString(-15 + "/", 32)));
+        } else if (MusicPlayer.getInstance().isPlaying()) {
+            //正在播放
+            if (s.equals(fileName)) {
+                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                        TcpPacketFactory.EMR_AMR_FILE_OPERATION, FillZeroUtil.getString(-15 + "/", 32)));
+            }
         } else {
             if (new File(path + fileName).exists()) {
                 FileHelper.deleteFile(path + fileName);
@@ -891,8 +899,12 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                             DDLog.i("下载结束" + cause);
                             if (cause.equals(EndCause.ERROR) || cause.equals(EndCause.CANCELED)) {
                                 //下载失败
+                                DDLog.i("原因" + realCause);
                                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                                         TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-2/00000000000000000000000000000"));
+                            } else if (cause.equals(EndCause.SAME_TASK_BUSY)) {
+                                NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
+                                        TcpPacketFactory.EMR_AMR_FILE_OPERATION, "-1/00000000000000000000000000000"));
                             } else if (cause.equals(EndCause.COMPLETED)) {
                                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER,
                                         TcpPacketFactory.EMR_AMR_FILE_OPERATION, "0/000000000000000000000000000000"));
@@ -949,6 +961,9 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                         //下载失败
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                                 "-2/00000000000000000000000000000"));
+                    } else if (cause.equals(EndCause.SAME_TASK_BUSY)) {
+                        NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
+                                "-1/00000000000000000000000000000"));
                     } else if (cause.equals(EndCause.COMPLETED)) {
                         NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.WRITE_ANSWER, address,
                                 "0/000000000000000000000000000000"));
