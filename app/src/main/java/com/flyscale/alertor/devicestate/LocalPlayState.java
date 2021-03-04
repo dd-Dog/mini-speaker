@@ -20,6 +20,7 @@ public class LocalPlayState implements IState {
      */
     public static final int PRIORITY = 6;
     private StateManager stateManager;
+    boolean fm = false;
 
     public LocalPlayState(StateManager stateManager) {
         this.stateManager = stateManager;
@@ -41,11 +42,13 @@ public class LocalPlayState implements IState {
             if (isPaused) {
                 DDLog.i("恢复本地播放");
                 musicPlayer.playNext(true);
+                PersistConfig.savePaused(false);
             } else {
                 if (localPlay == 1) {
                     DDLog.i("待机状态");
+                    PersistConfig.savePaused(false);
                     stop();
-                } else {
+                } else if (!musicPlayer.isPlaying()){
                     DDLog.i("开始新的本地播放");
                     FMUtil.stopFM(BaseApplication.sContext);
                     musicPlayer.reset(false);
@@ -57,20 +60,31 @@ public class LocalPlayState implements IState {
                         }
                     }, 200);
                     PersistConfig.saveLocalPaused(2);
+                    PersistConfig.savePaused(false);
+                } else {
+                    musicPlayer.pause(true);
+                    PersistConfig.savePaused(true);
+                    DDLog.i("保存暂停状态");
                 }
             }
-            PersistConfig.savePaused(false);
         } else {
             //播放FM
+            PersistConfig.savePaused(false);
             if (timer != null) {
                 timer.cancel();
             }
+            MusicPlayer.getInstance().pause(false);
             Intent intent = new Intent("flyscale.fm.start");
             BaseApplication.sContext.sendBroadcast(intent);
-            MusicPlayer.getInstance().pause(false);
-            FMUtil.startFM(BaseApplication.sContext);
-            FMUtil.searchFM(BaseApplication.sContext);
-            FMUtil.informationFM(BaseApplication.sContext);
+            if (fm) {
+                DDLog.i("暂停");
+                FMUtil.pauseFM(BaseApplication.sContext);
+            } else {
+                DDLog.i("开始新的FM");
+                fm = true;
+                FMUtil.startFM(BaseApplication.sContext);
+                FMUtil.informationFM(BaseApplication.sContext);
+            }
         }
     }
 
