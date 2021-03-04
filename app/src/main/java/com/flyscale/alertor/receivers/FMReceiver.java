@@ -52,6 +52,7 @@ public class FMReceiver extends BroadcastReceiver {
             if(DateUtil.isTodayOn()){
                 RemotePlayFMState.setFmid(fmid);
                 RemotePlayFMState.setFreq(freq);
+                RemotePlayFMState.setHasTask(true);
                 stateManager.setStateByPriority(RemotePlayFMState.PRIORITY,true);
 //                FMUtil.startFM(context);
 //                FMUtil.adjustFM(context,freq);
@@ -74,6 +75,7 @@ public class FMReceiver extends BroadcastReceiver {
             float freq = Float.parseFloat(intent.getStringExtra("freq"));
             RemoteBreakFMState.setFmid(fmid);
             RemoteBreakFMState.setFreq(freq);
+            RemoteBreakFMState.setHasTask(true);
 	    stateManager.setStateByPriority(RemoteBreakFMState.PRIORITY,true);
 //            FMUtil.startFM(context);
 //            FMUtil.adjustFM(context,freq);
