@@ -67,10 +67,10 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             String key4 = PersistConfig.findConfig().getKey4Num();
             DDLog.d(getClass() , "按下功能键4, 拨号：" + key4);
             if (!TextUtils.equals(key4, "0")) PhoneUtil.call(context , key4);
-        } else if (TextUtils.equals(action , BRConstant.ACTION_FM_AND_MP3)) {
-            //选择FM或者MP3切换
+        } else if (TextUtils.equals(action , BRConstant.ACTION_FM)) {
+            //FM按下
             int mode = PersistConfig.findConfig().getPlayMode();
-            Log.i("TAG", "start: 开始播放本地MP3或者FM" + mode);
+            Log.i("TAG", "start: 开始播放FM" + mode);
             if (mode == 1) {
                 //播放MP3
                 PersistConfig.savePlayMode(0);
@@ -80,6 +80,10 @@ public class FlyscaleReceiver extends BroadcastReceiver {
                 PersistConfig.savePlayMode(1);
             }
             AlarmService.localPlay();
+        } else if (TextUtils.equals(action , BRConstant.ACTION_MP3)) {
+            //MP3按下
+            Log.i("TAG", "start: 开始播放本地MP3");
+
         } else if (TextUtils.equals(action , BRConstant.ACTION_PREV)) {
             //上一首
             stateManager = AlarmService.mStateManager;
@@ -92,7 +96,7 @@ public class FlyscaleReceiver extends BroadcastReceiver {
                     MusicPlayer.getInstance().playLastMusic();
                 } else {
                     //播放上一个FM频道
-
+                    FMUtil.adjustFM(context, 1);
                 }
             }
         } else if (TextUtils.equals(action , BRConstant.ACTION_STOP_AND_PLAY)) {

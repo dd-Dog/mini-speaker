@@ -27,8 +27,10 @@ public interface BRConstant {
     String ACTION_FUNCTION_KEY3_DOWN = "flyscale.privkey.FUNCTION_KEY3.down";
     String ACTION_FUNCTION_KEY4_DOWN = "flyscale.privkey.FUNCTION_KEY4.down";
 
-    //按键FM/MPS
-    String ACTION_FM_AND_MP3 = "flyscale.privkey.FM_MP3.down";
+    //按键FM
+    String ACTION_FM = "flyscale.privkey.FM.down";
+    //按键MP3
+    String ACTION_MP3 = "flyscale.privkey.MP3.down";
     //上一首或者上一个频道
     String ACTION_PREV= "flyscale.privkey.PREV.down";
     //暂停或播放
