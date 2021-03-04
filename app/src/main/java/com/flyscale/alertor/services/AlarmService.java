@@ -49,7 +49,7 @@ public class AlarmService extends BaseService {
     TelephonyStateReceiver mTelephonyStateReceiver;
     //    CallPhoneReceiver mCallPhoneReceiver;
     CallPhoneReceiver2 mCallPhoneReceiver2;
-    static StateManager mStateManager;
+    public static StateManager mStateManager;
 
     public AlarmService() {
 

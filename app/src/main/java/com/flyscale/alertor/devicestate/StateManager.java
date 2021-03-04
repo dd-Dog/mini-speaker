@@ -1,5 +1,7 @@
 package com.flyscale.alertor.devicestate;
 
+import android.util.Log;
+
 import com.flyscale.alertor.helper.DDLog;
 
 import java.util.HashMap;
@@ -10,7 +12,7 @@ import java.util.HashMap;
  */
 public class StateManager {
     private IState mState;
-
+    private static final String TAG = "StateManager";
     private final HashMap<Integer, IState> stateList;
 
 
@@ -45,10 +47,14 @@ public class StateManager {
             return;
         }
         IState state = stateList.get(priority);
+        Log.i(TAG, "setStateByPriority: " + state.getPriority());
+
         if (state == null) {
             DDLog.e("状态转换异常，未知的优先级");
         } else {
             if (saveState) {
+                Log.i(TAG, "setStateByPriority: 是否走暂停的方法" + saveState);
+                Log.i(TAG, "setStateByPriority: " + this.mState.getPriority());
                 this.mState.pause();
             }
             this.mState = state;

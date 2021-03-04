@@ -15,7 +15,7 @@ public class AlarmState implements IState {
 
     @Override
     public void start() {
-        
+        stop();
     }
 
     @Override

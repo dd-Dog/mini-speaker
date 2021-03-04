@@ -153,9 +153,35 @@ public class PersistConfig extends LitePalSupport {
 
     //远程播放参数
     String path, fileName, type, voice, end;
-    int playTimes;
+    int playTimes, remote;
     long size, address;
     boolean beforePlay;
+    boolean pauseLocal = false;
+    int localPlay = 1; //1--待机状态；2--本地播放
+
+    public int getLocalPlay() {
+        return localPlay;
+    }
+
+    public void setLocalPlay(int localPlay) {
+        this.localPlay = localPlay;
+    }
+
+    public boolean isPauseLocal() {
+        return pauseLocal;
+    }
+
+    public void setPauseLocal(boolean pauseLocal) {
+        this.pauseLocal = pauseLocal;
+    }
+
+    public int getRemote() {
+        return remote;
+    }
+
+    public void setRemote(int remote) {
+        this.remote = remote;
+    }
 
     public String getVoice() {
         return voice;
@@ -1310,35 +1336,54 @@ public class PersistConfig extends LitePalSupport {
         return persistConfig;
     }
 
-    public static PersistConfig saveEmrInfo(String fileName, long size, int playTimes, String type) {
+    public static PersistConfig saveEmrInfo(String fileName, long size, int playTimes, String type, int remote) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setFileName(fileName);
         persistConfig.setSize(size);
         persistConfig.setPlayTimes(playTimes);
         persistConfig.setType(type);
+        persistConfig.setRemote(remote);
         persistConfig.save();
         return persistConfig;
     }
 
-    public static PersistConfig saveNormal(String fileName, long size, int playTimes) {
+    public static PersistConfig saveNormal(String fileName, long size, int playTimes, int remote) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setFileName(fileName);
         persistConfig.setSize(size);
         persistConfig.setPlayTimes(playTimes);
+        persistConfig.setRemote(remote);
         persistConfig.save();
         return persistConfig;
     }
 
-    public static PersistConfig saveTiming(String fileName, long address, boolean beforePlay, String voice, String end) {
+    public static PersistConfig saveTiming(String fileName, long address, boolean beforePlay, String voice,
+                                           String end, int remote) {
         PersistConfig persistConfig = findConfig();
         persistConfig.setFileName(fileName);
         persistConfig.setAddress(address);
         persistConfig.setBeforePlay(beforePlay);
         persistConfig.setVoice(voice);
         persistConfig.setEnd(end);
+        persistConfig.setRemote(remote);
         persistConfig.save();
         return persistConfig;
     }
+
+    public static PersistConfig savePaused(boolean pauseLocal) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setPauseLocal(pauseLocal);
+        persistConfig.save();
+        return persistConfig;
+    }
+
+    public static PersistConfig saveLocalPaused(int localPlay) {
+        PersistConfig persistConfig = findConfig();
+        persistConfig.setLocalPlay(localPlay);
+        persistConfig.save();
+        return persistConfig;
+    }
+
 
     @Override
     public String toString() {

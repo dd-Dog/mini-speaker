@@ -8,6 +8,7 @@ import com.flyscale.alertor.Constants;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.helper.AlarmManagerUtil;
+import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.DateHelper;
 import com.flyscale.alertor.media.MusicPlayer;
 
@@ -24,10 +25,10 @@ public class RemotePlayMP3State implements IState {
      * 状态触发优先级
      */
     public static final int PRIORITY = 3;
-    private StateManager stateManager;
+    private static StateManager stateManager;
 
     public RemotePlayMP3State(StateManager stateManager) {
-        this.stateManager = stateManager;
+        RemotePlayMP3State.stateManager = stateManager;
     }
 
     @Override
@@ -35,17 +36,17 @@ public class RemotePlayMP3State implements IState {
         String fileName = PersistConfig.findConfig().getFileName();
         long size = PersistConfig.findConfig().getSize();
         int playTimes = PersistConfig.findConfig().getPlayTimes();
-
-        if (size != 0) {
-            DownLoadAndDelete(fileName, size, playTimes);
-        }
+        int remote = PersistConfig.findConfig().getRemote();
 
         boolean beforePlay = PersistConfig.findConfig().isBeforePlay();
         long address = PersistConfig.findConfig().getAddress();
         String voice = PersistConfig.findConfig().getVoice();
         String end = PersistConfig.findConfig().getEnd();
 
-        if (address != 0) {
+        if (remote == 3) {
+            DDLog.i("优先级为三 " + fileName);
+            DownLoadAndDelete(fileName, size, playTimes);
+        } else if (remote == 4) {
             String time = DateHelper.StringTimeHms();
             long persist = DateHelper.getFMDuration(time, end);
             //设置音量
@@ -57,14 +58,12 @@ public class RemotePlayMP3State implements IState {
             MusicPlayer.getInstance().playBefore(path + fileName, beforePlay, address);
             //持续persist时间
             AlarmManagerUtil.getInstance(BaseApplication.sContext).cancelMusic(persist);
-        }
-        if (!MusicPlayer.getInstance().isPlaying()) {
-            stop();
-        }
+        } else stops();
     }
 
     @Override
     public void pause() {
+        DDLog.i("优先级为三的暂停方法");
         MusicPlayer.getInstance().pause(true);
 
     }
@@ -73,6 +72,11 @@ public class RemotePlayMP3State implements IState {
     public void stop() {
         stateManager.setStateByPriority(PRIORITY + 1, false);
     }
+
+    public static void stops() {
+        stateManager.setStateByPriority(PRIORITY + 1, false);
+    }
+
     @Override
     public int getPriority() {
         return PRIORITY;

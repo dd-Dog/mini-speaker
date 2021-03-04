@@ -13,7 +13,7 @@ public class RemotePlayFMState implements IState {
 
     @Override
     public void start() {
-        
+        stop();
     }
 
     @Override
