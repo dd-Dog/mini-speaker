@@ -1236,7 +1236,7 @@ public class NettyHandler extends SimpleChannelInboundHandler<TcpPacket> {
                 String nid = cellInfo[1];
                 String bid = cellInfo[2];
                 String s = "0000";
-                String singleLevel = PhoneUtil.getMobileDbm() + "";
+                String singleLevel = Math.abs(PhoneUtil.getMobileDbm()) + "";
                 String baseStationInfo = sid + "/" + nid + "/" + s + "/" + bid + "/" + singleLevel + "/";
                 NettyHelper.getInstance().send(TcpPacket.getInstance().encode(CMD.READ_ANSWER, address,
                         baseStationInfo + addZero(baseStationInfo)));
