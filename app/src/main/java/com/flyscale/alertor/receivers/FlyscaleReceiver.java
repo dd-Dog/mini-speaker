@@ -9,6 +9,7 @@ import android.util.Log;
 import com.flyscale.alertor.base.BaseApplication;
 import com.flyscale.alertor.data.persist.PersistConfig;
 import com.flyscale.alertor.data.persist.PersistPair;
+import com.flyscale.alertor.devicestate.StateManager;
 import com.flyscale.alertor.helper.DDLog;
 import com.flyscale.alertor.helper.FMUtil;
 import com.flyscale.alertor.helper.MediaHelper;
@@ -27,6 +28,7 @@ public class FlyscaleReceiver extends BroadcastReceiver {
 
     String TAG = "FlyscaleReceiver";
     static long sStudyStart,sStudyEnd;
+    StateManager stateManager;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -67,40 +69,65 @@ public class FlyscaleReceiver extends BroadcastReceiver {
             if (!TextUtils.equals(key4, "0")) PhoneUtil.call(context , key4);
         } else if (TextUtils.equals(action , BRConstant.ACTION_FM_AND_MP3)) {
             //选择FM或者MP3切换
+            int mode = PersistConfig.findConfig().getPlayMode();
+            Log.i("TAG", "start: 开始播放本地MP3或者FM" + mode);
+            if (mode == 1) {
+                //播放MP3
+                PersistConfig.savePlayMode(0);
+                PersistConfig.saveLocalPaused(2);
+            } else {
+                //播放FM
+                PersistConfig.savePlayMode(1);
+            }
             AlarmService.localPlay();
         } else if (TextUtils.equals(action , BRConstant.ACTION_PREV)) {
             //上一首
+            stateManager = AlarmService.mStateManager;
+            DDLog.i("优先级" + stateManager.getState().getPriority());
+            PersistConfig.saveLocalPaused(2);
             int mode = PersistConfig.findConfig().getPlayMode();
-            if (mode == 0) {
-                //播放上一首MP3
-                MusicPlayer.getInstance().playLastMusic();
-            } else {
-                //播放上一个FM频道
+            if (stateManager.getState().getPriority() == 6) {//只可以控制本地播放状态
+                if (mode == 0) {
+                    //播放上一首MP3
+                    MusicPlayer.getInstance().playLastMusic();
+                } else {
+                    //播放上一个FM频道
 
+                }
             }
         } else if (TextUtils.equals(action , BRConstant.ACTION_STOP_AND_PLAY)) {
             //暂停和播放
+            stateManager = AlarmService.mStateManager;
+            DDLog.i("优先级" + stateManager.getState().getPriority());
+            PersistConfig.saveLocalPaused(2);
             int mode = PersistConfig.findConfig().getPlayMode();
-            if (mode == 0) {
-                //暂停或者开始MP3
-                if (MusicPlayer.getInstance().isPlaying()) {
-                    MusicPlayer.getInstance().pause(true);
+            if (stateManager.getState().getPriority() == 6) {//只可以控制本地播放状态
+                if (mode == 0) {
+                    //暂停或者开始MP3
+                    if (MusicPlayer.getInstance().isPlaying()) {
+                        MusicPlayer.getInstance().pause(true);
+                    } else {
+                        MusicPlayer.getInstance().playNext(true);
+                    }
                 } else {
-                    MusicPlayer.getInstance().playNext(true);
+                    //暂停或者播放FM
+                    FMUtil.pauseFM(context);
                 }
-            } else {
-                //暂停或者播放FM
-                FMUtil.pauseFM(context);
             }
         } else if (TextUtils.equals(action , BRConstant.ACTION_NEXT)) {
             //下一首
+            PersistConfig.saveLocalPaused(2);
             int mode = PersistConfig.findConfig().getPlayMode();
-            if (mode == 0) {
-                //播放下一首MP3
-                MusicPlayer.getInstance().playNextManual();
-            } else {
-                //播放下一个FM频道
-                FMUtil.adjustFM(context , 0);
+            stateManager = AlarmService.mStateManager;
+            DDLog.i("优先级" + stateManager.getState().getPriority());
+            if (stateManager.getState().getPriority() == 6) {//只可以控制本地播放状态
+                if (mode == 0) {
+                    //播放下一首MP3
+                    MusicPlayer.getInstance().playNextManual();
+                } else {
+                    //播放下一个FM频道
+                    FMUtil.adjustFM(context, 0);
+                }
             }
 
         } else if (TextUtils.equals(action , BRConstant.ACTION_PEOPLE_SERVICES)) {
