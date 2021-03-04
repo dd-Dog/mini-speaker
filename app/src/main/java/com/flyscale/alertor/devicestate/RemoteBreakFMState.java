@@ -18,6 +18,7 @@ public class RemoteBreakFMState implements IState {
     public static float freq = 0;
     public static int fmid = 0;
     public static Context context = BaseApplication.sContext;
+    public static boolean hasTask = false;
 
     public RemoteBreakFMState(StateManager stateManager) {
         this.stateManager = stateManager;
@@ -25,13 +26,18 @@ public class RemoteBreakFMState implements IState {
 
     @Override
     public void start() {
-        FMUtil.startFM(context);
-        FMUtil.adjustFM(context,freq);
-        String startTime = DateUtil.StringTimeHms();
-        String endTime = BreakFMLitepalUtil.getEndTime(fmid);
-        FMUtil.fmCallBack2(fmid,"0","0");
-        long time = DateUtil.getFMDuration(startTime,endTime);
-        FMUtil.stopBrFMAlarmManager(context,fmid,time);
+        if(hasTask){
+            FMUtil.startFM(context);
+            FMUtil.adjustFM(context,freq);
+            String startTime = DateUtil.StringTimeHms();
+            String endTime = BreakFMLitepalUtil.getEndTime(fmid);
+            FMUtil.fmCallBack2(fmid,"0","0");
+            long time = DateUtil.getFMDuration(startTime,endTime);
+            FMUtil.stopBrFMAlarmManager(context,fmid,time);
+        }else {
+            stop();
+        }
+
     }
 
     @Override
@@ -41,6 +47,7 @@ public class RemoteBreakFMState implements IState {
 
     @Override
     public void stop() {
+        if (hasTask){
             FMUtil.stopFM(context);
             BreakFMLitepalBean litepalBean = new BreakFMLitepalBean();
             litepalBean.setName("FM" + fmid);
@@ -54,7 +61,12 @@ public class RemoteBreakFMState implements IState {
             litepalBean.setData("");
             litepalBean.updateAll("name = ?","FM" + BreakFMLitepalUtil.getCorrectLine(fmid));
             FMUtil.fmCallBack2(fmid,"0","0");
-        stateManager.setStateByPriority(PRIORITY + 1, false);
+            hasTask =false;
+            stateManager.setStateByPriority(PRIORITY + 1, false);
+        }else {
+            stateManager.setStateByPriority(PRIORITY + 1, false);
+        }
+
     }
     @Override
     public int getPriority() {
@@ -75,5 +87,13 @@ public class RemoteBreakFMState implements IState {
 
     public static void setFmid(int fmid) {
         RemoteBreakFMState.fmid = fmid;
+    }
+
+    public static boolean isHasTask() {
+        return hasTask;
+    }
+
+    public static void setHasTask(boolean hasTask) {
+        RemoteBreakFMState.hasTask = hasTask;
     }
 }

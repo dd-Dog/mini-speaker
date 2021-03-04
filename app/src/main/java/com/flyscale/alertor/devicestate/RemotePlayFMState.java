@@ -16,6 +16,7 @@ public class RemotePlayFMState implements IState {
     public static float freq = 0;
     public static int fmid = 0;
     public static Context context = BaseApplication.sContext;
+    public static boolean hasTask = false;
 
     public RemotePlayFMState(StateManager stateManager) {
         this.stateManager = stateManager;
@@ -23,13 +24,17 @@ public class RemotePlayFMState implements IState {
 
     @Override
     public void start() {
-        FMUtil.startFM(BaseApplication.sContext);
-        FMUtil.adjustFM(context,freq);
-        FMUtil.fmCallBack(fmid,"0","0");
-        String startTime = DateUtil.StringTimeHms();
-        String endTime = FMLitepalUtil.getEndTime(fmid);
-        long time = DateUtil.getFMDuration(startTime,endTime);
-        FMUtil.stopFMAlarmManager(context,fmid,time);
+        if (hasTask) {
+            FMUtil.startFM(BaseApplication.sContext);
+            FMUtil.adjustFM(context, freq);
+            FMUtil.fmCallBack(fmid, "0", "0");
+            String startTime = DateUtil.StringTimeHms();
+            String endTime = FMLitepalUtil.getEndTime(fmid);
+            long time = DateUtil.getFMDuration(startTime, endTime);
+            FMUtil.stopFMAlarmManager(context, fmid, time);
+        }else {
+            stop();
+        }
     }
 
     @Override
@@ -39,9 +44,15 @@ public class RemotePlayFMState implements IState {
 
     @Override
     public void stop() {
-        FMUtil.stopFM(context);
-        FMUtil.fmCallBack(fmid,"1","0");
-        stateManager.setStateByPriority(PRIORITY + 1, false);
+        if(hasTask){
+            FMUtil.stopFM(context);
+            FMUtil.fmCallBack(fmid,"1","0");
+            hasTask =false;
+            stateManager.setStateByPriority(PRIORITY + 1, false);
+        }else {
+            hasTask = false;
+            stateManager.setStateByPriority(PRIORITY + 1, false);
+        }
     }
     @Override
     public int getPriority() {
@@ -62,5 +73,13 @@ public class RemotePlayFMState implements IState {
 
     public static void setFmid(int fmid) {
         RemotePlayFMState.fmid = fmid;
+    }
+
+    public static boolean isHasTask() {
+        return hasTask;
+    }
+
+    public static void setHasTask(boolean hasTask) {
+        RemotePlayFMState.hasTask = hasTask;
     }
 }
